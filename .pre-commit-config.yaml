@@ -1,0 +1,11 @@
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    # Välj en stabil version du har installerad, t.ex. v17.0.6 eller v18.x
+    rev: v20.1.8
+    hooks:
+      - id: clang-format
+        # Matcha Arduino/C++-filer
+        files: "\\.(cs)$"
+        # Se till att .ino tolkas som C++
+        args: ["--style=file", "--assume-filename=.cs"]
