@@ -1,6 +1,0 @@
-@GpsSensorApi_HostAddress = http://localhost:5126
-
-GET {{GpsSensorApi_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
