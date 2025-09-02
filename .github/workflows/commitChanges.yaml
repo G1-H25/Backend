@@ -1,0 +1,47 @@
+name: pushChanges
+
+on: 
+  push:
+    branches:
+      - main
+      - development 
+  pull_request:
+    branches: 
+      - main
+      - development
+
+jobs:
+  build_and_run_dotnet:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up .NET SDK
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'  # Use '7.0.x', '8.0.x', etc., depending on your project
+
+      # Step 3: Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore GpsApp/GpsApp.csproj
+
+      # Step 4: Build the project
+      - name: Build project
+        run: dotnet build GpsApp/GpsApp.csproj --configuration Release
+
+      # ✅ Step 5: Run tests
+      - name: Run tests
+        run: dotnet test GpsApp.Tests/GpsApp.Tests.csproj --configuration Release
+
+      - name: Run tests with logging
+        run: dotnet test GpsApp.Tests/GpsApp.Tests.csproj --logger "trx"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+            name: test-results
+            path: '**/TestResults/*.trx'
