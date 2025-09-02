@@ -1,32 +1,46 @@
 name: pushChanges
 
 on: 
-    push:
-        branches:
-                - feature/WilmerPrototyping
-                - development 
-    pull_request:
-        branches: 
-                - main
-                - development
-
-
+  push:
+    branches:
+      - feature/WilmerPrototyping
+      - development 
+  pull_request:
+    branches: 
+      - main
+      - development
 
 jobs:
-  push_changes_commit:
+  build_and_run_dotnet:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      # Step 2: Set up .NET SDK
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
         with:
-           python-version: '3.10'
+          dotnet-version: '9.0.x'  # You can change this to 7.0.x or 8.0.x depending on your project
 
-      - name: Set up Python and print version
-        run: python3 --version
+      # Step 3: Restore project dependencies
+      - name: Restore dependencies
+        run: dotnet restore
 
-      - name: Run main.py
-        run: python3 main.py
+      # Step 4: Build the project
+      - name: Build project
+        run: dotnet build --configuration Release
+
+      # Step 5 (Optional): Run tests if you have any
+      # - name: Run tests
+      #   run: dotnet test --no-build --verbosity normal
+
+      # Step 6 (Optional): Run your application (console/web)
+      # If your project is a console app:
+      # - name: Run the application
+      #   run: dotnet run --project path/to/your/project.csproj
+
+      # If your project is a Web API and you want to start the server, 
+      # be cautious as it may hang (consider only doing this in deployment/test jobs)
