@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 
-[ApiController]
-[Route("[controller]")] // removes controller part of the route word
-public class HelloController : ControllerBase
+namespace GpsApp.Controllers
 {
-    [HttpGet]
-    public IActionResult Get()
+    [ApiController]
+    [Route("[controller]")]
+    public class HelloController : ControllerBase
     {
-        return Ok("Hello from the ASP.NET Core API!");
+        [HttpGet]
+        public IActionResult Get()
+        {
+            return Ok("Hello from the ASP.NET Core API!");
+        }
     }
 }
