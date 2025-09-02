@@ -23,24 +23,20 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'  # You can change this to 7.0.x or 8.0.x depending on your project
+          dotnet-version: '9.0.x'  # Use '7.0.x', '8.0.x', etc., depending on your project
 
-      # Step 3: Restore project dependencies
+      # Step 3: Restore dependencies
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore src/GpsSensorApi/GpsSensorApi.csproj
 
       # Step 4: Build the project
       - name: Build project
-        run: dotnet build --configuration Release
+        run: dotnet build src/GpsSensorApi/GpsSensorApi.csproj --configuration Release
 
-      # Step 5 (Optional): Run tests if you have any
-      # - name: Run tests
-      #   run: dotnet test --no-build --verbosity normal
-
-      # Step 6 (Optional): Run your application (console/web)
-      # If your project is a console app:
+      # Optional: Step 5: Run the application (if it's a console app)
       # - name: Run the application
-      #   run: dotnet run --project path/to/your/project.csproj
+      #   run: dotnet run --project src/GpsSensorApi/GpsSensorApi.csproj
 
-      # If your project is a Web API and you want to start the server, 
-      # be cautious as it may hang (consider only doing this in deployment/test jobs)
+      # Optional: Step 6: Run tests (if you have a test project)
+      # - name: Run tests
+      #   run: dotnet test src/GpsSensorApi.Tests/GpsSensorApi.Tests.csproj
