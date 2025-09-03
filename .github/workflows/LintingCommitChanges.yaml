@@ -25,37 +25,16 @@ jobs:
         continue-on-error: true
         run: dotnet format GpsApp/GpsApp.csproj --verify-no-changes --no-restore
 
-      - name: Comment on PR if formatting check failed (same repo only)
-        if: |
-          steps.format_check.outcome == 'failure' &&
-          github.event.pull_request.head.repo.full_name != null &&
-          github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: [
-                "⚠️ **Code formatting check failed!**",
-                "",
-                "Please run the following command locally to fix formatting issues:",
-                "",
-                "```bash",
-                "dotnet format GpsApp/GpsApp.csproj",
-                "```",
-                "",
-                "After formatting, commit and push your changes."
-              ].join('\n')
-            });
-
 
       - name: Fail if formatting is incorrect
         if: steps.format_check.outcome == 'failure'
         run: |
-          echo "❌ Code formatting check failed."
+          echo "❌ Code formatting check failed!"
+          echo ""
+          echo "To fix formatting issues locally, run:"
+          echo ""
+          echo "    dotnet format GpsApp/GpsApp.csproj"
+          echo ""
           exit 1
 
 
