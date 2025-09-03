@@ -26,7 +26,10 @@ jobs:
         run: dotnet format GpsApp/GpsApp.csproj --verify-no-changes --no-restore
 
       - name: Comment on PR if formatting check failed (same repo only)
-        if: steps.format_check.outcome == 'failure' && github.event.pull_request.head.repo.full_name == github.repository
+        if: |
+          steps.format_check.outcome == 'failure' &&
+          github.event.pull_request.head.repo.full_name != null &&
+          github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -47,6 +50,7 @@ jobs:
                 "After formatting, commit and push your changes."
               ].join('\n')
             });
+
 
       - name: Fail if formatting is incorrect
         if: steps.format_check.outcome == 'failure'
