@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\chas\\SUVx24\\GPS\\Backend2\\Backend\\GpsApp\\GpsApp.csproj",
+      "projectUniqueName": "C:\\chas\\SUVx24\\GPS\\US-001-Github-Actions-And-Testing\\Backend\\GpsApp\\GpsApp.csproj",
       "projectName": "GpsApp",
-      "projectPath": "C:\\chas\\SUVx24\\GPS\\Backend2\\Backend\\GpsApp\\GpsApp.csproj",
+      "projectPath": "C:\\chas\\SUVx24\\GPS\\US-001-Github-Actions-And-Testing\\Backend\\GpsApp\\GpsApp.csproj",
       "packagesPath": "C:\\Users\\wilme\\.nuget\\packages\\",
-      "outputPath": "C:\\chas\\SUVx24\\GPS\\Backend2\\Backend\\GpsApp\\obj\\",
+      "outputPath": "C:\\chas\\SUVx24\\GPS\\US-001-Github-Actions-And-Testing\\Backend\\GpsApp\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\wilme\\AppData\\Roaming\\NuGet\\NuGet.Config",
