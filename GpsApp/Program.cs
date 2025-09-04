@@ -18,6 +18,6 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapControllers(); 
+app.MapControllers();
 
 app.Run();

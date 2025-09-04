@@ -1,0 +1,40 @@
+name: Lint C# Code
+
+on:
+  pull_request:
+    branches: [main, development]
+
+jobs:
+  dotnet_format_check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore GpsApp/GpsApp.csproj
+
+      - name: Check code formatting
+        id: format_check
+        continue-on-error: true
+        run: dotnet format GpsApp/GpsApp.csproj --verify-no-changes --no-restore
+
+
+      - name: Fail if formatting is incorrect
+        if: steps.format_check.outcome == 'failure'
+        run: |
+          echo "❌ Code formatting check failed!"
+          echo ""
+          echo "To fix formatting issues locally, run:"
+          echo ""
+          echo "    dotnet format GpsApp/GpsApp.csproj"
+          echo ""
+          exit 1
+
+
