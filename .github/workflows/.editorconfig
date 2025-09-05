@@ -1,0 +1,17 @@
+# .editorconfig
+root = true
+
+[*.cs]
+
+# Use Allman-style braces
+csharp_new_line_before_open_brace = all
+
+# No short if statements on a single line
+csharp_style_allow_embedded_statements_on_same_line_experimental = false
+
+# Never allow short methods on one line
+csharp_style_allow_short_methods_on_a_single_line_experimental = false
+
+# Indentation settings
+indent_style = space
+indent_size = 4
