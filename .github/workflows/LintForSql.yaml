@@ -7,7 +7,8 @@ on:
   push: 
     # Will run on push to all branches
     branches:
-      - '**'
+      - main
+      - development
     paths:
       # Will only run on files under sql folder
       - 'sql/**'
