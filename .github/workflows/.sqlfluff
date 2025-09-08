@@ -1,8 +1,7 @@
 [sqlfluff]
 dialect = ansi
-exclude_rules = L009  # example: allow SELECT *
-templater = jinja  # or 'raw' if you're not templating
+exclude_rules = L009 
+templater = jinja 
 
-
-[sqlfluff:rules:L010]  # Capitalisation of keywords
+[sqlfluff:rules:L010]
 capitalisation_policy = consistent
