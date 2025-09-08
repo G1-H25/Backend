@@ -10,7 +10,7 @@ public class SqlGet
 
     public SqlGet(string connectionString)
     {
-        _connectionString = connectionString 
+        _connectionString = connectionString
             ?? throw new ArgumentNullException(nameof(connectionString));
     }
 

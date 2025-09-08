@@ -9,7 +9,7 @@ public class GpsController : ControllerBase
 {
     private readonly SqlInsert _insertService;
 
-// get the connectionstring to azure database
+    // get the connectionstring to azure database
     public GpsController(SqlInsert insertService)
     {
         _insertService = insertService;
@@ -19,7 +19,7 @@ public class GpsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> PostGpsData([FromBody] GpsData data)
     {
-        
+
         if (string.IsNullOrWhiteSpace(data.DeviceId))
             return BadRequest("DeviceId is required.");
 
