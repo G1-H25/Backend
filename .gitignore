@@ -16,3 +16,8 @@ appsettings.Development.json
 # Logs and temp files
 *.log
 *.tmp
+-d
+-H
+
+# scripts
+.scripts/
