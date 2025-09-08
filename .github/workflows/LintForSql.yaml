@@ -9,6 +9,7 @@ on:
     branches:
       - main
       - development
+      - dev/**
     paths:
       # Will only run on files under sql folder
       - 'sql/**'

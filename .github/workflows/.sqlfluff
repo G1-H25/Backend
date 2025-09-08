@@ -1,5 +1,5 @@
 [sqlfluff]
-dialect = tsql
+dialect = ansi
 exclude_rules = L009  # example: allow SELECT *
 templater = jinja  # or 'raw' if you're not templating
 
