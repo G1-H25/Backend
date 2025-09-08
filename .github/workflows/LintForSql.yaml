@@ -1,0 +1,39 @@
+# Linter for SQL Code using the tsqllint
+# Link : https://github.com/tsqllint/tsqllint
+
+name: Format SQL files
+
+on: 
+  push: 
+    # Will run on push to all branches
+    branches:
+      - '**'
+    paths:
+      # Will only run on files under sql folder
+      - 'sql/**'
+  pull_request:
+    # Will only run on pull_requests
+    branches: [main, development]
+    paths:
+      - 'sql/**'
+    workflow_dispatch:
+
+jobs: 
+
+  sql-lint: 
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v4
+      
+      - name: Set up .NET env 
+        uses: actions/setup-dotnet@v4
+        with:
+          # Use '7.0.x', '8.0.x', etc., depending on your project
+          dotnet-version: '9.0.x' 
+      
+      - name: Add tools path to PATH 
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Run TSQLLint with config from .github/workflows
+        run: tsqllint -p sql/ -c .github/workflows/.tsqllintrc
+
