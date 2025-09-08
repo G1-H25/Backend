@@ -1,7 +1,6 @@
 [sqlfluff]
 dialect = ansi
-exclude_rules = L009 
-templater = jinja 
+templater = raw
 
 [sqlfluff:rules:L010]
 capitalisation_policy = consistent
