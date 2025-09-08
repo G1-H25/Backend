@@ -1,0 +1,10 @@
+[sqlfluff]
+dialect = tsql
+exclude_rules = L009  # example: allow SELECT *
+templater = jinja  # or 'raw' if you're not templating
+
+[sqlfluff:rules]
+max_line_length = 120
+
+[sqlfluff:rules:L010]  # Capitalisation of keywords
+capitalisation_policy = consistent

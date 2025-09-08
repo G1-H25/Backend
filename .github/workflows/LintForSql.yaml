@@ -25,18 +25,16 @@ jobs:
     steps: 
       - uses: actions/checkout@v4
       
-      - name: Set up .NET env 
-        uses: actions/setup-dotnet@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          # Use '7.0.x', '8.0.x', etc., depending on your project
-          dotnet-version: '9.0.x' 
+          python-version: '3.x'
 
-      - name: Install TSQL client
-        run: dotnet tool install --global tsqllint
+      - run: pip install sqlfluff
       
-      - name: Add tools path to PATH 
-        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+      - name: Lint SQL files
+        run: sqlfluff lint sql/ --config .github/workflows/.sqlfluff
 
-      - name: Run TSQLLint with config from .github/workflows
-        run: tsqllint -p sql/ -c .github/workflows/.tsqllintrc
+      - name: Auto fix SQL files
+        run: sqlfluff fix sql/ --config .github/workflows/.sqlfluff
 
