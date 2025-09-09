@@ -4,6 +4,7 @@
 name: Format SQL files
 
 on: 
+  workflow_dispatch: 
   push: 
     # Will run on push to all branches
     branches:
@@ -19,7 +20,7 @@ on:
     branches: [main, development]
     paths:
       - 'sql/**'
-    workflow_dispatch:
+    
 
 jobs: 
 
