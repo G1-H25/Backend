@@ -45,3 +45,8 @@ Thumbs.db
 
 # Environment variables or secrets (if using dotenv)
 .env
+-d
+-H
+
+# scripts
+.scripts/
