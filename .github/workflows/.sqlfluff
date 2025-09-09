@@ -1,0 +1,6 @@
+[sqlfluff]
+dialect = ansi
+templater = raw
+
+[sqlfluff:rules:L010]
+capitalisation_policy = consistent
