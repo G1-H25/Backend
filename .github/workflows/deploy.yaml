@@ -13,9 +13,8 @@ on:
   push:
 
     branches:
-
-      - main
-      - '*'   # runs on all branches
+      - '*'  # Run on all branches
+      #- main
 
   workflow_dispatch:
 
