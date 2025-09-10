@@ -16,3 +16,37 @@ appsettings.Development.json
 # Logs and temp files
 *.log
 *.tmp
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Python virtual environment
+.venv/
+venv/
+ENV/
+env/
+
+# pip environment
+pip-log.txt
+pip-delete-this-directory.txt
+
+# SQLFluff lint cache
+.sqlfluffcache/
+
+# VS Code settings
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables or secrets (if using dotenv)
+.env
+-d
+-H
+
+# scripts
+.scripts/
