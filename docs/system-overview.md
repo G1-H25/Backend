@@ -19,4 +19,4 @@ Frontend->>Backend: GET /GpsGet
 Backend->>Frontend: Return data for display
 
 
-![Architecture Diagram](docs/images/system-overview.png)
+![Architecture Diagram](images/system-overview.png)
