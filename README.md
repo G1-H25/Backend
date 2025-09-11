@@ -47,14 +47,18 @@ Here you will find a link/description on what library will be used for testing a
 ### Running it locally
 
 1. Clone the repo
+
 `git clone https://github.com/G1-H25/Backend.git`
 `cd backend`
 
 2. run docker
+
 Either. `docker compose up --watch` or `docker-compose up --build`
+
 watch is to automatically have changes in the file update the docker, while non watch does not do this.
 
 3. additional tips
+
 to enter the backend container shell
 
 - `docker exec -it backend-app-1 /bin/sh`
@@ -66,10 +70,13 @@ to enter database shell
 4. Start coding 
 
 5. Stopping & Cleaning Up
+
 Stop containers:
+
 `docker compose down`
 
 Stop and remove volumes and images:
+
 `docker compose down --volumes --rmi all`
 
 Notes
