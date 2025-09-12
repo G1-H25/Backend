@@ -42,6 +42,6 @@ jobs:
       - name: Auto fix SQL files
 
         # && y to confirm changes
-        run: sqlfluff fix sql/ --config .github/workflows/.sqlfluff && y
+        run: sqlfluff fix sql/ --config .github/workflows/.sqlfluff --force
 
 
