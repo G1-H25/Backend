@@ -57,6 +57,8 @@ Either. `docker compose up --watch` or `docker-compose up --build`
 
 watch is to automatically have changes in the file update the docker, while non watch does not do this.
 
+docker watch currently does not work
+
 3. additional tips
 
 to enter the backend container shell
