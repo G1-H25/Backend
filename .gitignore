@@ -48,5 +48,5 @@ Thumbs.db
 -d
 -H
 
-# scripts
-.scripts/
+# Extra measure, probably not needed
+secrets.py 
