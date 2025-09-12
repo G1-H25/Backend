@@ -1,5 +1,10 @@
 var builder = WebApplication.CreateBuilder(args);
 
+// check that its using enviroment variables
+Console.WriteLine("[DEBUG] ENV: " + builder.Environment.EnvironmentName);
+Console.WriteLine("[DEBUG] Connection String: " + builder.Configuration.GetConnectionString("DefaultConnection"));
+
+
 // Add services to the container.
 builder.Services.AddControllers();
 
