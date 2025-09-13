@@ -21,8 +21,11 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Switch back to the default user for SQL Server
-USER mssql
 
 # Copy scripts and entrypoint
-COPY ./scripts /scripts
+COPY . /scripts
+RUN chmod +x /scripts/entrypoint.sh
 ENTRYPOINT ["/scripts/entrypoint.sh"]
+
+
+USER mssql

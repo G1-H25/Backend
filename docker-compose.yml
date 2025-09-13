@@ -3,8 +3,8 @@ version: '3.8'
 services:
   sqlserver:
     build:
-      context: .
-      dockerfile: ./scripts/Dockerfile
+      context: ./scripts
+      dockerfile: Dockerfile
     container_name: dev-sqlserver
     ports:
       - "1433:1433"
