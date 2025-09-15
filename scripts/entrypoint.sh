@@ -32,8 +32,8 @@ fi
 # Run all other .sql files
 for script in /scripts/sql/*.sql; do
     if [[ "$script" != "/scripts/sql/init.sql" ]]; then
-        echo "Running: $script in MyDb"
-        sqlcmd -S localhost -U SA -P "$SA_PASSWORD" -d MyDb -i "$script" -C
+        echo "Running: $script in LocalDatabase"
+        sqlcmd -S localhost -U SA -P "$SA_PASSWORD" -d LocalDatabase -i "$script" -C
     fi
 done
 
