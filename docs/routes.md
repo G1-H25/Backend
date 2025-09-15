@@ -1,3 +1,5 @@
+Localhost may vary, Azure uses 5193, local enviroemnt uses 5000, local containers use 8080
+
 POST /Gps
 
 Create a new GPS data entry.
@@ -10,8 +12,6 @@ Create a new GPS data entry.
       "Longitude": -0.118092,
       "Timestamp": "2025-09-08T12:00:00Z"
     }'
-
-
 
 
 GET /GpsGet

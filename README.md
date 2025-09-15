@@ -73,13 +73,9 @@ to enter database shell
 
 5. Stopping & Cleaning Up
 
-Stop containers:
+Stop containers, clear cache volumes:
 
-`docker compose down`
-
-Stop and remove volumes and images:
-
-`docker compose down --volumes --rmi all`
+`docker-compose down -v`
 
 Notes
 
