@@ -14,12 +14,12 @@ on:
       - 'dev/**'
     paths:
       # Will only run on files under sql folder
-      - 'sql/**'
+      - 'scripts/sql/**'
   pull_request:
     # Will only run on pull_requests
     branches: [main, development]
     paths:
-      - 'sql/**'
+      - 'scripts/sql/**'
     
 
 jobs: 
@@ -37,11 +37,11 @@ jobs:
       - run: pip install sqlfluff
       
       - name: Lint SQL files
-        run: sqlfluff lint sql/ --config .github/workflows/.sqlfluff
+        run: sqlfluff lint scripts/sql/ --config .github/workflows/.sqlfluff
 
       - name: Auto fix SQL files
 
         # && y to confirm changes
-        run: sqlfluff fix sql/ --config .github/workflows/.sqlfluff --force
+        run: sqlfluff fix scripts/sql/ --config .github/workflows/.sqlfluff --force
 
 
