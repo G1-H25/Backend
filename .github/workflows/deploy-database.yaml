@@ -1,4 +1,3 @@
-#
 name: Deploy SQL to Azure
 
 on:
