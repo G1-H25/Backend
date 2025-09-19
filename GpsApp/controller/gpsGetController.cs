@@ -15,7 +15,9 @@ public class GpsGetController : ControllerBase
     }
 
 
-
+    /// <summary>
+    /// Returns a GPS value
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetGpsData([FromQuery] GpsData data)
     {

@@ -1,4 +1,8 @@
+using System.Reflection;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddEndpointsApiExplorer();
 
 // check that its using enviroment variables
 Console.WriteLine("[DEBUG] ENV: " + builder.Environment.EnvironmentName);
@@ -25,6 +29,14 @@ builder.Services.AddSingleton<SqlGet>(sp =>
     return new SqlGet(connectionString);
 });
 
+builder.Services.AddSwaggerGen(options =>
+{
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+    Console.WriteLine("[DEBUG] XML Path: " + xmlPath); // Debug print to verify path
+    options.IncludeXmlComments(xmlPath);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -32,6 +44,13 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
+}
+
+// starts swagger
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Environment.IsProduction())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
