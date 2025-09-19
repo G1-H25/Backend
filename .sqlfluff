@@ -9,7 +9,7 @@ capitalisation.functions = lower
 capitalisation.literals = upper       
 
 [sqlfluff:rules:capitalisation.identifiers]
-extended_capitalisation_policy = pascal #
+extended_capitalisation_policy = pascal
 
 [sqlfluff:rules:capitalisation.keywords]
 capitalisation_policy = upper
