@@ -37,11 +37,11 @@ jobs:
       - run: pip install sqlfluff
       
       - name: Lint SQL files
-        run: sqlfluff lint scripts/sql/ --config .github/workflows/.sqlfluff
+        run: sqlfluff lint scripts/sql/ --config $GITHUB_WORKSPACE/.github/workflows/.sqlfluff
 
       - name: Auto fix SQL files
 
         # --force is used to accept changes being made from linter
-        run: sqlfluff fix scripts/sql/ --config .github/workflows/.sqlfluff --force
+        run: sqlfluff lint scripts/sql/ --config $GITHUB_WORKSPACE/.github/workflows/.sqlfluff --force
 
 
