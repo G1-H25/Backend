@@ -1,33 +1,39 @@
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+var config = builder.Configuration;
 
-builder.Services.AddEndpointsApiExplorer();
+var connectionString = config.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+{
+    connectionString = Environment.GetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection")
+                       ?? Environment.GetEnvironmentVariable("SQLCONNSTR_DefaultConnection")
+                       ?? Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DefaultConnection");
+}
 
-// check that its using enviroment variables
-Console.WriteLine("[DEBUG] ENV: " + builder.Environment.EnvironmentName);
-Console.WriteLine("[DEBUG] Connection String: " + builder.Configuration.GetConnectionString("DefaultConnection"));
-
+if (string.IsNullOrEmpty(connectionString))
+{
+    // Console fallback for early warning
+    Console.WriteLine("Warning: Missing 'DefaultConnection' connection string. Database functionality will be disabled.");
+    connectionString = null;
+}
 
 // Add services to the container.
 builder.Services.AddControllers();
-
-// secures connection to database through config
-builder.Services.AddSingleton<SqlInsert>(sp =>
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
 {
-    var config = sp.GetRequiredService<IConfiguration>();
-    var connectionString = config.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("Missing 'DefaultConnection' in config.");
-    return new SqlInsert(connectionString);
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+    options.IncludeXmlComments(xmlPath);
 });
 
-builder.Services.AddSingleton<SqlGet>(sp =>
+// Register SqlInsert and SqlGet only if connection string is available
+if (!string.IsNullOrEmpty(connectionString))
 {
-    var config = sp.GetRequiredService<IConfiguration>();
-    var connectionString = config.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("Missing 'DefaultConnection' in config.");
-    return new SqlGet(connectionString);
-});
+    builder.Services.AddSingleton<SqlInsert>(_ => new SqlInsert(connectionString));
+    builder.Services.AddSingleton<SqlGet>(_ => new SqlGet(connectionString));
+}
 
 var app = builder.Build();
 
@@ -44,19 +50,16 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// starts swagger
-if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Environment.IsProduction())
+// Enable Swagger UI only in dev or staging 
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-
 app.UseRouting();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
