@@ -29,17 +29,15 @@ builder.Services.AddSingleton<SqlGet>(sp =>
     return new SqlGet(connectionString);
 });
 
-builder.Services.AddSwaggerGen(options =>
-{
-    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
-    Console.WriteLine("[DEBUG] XML Path: " + xmlPath); // Debug print to verify path
-    options.IncludeXmlComments(xmlPath);
-});
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    logger.LogWarning("Missing 'DefaultConnection' connection string. Database functionality will be disabled.");
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
