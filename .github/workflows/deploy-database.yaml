@@ -2,8 +2,7 @@ name: Deploy SQL to Azure
 
 on:
   push:
-    branches:
-      - '*'
+    #branches:
       #- main
   workflow_dispatch:  # Allow manual trigger from GitHub Actions UI
 
