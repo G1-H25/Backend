@@ -1,7 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
 
+var config = builder.Configuration;
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = config.GetConnectionString("DefaultConnection");
 
 if (string.IsNullOrEmpty(connectionString))
 {
@@ -12,7 +13,7 @@ if (string.IsNullOrEmpty(connectionString))
 
 if (string.IsNullOrEmpty(connectionString))
 {
-    // Log a warning instead of throwing
+    // Console fallback for early warning
     Console.WriteLine("Warning: Missing 'DefaultConnection' connection string. Database functionality will be disabled.");
     connectionString = null;
 }
@@ -28,7 +29,13 @@ if (!string.IsNullOrEmpty(connectionString))
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    logger.LogWarning("Missing 'DefaultConnection' connection string. Database functionality will be disabled.");
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
