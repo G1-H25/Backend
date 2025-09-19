@@ -1,29 +1,30 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// check that its using enviroment variables
-Console.WriteLine("[DEBUG] ENV: " + builder.Environment.EnvironmentName);
-Console.WriteLine("[DEBUG] Connection String: " + builder.Configuration.GetConnectionString("DefaultConnection"));
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    connectionString = Environment.GetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection")
+                       ?? Environment.GetEnvironmentVariable("SQLCONNSTR_DefaultConnection")
+                       ?? Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DefaultConnection");
+}
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    // Log a warning instead of throwing
+    Console.WriteLine("Warning: Missing 'DefaultConnection' connection string. Database functionality will be disabled.");
+    connectionString = null;
+}
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-// secures connection to database through config
-builder.Services.AddSingleton<SqlInsert>(sp =>
+if (!string.IsNullOrEmpty(connectionString))
 {
-    var config = sp.GetRequiredService<IConfiguration>();
-    var connectionString = config.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("Missing 'DefaultConnection' in config.");
-    return new SqlInsert(connectionString);
-});
-
-builder.Services.AddSingleton<SqlGet>(sp =>
-{
-    var config = sp.GetRequiredService<IConfiguration>();
-    var connectionString = config.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("Missing 'DefaultConnection' in config.");
-    return new SqlGet(connectionString);
-});
+    builder.Services.AddSingleton<SqlInsert>(_ => new SqlInsert(connectionString));
+    builder.Services.AddSingleton<SqlGet>(_ => new SqlGet(connectionString));
+}
 
 var app = builder.Build();
 
