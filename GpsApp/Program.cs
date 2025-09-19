@@ -11,6 +11,14 @@ if (string.IsNullOrEmpty(connectionString))
                        ?? Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DefaultConnection");
 }
 
+                        var conn1 = Environment.GetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection");
+                        var conn2 = Environment.GetEnvironmentVariable("SQLCONNSTR_DefaultConnection");
+                        var conn3 = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DefaultConnection");
+
+                        Console.WriteLine($"SQLAZURECONNSTR_DefaultConnection: {conn1}");
+                        Console.WriteLine($"SQLCONNSTR_DefaultConnection: {conn2}");
+                        Console.WriteLine($"CUSTOMCONNSTR_DefaultConnection: {conn3}");
+
 if (string.IsNullOrEmpty(connectionString))
 {
     // Console fallback for early warning
