@@ -4,10 +4,18 @@ templater = jinja
 
 [sqlfluff:rules]
 # Capitalisation rules
-capitalisation.keywords = upper       # Keywords like SELECT, CREATE, JOIN
-capitalisation.identifiers = pascal   # Table & column names PascalCase
-capitalisation.functions = lower      # Functions like getdate(), count()
-capitalisation.literals = upper       # true, false, null 
+
+capitalisation.keywords = upper       
+# Keywords like SELECT, CREATE, JOIN
+
+capitalisation.identifiers = pascal   
+# Table & column names PascalCase
+
+capitalisation.functions = lower      
+# Functions like getdate(), count()
+
+capitalisation.literals = upper       
+# true, false, null 
 
 [sqlfluff:rules:capitalisation.identifiers]
 extended_capitalisation_policy = pascal #
@@ -15,8 +23,10 @@ extended_capitalisation_policy = pascal #
 [sqlfluff:rules:capitalisation.keywords]
 capitalisation_policy = upper
 
-[sqlfluff:rules:L010]  # Enforce PascalCasing for aliasing if needed, used for queries
+[sqlfluff:rules:L010]  
+# Enforce PascalCasing for aliasing if needed, used for queries
 capitalisation_policy = pascal
 
-[sqlfluff:rules:L029]  # Require PascalCasing for aliasing.
+[sqlfluff:rules:L029]  
+# Require PascalCasing for aliasing.
 aliasing_policy = required
