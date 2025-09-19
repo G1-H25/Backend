@@ -41,7 +41,7 @@ jobs:
 
       - name: Auto fix SQL files
 
-        # && y to confirm changes
+        # --force is used to accept changes being made from linter
         run: sqlfluff fix scripts/sql/ --config .github/workflows/.sqlfluff --force
 
 
