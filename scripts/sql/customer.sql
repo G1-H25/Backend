@@ -1,0 +1,7 @@
+CREATE TABLE Customer (
+    PK INT IDENTITY(1,1) PRIMARY KEY,
+    Id INT IDENTITY(1,1) UNIQUE,
+    FK_Company INT,
+    Role VARCHAR(15),
+    CONSTRAINT FK_Customer_Company FOREIGN KEY (FK_Company) REFERENCES Company(PK)
+);

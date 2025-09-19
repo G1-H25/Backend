@@ -1,0 +1,7 @@
+CREATE TABLE Contact (
+    PK INT IDENTITY(1,1) PRIMARY KEY,
+    Name VARCHAR(25),
+    Phone VARCHAR(12),
+    Email VARCHAR(100),
+    Note VARCHAR(100) NULL
+);
