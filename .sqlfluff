@@ -13,9 +13,3 @@ extended_capitalisation_policy = pascal #
 
 [sqlfluff:rules:capitalisation.keywords]
 capitalisation_policy = upper
-
-[sqlfluff:rules:L010]
-capitalisation_policy = pascal
-
-[sqlfluff:rules:L029]
-aliasing_policy = required
