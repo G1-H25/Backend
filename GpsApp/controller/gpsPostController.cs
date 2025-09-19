@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
 
+
+
 [ApiController]
 [Route("[controller]")]
 public class GpsController : ControllerBase
@@ -15,7 +17,14 @@ public class GpsController : ControllerBase
         _insertService = insertService;
     }
 
-
+    /// <summary>
+    /// Adds new GPS data.
+    /// </summary>
+    /// <param name="data">The GPS data to insert.</param>
+    /// <returns>Returns OK if inserted successfully.</returns>
+    /// <remarks>
+    /// Latitude must be between -90 and 90. Longitude between -180 and 180.
+    /// </remarks>
     [HttpPost]
     public async Task<IActionResult> PostGpsData([FromBody] GpsData data)
     {
