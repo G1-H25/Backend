@@ -13,7 +13,6 @@ on:
   push:
 
     branches:
-
       - main
 
   workflow_dispatch:
@@ -97,9 +96,8 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.__clientidsecretname__ }}
-          tenant-id: ${{ secrets.__tenantidsecretname__ }}
-          subscription-id: ${{ secrets.__subscriptionidsecretname__ }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          auth-type: SERVICE_PRINCIPAL
 
 
       - name: Deploy to Azure Web App

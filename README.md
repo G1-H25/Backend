@@ -44,6 +44,47 @@ Here you will find a link/description on how all the needed dependencies are ins
 
 Here you will find a link/description on what library will be used for testing and how the process is made
 
+### Running it locally
+
+1. Clone the repo
+
+`git clone https://github.com/G1-H25/Backend.git`
+`cd backend`
+
+2. run docker
+
+Either. `docker compose up --watch` or `docker-compose up --build`
+
+watch is to automatically have changes in the file update the docker, while non watch does not do this.
+
+docker watch currently does not work
+
+3. additional tips
+
+to enter the backend container shell
+
+- `docker exec -it backend-app-1 /bin/sh`
+
+to enter database shell
+
+`docker run -it --rm --network container:dev-sqlserver mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Passw0rd`
+
+4. Start coding 
+
+5. Stopping & Cleaning Up
+
+Stop containers, clear cache volumes:
+
+`docker-compose down -v`
+
+Notes
+
+Make sure Docker Desktop is running
+
+If using --watch, ensure you're on a compatible Docker version
+
+If ports are blocked, check for running containers:
+
 ### API Documentation
 
 Here you will find a link/description to how we have decided to structure our API and possibly our database.

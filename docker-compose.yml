@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    build:
+      context: ./scripts
+      dockerfile: Dockerfile
+    container_name: dev-sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      ACCEPT_EULA: "Y"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  app:
+    build:
+      context: ./GpsApp
+    ports:
+      - "5000:8080"  # Map host port 5000 to container port 8080
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=LocalDatabase;User Id=SA;Password=YourStrong!Passw0rd;TrustServerCertificate=True;"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_URLS: "http://*:8080"
+    depends_on:
+      - sqlserver
+    # No volumes or working_dir because your Dockerfile handles everything
+    # The Dockerfile ENTRYPOINT will run the app
+    # So no override of command here
+
+volumes:
+  sql_data:
+
