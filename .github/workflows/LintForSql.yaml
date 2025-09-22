@@ -35,6 +35,9 @@ jobs:
           python-version: '3.x'
 
       - run: pip install sqlfluff
+
+      - run: sqlfluff --version
+      - run: sqlfluff config
       
       - name: Lint SQL files
         run: sqlfluff lint scripts/sql/
