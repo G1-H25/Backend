@@ -1,10 +1,10 @@
 IF OBJECT_ID('dbo.GpsData', 'U') IS NULL
-BEGIN
-    CREATE TABLE dbo.GpsData (
-       DeviceId NVARCHAR(100),
-       Latitude FLOAT,
-       Longitude FLOAT,
-       Timestamp DATETIME
-    );
-END
+    BEGIN
+        CREATE TABLE dbo.gpsdata (
+            deviceid NVARCHAR(100),
+            latitude FLOAT,
+            longitude FLOAT,
+            createdat DATETIME
+        );
+    END
 GO

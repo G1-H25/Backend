@@ -40,6 +40,6 @@ jobs:
   
       - name: Auto fix SQL files
         # --force is used to accept changes being made from linter
-        run: sqlfluff fix scripts/sql/ --force
+        run: sqlfluff fix scripts/sql/** --force
 
 

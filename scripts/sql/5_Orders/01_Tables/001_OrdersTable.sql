@@ -1,4 +1,3 @@
-
 -- First draft of how a Deliver order might look like.
 IF OBJECT_ID('Orders.Delivery', 'U') IS NULL
 BEGIN
