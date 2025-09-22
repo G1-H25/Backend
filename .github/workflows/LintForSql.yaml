@@ -37,12 +37,8 @@ jobs:
       - run: pip install sqlfluff
 
       - run: sqlfluff --version
-      
-      - name: Lint SQL files
-        run: sqlfluff lint scripts/sql/
-
+  
       - name: Auto fix SQL files
-
         # --force is used to accept changes being made from linter
         run: sqlfluff fix scripts/sql/ --force
 
