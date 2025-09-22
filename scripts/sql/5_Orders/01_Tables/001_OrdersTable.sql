@@ -31,6 +31,6 @@ BEGIN
             FOREIGN KEY (DeliveryId) REFERENCES Delivery(Id),
         CurrentState VARCHAR(20),
         UpdatedAt DATETIME2
-    );
+    );  
 END
 GO
