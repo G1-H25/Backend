@@ -7,9 +7,3 @@ capitalization.keywords = upper
 capitalization.identifiers = pascal   
 capitalization.functions = lower      
 capitalization.literals = upper       
-
-[sqlfluff:rules:capitalization.identifiers]
-extended_capitalization_policy = pascal
-
-[sqlfluff:rules:capitalisation.keywords]
-capitalization_policy = upper
