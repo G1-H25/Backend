@@ -1,18 +1,22 @@
 // Extensions/GetConnectionString.cs
-public static class GetConnectionString
+
+namespace GpsApp.Configuration
 {
-    public static string GetResolvedConnectionString(this IConfiguration config, string name)
+    public static class GetConnectionString
     {
-        var connectionString = config.GetConnectionString(name);
-
-        if (string.IsNullOrEmpty(connectionString))
+        public static string GetResolvedConnectionString(this IConfiguration config, string name)
         {
-            connectionString = Environment.GetEnvironmentVariable($"SQLAZURECONNSTR_{name}")
-                               ?? Environment.GetEnvironmentVariable($"SQLCONNSTR_{name}")
-                               ?? Environment.GetEnvironmentVariable($"CUSTOMCONNSTR_{name}");
+            var connectionString = config.GetConnectionString(name);
+
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                connectionString = Environment.GetEnvironmentVariable($"SQLAZURECONNSTR_{name}")
+                                   ?? Environment.GetEnvironmentVariable($"SQLCONNSTR_{name}")
+                                   ?? Environment.GetEnvironmentVariable($"CUSTOMCONNSTR_{name}");
+            }
+
+
+            return connectionString;
         }
-
-
-        return connectionString;
     }
 }

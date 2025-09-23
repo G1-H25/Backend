@@ -1,23 +1,27 @@
 // Composition/ServiceRegistration.cs
-public static class ServiceRegistration
+
+namespace GpsApp.Composition
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    public static class ServiceRegistration
     {
-        services.AddControllers();
-        services.AddEndpointsApiExplorer();
-
-        return services;
-    }
-
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, string? connectionString)
-    {
-        if (!string.IsNullOrEmpty(connectionString))
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            services.AddSingleton(_ => new SqlInsert(connectionString));
-            services.AddSingleton(_ => new SqlGet(connectionString));
+            services.AddControllers();
+            services.AddEndpointsApiExplorer();
+
+            return services;
         }
 
-        return services;
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, string? connectionString)
+        {
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                services.AddSingleton(_ => new SqlInsert(connectionString));
+                services.AddSingleton(_ => new SqlGet(connectionString));
+            }
+
+            return services;
+        }
     }
 }
 

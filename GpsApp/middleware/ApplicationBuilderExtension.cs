@@ -1,23 +1,27 @@
 // Extensions/ApplicationBuilderExtensions.cs
-public static class ApplicationBuilderExtensions
+
+namespace GpsApp.Middleware
 {
-    public static void UseApplicationMiddleware(this WebApplication app)
+    public static class ApplicationBuilderExtensions
     {
-        if (!app.Environment.IsDevelopment())
+        public static void UseApplicationMiddleware(this WebApplication app)
         {
-            app.UseExceptionHandler("/Error");
-            app.UseHsts();
-        }
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
+            }
 
-        if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+            if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
-        app.UseHttpsRedirection();
-        app.UseRouting();
-        app.UseAuthorization();
-        app.MapControllers();
+            app.UseHttpsRedirection();
+            app.UseRouting();
+            app.UseAuthorization();
+            app.MapControllers();
+        }
     }
 }

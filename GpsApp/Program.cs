@@ -1,5 +1,7 @@
 // Program.cs
 using GpsApp.Composition;
+using GpsApp.Configuration;
+using GpsApp.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
