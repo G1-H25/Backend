@@ -1,55 +1,53 @@
-## ProjectFolderOverview.md
+# Project Folder Overview
 
-### /Composition
+---
 
-Purpose:
-Defines how the application is composed at startup — especially in Program.cs. It contains extension methods used to:
+## /Composition
 
-Register services (DI setup)
+**What it does:**  
+- Sets up the application at startup  
+- Connects different parts like services, middleware, and tools (e.g., API documentation)
 
-Configure middleware
+---
 
-Wire up features like Swagger, health checks, logging, etc.
+## /Configuration
 
+**What it does:**  
+- Manages app settings and environment details  
+- Handles database connection info and helps the app find its settings
 
+---
 
-### /Configuration
+## /Middleware
 
-Purpose:
-Handles application and environment configuration logic.
+**What it does:**  
+- Contains small building blocks that run between the app and incoming requests  
+- Can log activity, handle errors, check user access, or measure performance
 
-Resolves connection strings (including cloud fallbacks)
+---
 
-Binds app settings to strongly typed config classes 
+## /Repository
 
-Defines helper extensions for IConfiguration
+**What it does:**  
+- Reads from and writes to the database or other storage  
+- Acts as a middleman between the app and data storage
 
+---
 
-### Middleware
+## /Models
 
-Purpose:
-Contains custom middleware components that intercept HTTP requests.
+**What it does:**  
+- Defines the shape of data the app works with  
+- Includes how information is organized when sent or received  
+- Covers data used internally or from outside sources
 
-Examples:
+---
 
-* Request logging
+## /Controllers
 
-* Error handling
+**What it does:**  
+- Handles incoming requests from users or other apps  
+- Connects user actions to the app’s logic and data  
+- Sends back responses
 
-* Authentication/authorization
-
-* Metrics or timing
-
-
-### /Repository
-
-Purpose:
-Encapsulates data access logic, abstracting away database interaction.
-
-Repositories are often:
-
-* Thin wrappers around SQL, Dapper, EF Core, etc.
-
-* Registered as services in DI
-
-* Called by controllers or service layers
+---
