@@ -1,3 +1,6 @@
+// Program.cs
+using GpsApp.Composition;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Resolve connection string
