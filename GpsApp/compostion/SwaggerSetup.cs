@@ -3,7 +3,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
 
-namespace GpsApp.Composition  
+namespace GpsApp.Composition
 {
     public static class SwaggerSetup
     {
