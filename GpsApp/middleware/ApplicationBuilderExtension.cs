@@ -17,13 +17,13 @@ namespace GpsApp.Middleware
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-            
+
             app.UseHttpsRedirection();
             app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
-            
+
             app.MapControllers();
         }
     }

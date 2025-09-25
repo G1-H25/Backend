@@ -7,12 +7,12 @@ using System.Security.Claims;
 
 public static class AuthenticationSetup
 {
-        public static IServiceCollection AddAuthenticationAndAuthorization(
-        this IServiceCollection services,
-        IConfiguration config)  // Inject configuration here
-        {
+    public static IServiceCollection AddAuthenticationAndAuthorization(
+    this IServiceCollection services,
+    IConfiguration config)  // Inject configuration here
+    {
 
-        var audience = config.GetResolvedAudience(); 
+        var audience = config.GetResolvedAudience();
         var issuer = config.GetResolvedIssuer();
         var secret = config.GetResolvedSecretKey();
 
