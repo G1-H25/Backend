@@ -51,3 +51,15 @@
 - Sends back responses
 
 ---
+
+## /DTOs (Data Transfer Objects)
+
+**What it does:**
+
+- Defines the shape of data for incoming or outgoing requests/responses
+
+- Keeps external data contracts separate from internal models
+
+- Used for validation, input, output formatting, and API communication
+
+---

@@ -1,6 +1,8 @@
 // Program.cs
 using GpsApp.Composition;
 using GpsApp.Configuration;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using GpsApp.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +15,8 @@ var connectionString = builder.Configuration.GetResolvedConnectionString("Defaul
 builder.Services
     .AddApplicationServices()
     .AddSwaggerDocumentation()
-    .AddInfrastructureServices(connectionString);
+    .AddInfrastructureServices(connectionString)
+    .AddAuthenticationAndAuthorization(builder.Configuration);
 
 // Build the app
 var app = builder.Build();
