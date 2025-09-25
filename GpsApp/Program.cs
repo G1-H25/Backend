@@ -1,8 +1,6 @@
 // Program.cs
 using GpsApp.Composition;
 using GpsApp.Configuration;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using GpsApp.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
