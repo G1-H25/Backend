@@ -1,9 +1,9 @@
 #!/bin/sh
 
-# Wait for backend to be ready (up to 20 seconds)
+# Wait for backend to be ready on host port 5000
 echo "Waiting for backend to be ready..."
 for i in $(seq 1 60); do
-  status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/health)
+  status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/health)
   if [ "$status_code" = "200" ]; then
     echo "Backend is ready!"
     break
@@ -18,64 +18,61 @@ for i in $(seq 1 60); do
   fi
 done
 
-# step 1, create a user
-USERNAME="testuser_$(date +%s)"
-PASSWORD="testpass123"
+# Now enter the container shell and run the rest of the tests inside the container
+# Replace 'backend-app-1' with your actual container name
+docker exec -it backend-app-1 /bin/sh -c "
+  USERNAME=\"testuser_\$(date +%s)\"
+  PASSWORD=\"testpass123\"
 
-echo "Signing up with username $USERNAME..."
-curl -i -X POST http://localhost:8080/signup/signup \
--H "Content-Type: application/json" \
--d "{\"username\": \"$USERNAME\", \"password\": \"$PASSWORD\"}"
-echo "\n"
+  echo \"Signing up with username \$USERNAME...\"
+  curl -i -X POST http://localhost:8080/signup/signup \
+    -H \"Content-Type: application/json\" \
+    -d '{\"username\": \"'\$USERNAME'\", \"password\": \"'\$PASSWORD'\"}'
+  echo
 
-# 2. Login and extract token
-echo "Logging in..."
-response=$(curl -s -X POST http://localhost:8080/login \
--H "Content-Type: application/json" \
--d "{\"username\":\"$USERNAME\", \"password\":\"$PASSWORD\"}")
+  echo \"Logging in...\"
+  response=\$(curl -s -X POST http://localhost:8080/login \
+    -H \"Content-Type: application/json\" \
+    -d '{\"username\":\"'\$USERNAME'\", \"password\":\"'\$PASSWORD'\"}')
 
-echo "Raw login response:"
-echo "$response"
+  echo \"Raw login response:\"
+  echo \"\$response\"
 
-# Extract token using grep + cut (no jq required)
-TOKEN=$(echo "$response" | grep -o '"token":"[^"]*' | cut -d':' -f2 | tr -d '"')
+  TOKEN=\$(echo \"\$response\" | grep -o '\"token\":\"[^\"]*' | cut -d':' -f2 | tr -d '\"')
 
-if [ "$TOKEN" = "null" ] || [ -z "$TOKEN" ]; then
-  echo "Login failed, no token received"
-  exit 1
-fi
+  if [ \"\$TOKEN\" = \"null\" ] || [ -z \"\$TOKEN\" ]; then
+    echo \"Login failed, no token received\"
+    exit 1
+  fi
 
-echo "Token received: $TOKEN"
-echo "\n"
+  echo \"Token received: \$TOKEN\"
+  echo
 
-# 3. Test authentication
-echo "Testing auth..."
-curl -s -X GET http://localhost:8080/test/user-only \
--H "Authorization: Bearer $TOKEN"
-echo "\n"
+  echo \"Testing auth...\"
+  curl -s -X GET http://localhost:8080/test/user-only \
+    -H \"Authorization: Bearer \$TOKEN\"
+  echo
 
-# 4. Register device
-echo "Registering device..."
-curl -s -X POST http://localhost:8080/Gateway \
--H "Content-Type: application/json" \
--H "Authorization: Bearer $TOKEN" \
--d '{"DeviceId": 12345}'
-echo "\n"
+  echo \"Registering device...\"
+  curl -s -X POST http://localhost:8080/Gateway \
+    -H \"Content-Type: application/json\" \
+    -H \"Authorization: Bearer \$TOKEN\" \
+    -d '{\"DeviceId\": 12345}'
+  echo
 
-# 5. Post GPS data
-echo "Posting GPS data..."
-curl -s -X POST http://localhost:8080/Gps \
--H "Content-Type: application/json" \
--d '{
-  "DeviceId": "12345",
-  "Latitude": 51.509865,
-  "Longitude": -0.118092,
-  "Timestamp": "2025-09-08T12:00:00Z"
-}'
-echo "\n"
+  echo \"Posting GPS data...\"
+  curl -s -X POST http://localhost:8080/Gps \
+    -H \"Content-Type: application/json\" \
+    -d '{
+      \"DeviceId\": \"12345\",
+      \"Latitude\": 51.509865,
+      \"Longitude\": -0.118092,
+      \"Timestamp\": \"2025-09-08T12:00:00Z\"
+    }'
+  echo
 
-# 6. Fetch GPS data
-echo "Fetching GPS data..."
-curl -s -X GET "http://localhost:8080/GpsGet?DeviceId=12345" \
--H "Authorization: Bearer $TOKEN"
-echo "\n"
+  echo \"Fetching GPS data...\"
+  curl -s -X GET \"http://localhost:8080/GpsGet?DeviceId=12345\" \
+    -H \"Authorization: Bearer \$TOKEN\"
+  echo
+"
