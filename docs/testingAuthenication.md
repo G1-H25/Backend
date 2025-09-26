@@ -3,17 +3,19 @@ docker exec -it backend-app-1 /bin/sh
 
 Signup an account
 
-curl -i -X POST http://localhost:8080/signup/signup -H "Content-Type: application/json" -d '{"username": "testuser3", "password": "testpass123"}'
+curl -i -X POST http://localhost:8080/signup/signup -H "Content-Type: application/json" -d '{"username": "testuser5", "password": "testpass123"}'
 
 
 Logging in with the account
-curl -i -X POST http://localhost:8080/login -H "Content-Type: application/json" -d '{"username":"testuser3", "password":"testpass123"}'
+curl -i -X POST http://localhost:8080/login -H "Content-Type: application/json" -d '{"username":"testuser5", "password":"testpass123"}'
 
 
 
 test if authenication worked (replace the <token> with what was provided in the previous command)
 
 curl -i http://localhost:8080/test/user-only -H "Authorization: Bearer <token>"
+
+
 
 register a device
 curl -X POST http://localhost:8080/Gateway \
@@ -22,6 +24,7 @@ curl -X POST http://localhost:8080/Gateway \
 -d '{
   "DeviceId": 12345
 }'
+
 
 Fetch GPS data with filters. Example querying by DeviceId:
 curl -X GET "http://localhost:8080/GpsGet?DeviceId=device123" \
