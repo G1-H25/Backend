@@ -30,11 +30,11 @@ jobs:
 
       - name: List all files recursively
         run: find . -type f
-        
+
       - name: Run integration test script
         run: |
-            chmod +x ./GpsAppTest/integration/test_api.sh
-            ./GpsAppTest/integration/test_api.sh
+            chmod +x ./GpsApp.Tests/integration/test_api.sh
+            ./GpsApp.Tests/integration/test_api.sh
 
       - name: Tear down Docker Compose
         if: always()
