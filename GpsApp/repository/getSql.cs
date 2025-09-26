@@ -41,7 +41,7 @@ public class SqlGet
         string whereClause = string.Join(" AND ", filters.Keys.Select(k => $"{k} = @{k}"));
 
         // Final SQL query
-        string sql = $"SELECT {selectedColumns} FROM {tableName} WHERE {whereClause}";
+        string sql = $"SELECT {selectedColumns} FROM dbo.{tableName} WHERE {whereClause}";
 
         await using var connection = new SqlConnection(_connectionString);
         await using var command = new SqlCommand(sql, connection);
