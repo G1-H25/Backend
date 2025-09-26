@@ -25,19 +25,6 @@ jobs:
       - name: Start Docker Compose services
         run: docker-compose up -d
 
-      - name: Wait for backend to be healthy
-        run: |
-          for i in {1..30}; do
-            if curl --silent --fail http://localhost:8080/health; then
-              echo "Backend is ready!"
-              exit 0
-            fi
-            echo "Waiting for backend..."
-            sleep 5
-          done
-          echo "Backend did not become ready in time"
-          exit 1
-
       - name: Run integration test script
         run: |
           chmod +x ./integration-tests/test_api.sh
