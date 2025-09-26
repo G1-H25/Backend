@@ -4,6 +4,7 @@
 echo "Waiting for backend to be ready..."
 for i in $(seq 1 60); do
   status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/health)
+  
   if [ "$status_code" = "200" ]; then
     echo "Backend is ready!"
     break
@@ -17,6 +18,7 @@ for i in $(seq 1 60); do
     exit 1
   fi
 done
+
 
 # Now enter the container shell and run the rest of the tests inside the container
 # Replace 'backend-app-1' with your actual container name
