@@ -12,7 +12,7 @@ for i in $(seq 1 60); do
     sleep 2
   fi
 
-  if [ "$i" = "10" ]; then
+  if [ "$i" = "60" ]; then
     echo "Backend did not become ready in time, exiting."
     exit 1
   fi
