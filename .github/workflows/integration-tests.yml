@@ -1,0 +1,52 @@
+name: Integration Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    #branches:
+    #  - main
+  push: 
+    
+jobs:
+  integration_test:
+    runs-on: ubuntu-latest
+    services:
+      docker:
+        image: docker:20.10.16
+        options: --privileged
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Compose
+        run: |
+          docker-compose -v
+
+      - name: Start Docker Compose services
+        run: |
+          docker-compose up -d
+
+      - name: Wait for backend to be healthy
+        run: |
+          # Adjust healthcheck URL as needed, e.g. /health or /api/status
+          for i in {1..30}; do
+            if curl --silent --fail http://localhost:8080/health; then
+              echo "Backend is ready!"
+              exit 0
+            fi
+            echo "Waiting for backend..."
+            sleep 5
+          done
+          echo "Backend did not become ready in time"
+          exit 1
+
+      - name: Run integration test script
+        run: |
+          chmod +x ./integration-tests/test_api.sh
+          ./integration-tests/test_api.sh
+
+      - name: Tear down Docker Compose
+        if: always()
+        run: docker-compose down
+
