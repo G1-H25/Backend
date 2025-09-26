@@ -5,10 +5,10 @@ BEGIN
         Id INT IDENTITY (1,1) PRIMARY KEY,
         RouteId INT CONSTRAINT FK_RouteId 
             FOREIGN KEY (RouteId) REFERENCES Logistics.Route(Id),
-        ExpTempId INT CONSTRAINT FK_ExpTempId
-            FOREIGN KEY (ExpTempId) REFERENCES Measurements.ExpTemp(Id),
-        ExpHumidId INT CONSTRAINT FK_ExpHumidId
-            FOREIGN KEY (ExpHumidId) REFERENCES Measurements.ExpHumid(Id),
+        ExpectedTempId INT CONSTRAINT FK_ExpTempId
+            FOREIGN KEY (ExpectedTempId) REFERENCES Measurements.ExpectedTemp(Id),
+        ExpectedHumidId INT CONSTRAINT FK_ExpHumidId
+            FOREIGN KEY (ExpectedHumidId) REFERENCES Measurements.ExpectedHumid(Id),
         CarrierId INT CONSTRAINT FK_CarrierId
             FOREIGN KEY (CarrierId) REFERENCES Logistics.Carrier(Id),
         SenderId INT CONSTRAINT FK_SenderId
