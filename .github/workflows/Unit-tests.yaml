@@ -36,10 +36,11 @@ jobs:
 
       # ✅ Step 5: Run tests
       - name: Run tests
-        run: dotnet test GpsApp.Tests/GpsApp.Tests.csproj --configuration Release
+        run: dotnet test Gpsapp.test/unit/GpsApp.Tests.csproj --configuration Release
 
       - name: Run tests with logging
-        run: dotnet test GpsApp.Tests/GpsApp.Tests.csproj --logger "trx"
+        run: dotnet test Gpsapp.test/unit/GpsApp.Tests.csproj --logger "trx"
+
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
