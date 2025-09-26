@@ -18,6 +18,7 @@ namespace GpsApp.Composition
             {
                 services.AddSingleton(_ => new SqlInsert(connectionString));
                 services.AddSingleton(_ => new SqlGet(connectionString));
+                services.AddSingleton(_ => new GetUser(connectionString));
             }
 
             return services;

@@ -13,7 +13,8 @@ var connectionString = builder.Configuration.GetResolvedConnectionString("Defaul
 builder.Services
     .AddApplicationServices()
     .AddSwaggerDocumentation()
-    .AddInfrastructureServices(connectionString);
+    .AddInfrastructureServices(connectionString)
+    .AddAuthenticationAndAuthorization(builder.Configuration);
 
 // Build the app
 var app = builder.Build();

@@ -1,4 +1,4 @@
-// Extensions/GetConnectionString.cs
+// configuration/GetConnectionString.cs
 
 namespace GpsApp.Configuration
 {
