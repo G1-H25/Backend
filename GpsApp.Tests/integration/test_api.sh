@@ -20,7 +20,7 @@ done
 
 # Now enter the container shell and run the rest of the tests inside the container
 # Replace 'backend-app-1' with your actual container name
-docker exec -it backend-app-1 /bin/sh -c "
+docker exec -i backend-app-1 /bin/sh -c "
   USERNAME=\"testuser_\$(date +%s)\"
   PASSWORD=\"testpass123\"
 
