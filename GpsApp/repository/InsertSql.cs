@@ -13,6 +13,8 @@ public class SqlInsert
             ?? throw new ArgumentNullException(nameof(connectionString));
     }
 
+    // exposes the string for read only
+    public string ConnectionString => _connectionString;
 
     public async Task InsertAsync(string tableName, Dictionary<string, object> data)
     {
