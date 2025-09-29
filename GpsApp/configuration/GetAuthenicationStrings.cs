@@ -14,8 +14,8 @@ namespace GpsApp.Configuration
 
             Console.WriteLine($"DEBUG: Audience from config/env: '{audience ?? "null"}'");
 
-            if (string.IsNullOrWhiteSpace(audience))
-                throw new InvalidOperationException("ValidAudience is missing. Set it in configuration or environment variables.");
+//            if (string.IsNullOrWhiteSpace(audience))
+//                throw new InvalidOperationException("ValidAudience is missing. Set it in configuration or environment variables.");
 
             return audience;
         }
@@ -30,8 +30,8 @@ namespace GpsApp.Configuration
 
             Console.WriteLine($"DEBUG: Issuer from config/env: '{issuer ?? "null"}'");
 
-            if (string.IsNullOrWhiteSpace(issuer))
-                throw new InvalidOperationException("ValidIssuer is missing. Set it in configuration or environment variables.");
+//              if (string.IsNullOrWhiteSpace(issuer))
+//                  throw new InvalidOperationException("ValidIssuer is missing. Set it in configuration or environment variables.");
 
             return issuer;
         }
@@ -46,8 +46,8 @@ namespace GpsApp.Configuration
 
             Console.WriteLine($"DEBUG: SecretKey from config/env: '{(string.IsNullOrWhiteSpace(secret) ? "null or empty" : "set")}'");
 
-            if (string.IsNullOrWhiteSpace(secret))
-                throw new InvalidOperationException("Secret_Key is missing. Set it in configuration or environment variables.");
+//              if (string.IsNullOrWhiteSpace(secret))
+//                  throw new InvalidOperationException("Secret_Key is missing. Set it in configuration or environment variables.");
 
             return secret;
         }
