@@ -1,4 +1,4 @@
-// configuration/GetAuthenicationStrings.cs
+// configuration/GetAuthenticationStrings.cs
 
 namespace GpsApp.Configuration
 {
@@ -8,9 +8,9 @@ namespace GpsApp.Configuration
         {
             var audience =
                 config["Authentication:ValidAudience"]
-                ?? Environment.GetEnvironmentVariable("AUTHENICATION__VALIDAUDIENCE")
+                ?? Environment.GetEnvironmentVariable("AUTHENTICATION__VALIDAUDIENCE")
                 ?? Environment.GetEnvironmentVariable("AUTH_VALIDAUDIENCE")
-                ?? Environment.GetEnvironmentVariable("APPSETTING_AUTHENICATION__VALIDAUDIENCE");
+                ?? Environment.GetEnvironmentVariable("APPSETTING_AUTHENTICATION__VALIDAUDIENCE");
 
             Console.WriteLine($"DEBUG: Audience from config/env: '{audience ?? "null"}'");
 
@@ -24,9 +24,9 @@ namespace GpsApp.Configuration
         {
             var issuer =
                 config["Authentication:ValidIssuer"]
-                ?? Environment.GetEnvironmentVariable("AUTHENICATION__VALIDISSUER")
+                ?? Environment.GetEnvironmentVariable("AUTHENTICATION__VALIDISSUER")
                 ?? Environment.GetEnvironmentVariable("AUTH_VALIDISSUER")
-                ?? Environment.GetEnvironmentVariable("APPSETTING_AUTHENICATION__VALIDISSUER");
+                ?? Environment.GetEnvironmentVariable("APPSETTING_AUTHENTICATION__VALIDISSUER");
 
             Console.WriteLine($"DEBUG: Issuer from config/env: '{issuer ?? "null"}'");
 
@@ -40,9 +40,9 @@ namespace GpsApp.Configuration
         {
             var secret =
                 config["Authentication:Secret_Key"]
-                ?? Environment.GetEnvironmentVariable("AUTHENICATION__SECRET_KEY")
+                ?? Environment.GetEnvironmentVariable("AUTHENTICATION__SECRET_KEY")
                 ?? Environment.GetEnvironmentVariable("AUTH_SECRET_KEY")
-                ?? Environment.GetEnvironmentVariable("APPSETTING_AUTHENICATION__SECRET_KEY");
+                ?? Environment.GetEnvironmentVariable("APPSETTING_AUTHENTICATION__SECRET_KEY");
 
             Console.WriteLine($"DEBUG: SecretKey from config/env: '{(string.IsNullOrWhiteSpace(secret) ? "null or empty" : "set")}'");
 
