@@ -3,7 +3,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using GpsApp.Model;
 using GpsApp.Configuration;
 using GpsApp.DTO;
 
@@ -33,12 +32,11 @@ public class LoginController : ControllerBase
         if (user == null || user.Password != request.Password)
             return Unauthorized("Invalid credentials");
 
-        // You can later add role lookup here, for now just "User"
-        var token = GenerateJwtToken(user.Username, user.Role);
+        var token = GenerateJwtToken(user.Username, user.Role, user.Id);
         return Ok(new { token });
     }
 
-    private string GenerateJwtToken(string username, string role)
+    private string GenerateJwtToken(string username, string role, int userID)
     {
         var issuer = _config.GetResolvedIssuer();
         var audience = _config.GetResolvedAudience();
@@ -52,6 +50,7 @@ public class LoginController : ControllerBase
             new Claim(JwtRegisteredClaimNames.Sub, username),
             new Claim(ClaimTypes.Name, username),
             new Claim(ClaimTypes.Role, role),
+            new Claim("userId", userID.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

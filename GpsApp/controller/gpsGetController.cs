@@ -1,7 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Data.SqlClient;
-using System.Threading.Tasks;
+using System.Security.Claims;
+using GpsApp.DTO;
 
 [ApiController]
 [Route("[controller]")]
@@ -14,29 +15,46 @@ public class GpsGetController : ControllerBase
         _getService = getService;
     }
 
-
-    /// <summary>
-    /// Returns a GPS value
-    /// </summary>
     [HttpGet]
+    [Authorize] // Require JWT
     public async Task<IActionResult> GetGpsData([FromQuery] GpsData data)
     {
-        var filters = new Dictionary<string, object>();
+        if (string.IsNullOrEmpty(data.DeviceId))
+            return BadRequest("Device ID is required.");
 
-        if (!string.IsNullOrEmpty(data.DeviceId))
-            filters.Add("DeviceId", data.DeviceId);
+        // 1. Extract user ID from JWT token
+        var userIdClaim = User.FindFirst("userId");
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+            return Unauthorized("User ID not found in token.");
+
+        // 2. Confirm device ownership using Gateway table
+        var ownership = await _getService.FetchAsync("Gateway", new Dictionary<string, object>
+        {
+            { "Id", data.DeviceId }
+        });
+
+        if (ownership == null)
+            return NotFound("Device is not registered.");
+
+        var deviceOwnerId = Convert.ToInt32(ownership["UserID"]);
+        if (deviceOwnerId != userId)
+            return Forbid("You do not have access to this device's data.");
+
+        // 3. Prepare filters for GPS data
+        var gpsFilters = new Dictionary<string, object>
+        {
+            { "DeviceId", data.DeviceId }
+        };
 
         if (data.Timestamp.HasValue)
-            filters.Add("Timestamp", data.Timestamp.Value);
+            gpsFilters.Add("Timestamp", data.Timestamp.Value);
 
-        if (!filters.Any())
-            return BadRequest("At least one filter parameter must be provided.");
+        // 4. Fetch and return GPS data
+        var gpsData = await _getService.FetchAsync("GpsData", gpsFilters);
 
-        var result = await _getService.FetchAsync("GpsData", filters);
-
-        if (result == null)
+        if (gpsData == null)
             return NotFound("No matching GPS data found.");
 
-        return Ok(result);
+        return Ok(gpsData);
     }
 }

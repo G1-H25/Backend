@@ -1,5 +1,7 @@
 // Composition/ServiceRegistration.cs
 
+using GpsApp.Controllers;
+
 namespace GpsApp.Composition
 {
     public static class ServiceRegistration
@@ -18,7 +20,8 @@ namespace GpsApp.Composition
             {
                 services.AddSingleton(_ => new SqlInsert(connectionString));
                 services.AddSingleton(_ => new SqlGet(connectionString));
-                services.AddSingleton(_ => new GetUser(connectionString));
+                services.AddScoped<GetUser>();
+                services.AddScoped<HealthController>();
             }
 
             return services;

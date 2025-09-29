@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using GpsApp.Model;
 using GpsApp.DTO;
 
 

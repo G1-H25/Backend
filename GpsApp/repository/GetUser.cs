@@ -3,37 +3,30 @@ using GpsApp.Model;
 
 public class GetUser
 {
+    private readonly SqlGet _getService;
 
-    private readonly string _connectionString;
-
-    public GetUser(string connectionString)
+    public GetUser(SqlGet getService)
     {
-        _connectionString = connectionString
-            ?? throw new ArgumentNullException(nameof(connectionString));
+        _getService = getService;
     }
 
     public async Task<User?> GetUserByUsernameAsync(string username)
     {
-        var query = "SELECT Username, Password, Role, DateCreated FROM dbo.Users WHERE Username = @Username";
-
-        using var connection = new SqlConnection(_connectionString);
-        using var command = new SqlCommand(query, connection);
-
-        command.Parameters.AddWithValue("@Username", username);
-        await connection.OpenAsync();
-
-        using var reader = await command.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
+        var result = await _getService.FetchAsync("Users", new Dictionary<string, object>
         {
-            return new User
-            {
-                Username = reader.GetString(0),
-                Password = reader.GetString(1),
-                Role = reader.GetString(2),
-                DateCreated = reader.GetDateTime(3)
-            };
-        }
+            { "Username", username }
+        });
 
-        return null;
+        if (result == null) return null;
+
+        return new User
+        {
+            Id = Convert.ToInt32(result["Id"]),
+            Username = result["Username"].ToString()!,
+            Password = result["Password"].ToString()!,
+            Role = result["Role"].ToString()!,
+            DateCreated = Convert.ToDateTime(result["DateCreated"])
+        };
     }
 }
+
