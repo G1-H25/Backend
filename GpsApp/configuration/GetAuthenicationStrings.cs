@@ -30,7 +30,6 @@ namespace GpsApp.Configuration
             return audience;
         }
 
-
         public static string GetResolvedIssuer(this IConfiguration config)
         {
             var issuer = config["Authentication:ValidIssuer"];
