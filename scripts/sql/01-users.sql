@@ -1,0 +1,11 @@
+IF OBJECT_ID('dbo.Users', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Users (
+        Id INT IDENTITY(1,1) PRIMARY KEY,
+        Username VARCHAR(100) NOT NULL UNIQUE,
+        Password VARCHAR(100) NOT NULL,
+        Role VARCHAR(50) NOT NULL DEFAULT 'User',
+        DateCreated DATETIME2 NOT NULL DEFAULT GETUTCDATE()
+    );
+END
+GO

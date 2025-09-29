@@ -1,0 +1,41 @@
+name: Integration Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  integration_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Install docker-compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      - name: Set up Docker Compose
+        run: docker-compose -v
+
+      - name: Start Docker Compose services
+        run: docker-compose up -d
+
+      - name: List root directory
+        run: ls -la
+
+      - name: List all files recursively
+        run: find . -type f
+
+      - name: Run integration test script
+        run: |
+            chmod +x ./GpsApp.Tests/integration/test_api.sh
+            ./GpsApp.Tests/integration/test_api.sh
+
+      - name: Tear down Docker Compose
+        if: always()
+        run: docker-compose down
+
