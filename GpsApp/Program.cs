@@ -8,7 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Resolve connection string
 var connectionString = builder.Configuration.GetResolvedConnectionString("DefaultConnection");
 
-
 // Register services
 builder.Services
     .AddApplicationServices()
