@@ -1,45 +1,33 @@
+// Program.cs
+using GpsApp.Composition;
+using GpsApp.Configuration;
+using GpsApp.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// check that its using enviroment variables
-Console.WriteLine("[DEBUG] ENV: " + builder.Environment.EnvironmentName);
-Console.WriteLine("[DEBUG] Connection String: " + builder.Configuration.GetConnectionString("DefaultConnection"));
+// Resolve connection string
+var connectionString = builder.Configuration.GetResolvedConnectionString("DefaultConnection");
 
+// Register services
+builder.Services
+    .AddApplicationServices()
+    .AddSwaggerDocumentation()
+    .AddInfrastructureServices(connectionString)
+    .AddAuthenticationAndAuthorization(builder.Configuration);
 
-// Add services to the container.
-builder.Services.AddControllers();
-
-// secures connection to database through config
-builder.Services.AddSingleton<SqlInsert>(sp =>
-{
-    var config = sp.GetRequiredService<IConfiguration>();
-    var connectionString = config.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("Missing 'DefaultConnection' in config.");
-    return new SqlInsert(connectionString);
-});
-
-builder.Services.AddSingleton<SqlGet>(sp =>
-{
-    var config = sp.GetRequiredService<IConfiguration>();
-    var connectionString = config.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("Missing 'DefaultConnection' in config.");
-    return new SqlGet(connectionString);
-});
-
+// Build the app
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+// error handleing
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+if (string.IsNullOrEmpty(connectionString))
 {
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
+    logger.LogWarning("Missing 'DefaultConnection' connection string. Database functionality will be disabled.");
+    Console.WriteLine("Warning: Missing 'DefaultConnection' connection string. Database functionality will be disabled.");
 }
 
-app.UseHttpsRedirection();
+// Configure middleware
+app.UseApplicationMiddleware();
 
-app.UseRouting();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
+// Run the app
 app.Run();
