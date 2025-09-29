@@ -39,7 +39,7 @@ namespace GpsApp.Configuration
             if (string.IsNullOrWhiteSpace(issuer))
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("⚠️ WARNING: ValidAudience not found in config or environment variables.");
+                Console.WriteLine("⚠️ WARNING: ValidIssuer not found in config or environment variables.");
                 Console.ResetColor();
 
                 return "aVerylongFallbackStringContainingAlotOfLetters"; 
@@ -61,7 +61,7 @@ namespace GpsApp.Configuration
             if (string.IsNullOrWhiteSpace(secret))
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("⚠️ WARNING: ValidAudience not found in config or environment variables.");
+                Console.WriteLine("⚠️ WARNING: ValidSecret not found in config or environment variables.");
                 Console.ResetColor();
 
                 return "aVerylongFallbackStringContainingAlotOfLetters"; // or a fallback string if you prefer
