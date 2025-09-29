@@ -11,7 +11,7 @@ namespace GpsApp.Middleware
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-            
+
             // if we want to stage something
             if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
             {

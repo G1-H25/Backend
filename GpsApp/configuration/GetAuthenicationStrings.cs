@@ -51,7 +51,7 @@ namespace GpsApp.Configuration
                 Console.WriteLine("⚠️ WARNING: ValidIssuer not found in config or environment variables.");
                 Console.ResetColor();
 
-                return "aVerylongFallbackStringContainingAlotOfLetters"; 
+                return "aVerylongFallbackStringContainingAlotOfLetters";
             }
 
             return issuer;
