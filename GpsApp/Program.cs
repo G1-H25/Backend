@@ -5,6 +5,7 @@ using GpsApp.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Resolve connection string
 var connectionString = builder.Configuration.GetResolvedConnectionString("DefaultConnection");
 
