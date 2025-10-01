@@ -12,11 +12,13 @@ namespace GpsApp.Middleware
                 app.UseHsts();
             }
 
+            // if we want to stage something
             if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
             app.UseRouting();
