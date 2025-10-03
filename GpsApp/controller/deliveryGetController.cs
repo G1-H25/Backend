@@ -8,11 +8,11 @@ using System.ComponentModel.Design;
 [Route("[controller]")]
 public class DeliveryGetController : ControllerBase
 {
-    private readonly SqlGet _getService;
+    private readonly string _connectionString;
 
-    public DeliveryGetController(SqlGet getService)
+    public DeliveryGetController(IConfiguration config)
     {
-        _getService = getService;
+        _connectionString = config.GetConnectionString("DefaultConnection");
     }
 
     [HttpGet]
@@ -37,5 +37,8 @@ public class DeliveryGetController : ControllerBase
         await connection.OpenAsync();
 
         await using var reader = await command.ExecuteReaderAsync();
+
+
     }
+    
 }
