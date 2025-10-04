@@ -9,7 +9,6 @@ BEGIN
         Note VARCHAR(100)
     );
 END
-GO
 
 -- MOCK DATA With idempotent insert
 IF NOT EXISTS (

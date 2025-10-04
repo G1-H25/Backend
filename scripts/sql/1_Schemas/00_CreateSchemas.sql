@@ -7,5 +7,8 @@ GO
 CREATE SCHEMA Orders;
 GO
 
-CREATE SCHEMA Customer;
+CREATE SCHEMA Customers;
+GO
+
+CREATE SCHEMA Secrets;
 GO

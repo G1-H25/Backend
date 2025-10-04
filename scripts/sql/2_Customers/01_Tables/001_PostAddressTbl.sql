@@ -7,7 +7,6 @@ BEGIN
         Country VARCHAR(30)
     );
 END
-GO
 
 -- MOCK DATA
 IF NOT EXISTS (
