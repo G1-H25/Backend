@@ -39,6 +39,10 @@ pip-delete-this-directory.txt
 # VS Code settings
 .vscode/
 
+# Tests for SQL
+
+/scritps/sql/Tests
+
 # OS files
 .DS_Store
 Thumbs.db

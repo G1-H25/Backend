@@ -1,0 +1,9 @@
+[sqlfluff]
+dialect = tsql
+templater = jinja
+
+[sqlfluff:rules]
+capitalization.keywords = upper       
+capitalization.identifiers = pascal   
+capitalization.functions = lower      
+capitalization.literals = upper       

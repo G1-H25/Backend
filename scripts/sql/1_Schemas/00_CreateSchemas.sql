@@ -1,0 +1,14 @@
+CREATE SCHEMA Measurements;
+GO
+
+CREATE SCHEMA Logistics;
+GO
+
+CREATE SCHEMA Orders;
+GO
+
+CREATE SCHEMA Customers;
+GO
+
+CREATE SCHEMA Secrets;
+GO

@@ -35,13 +35,11 @@ jobs:
           python-version: '3.x'
 
       - run: pip install sqlfluff
-      
-      - name: Lint SQL files
-        run: sqlfluff lint scripts/sql/ --config .github/workflows/.sqlfluff
 
+      - run: sqlfluff --version
+  
       - name: Auto fix SQL files
-
-        # && y to confirm changes
-        run: sqlfluff fix scripts/sql/ --config .github/workflows/.sqlfluff --force
+        # --force is used to accept changes being made from linter
+        run: sqlfluff fix scripts/sql/** --force
 
 

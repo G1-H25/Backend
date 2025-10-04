@@ -29,8 +29,9 @@ else
     echo "init.sql not found — skipping."
 fi
 
+shopt -s globstar
 # Run all other .sql files
-for script in /scripts/sql/*.sql; do
+for script in /scripts/sql/**/*.sql; do
     if [[ "$script" != "/scripts/sql/init.sql" ]]; then
         echo "Running: $script in LocalDatabase"
         sqlcmd -S localhost -U SA -P "$SA_PASSWORD" -d LocalDatabase -i "$script" -C
