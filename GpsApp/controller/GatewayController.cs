@@ -61,9 +61,9 @@ public class GatewayController : ControllerBase
         // Step 2: Insert new device
         await _insertService.InsertAsync("Secrets.Gateway", new Dictionary<string, object>
         {
-            { "Id", request.DeviceId },
-            { "UserID", userId }
+            { "UserId", userId },
         });
+
 
         return Ok(new { message = "Device linked to user successfully." });
     }
