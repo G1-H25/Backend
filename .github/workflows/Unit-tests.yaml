@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_and_run_dotnet:
+  build_and_run_Unit_tests:
     runs-on: ubuntu-latest
 
     steps:
