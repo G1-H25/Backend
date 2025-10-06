@@ -28,7 +28,7 @@ public class GpsGetController : ControllerBase
             return Unauthorized("User ID not found in token.");
 
         // 2. Confirm device ownership using Gateway table
-        var ownership = await _getService.FetchAsync("Gateway", new Dictionary<string, object>
+        var ownership = await _getService.FetchAsync("Secrets.Gateway", new Dictionary<string, object>
         {
             { "Id", data.DeviceId }
         });
