@@ -28,7 +28,7 @@ public class GatewayController : ControllerBase
             return Unauthorized("User ID not found in token.");
 
         // Step 1: Check existing ownership 
-        var existing = await _getService.FetchAsync("Gateway", new Dictionary<string, object>
+        var existing = await _getService.FetchAsync("Secrets.Gateway", new Dictionary<string, object>
         {
             { "Id", request.DeviceId }
         });
@@ -44,7 +44,7 @@ public class GatewayController : ControllerBase
             else
             {
                 // Reassign device to this user
-                var updateQuery = "UPDATE Gateway SET UserID = @UserId WHERE Id = @DeviceId";
+                var updateQuery = "UPDATE Secrets.Gateway SET UserID = @UserId WHERE Id = @DeviceId";
 
                 await using var connection = new SqlConnection(_insertService.ConnectionString);
                 await using var command = new SqlCommand(updateQuery, connection);
@@ -59,7 +59,7 @@ public class GatewayController : ControllerBase
         }
 
         // Step 2: Insert new device
-        await _insertService.InsertAsync("Gateway", new Dictionary<string, object>
+        await _insertService.InsertAsync("Secrets.Gateway", new Dictionary<string, object>
         {
             { "Id", request.DeviceId },
             { "UserID", userId }
