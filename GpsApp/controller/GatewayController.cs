@@ -60,12 +60,16 @@ public class GatewayController : ControllerBase
         {
             // Step 2: Insert new device
             // Insert new device with UserId, but no DeviceId from client
-            await _insertService.InsertAsync("Secrets.Gateway", new Dictionary<string, object>
+            var newDeviceId = await _insertService.InsertAndReturnIdAsync("Secrets.Gateway", new Dictionary<string, object>
             {
                 { "UserId", userId }
             });
 
-            return Ok(new { message = "Device linked to user successfully." });
+            return Ok(new
+            {
+                message = "Device linked to user successfully.",
+                deviceId = newDeviceId
+            });
         }
     }
 }

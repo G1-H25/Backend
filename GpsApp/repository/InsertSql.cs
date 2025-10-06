@@ -34,5 +34,28 @@ public class SqlInsert
         await conn.OpenAsync();
         await cmd.ExecuteNonQueryAsync();
     }
+
+    public async Task<int> InsertAndReturnIdAsync(string tableName, Dictionary<string, object> data)
+    {
+        var columns = string.Join(", ", data.Keys);
+        var paramNames = string.Join(", ", data.Keys.Select(k => "@" + k));
+
+        var sql = $@"
+            INSERT INTO {tableName} ({columns}) VALUES ({paramNames});
+            SELECT CAST(SCOPE_IDENTITY() AS INT);";
+
+        await using var conn = new SqlConnection(_connectionString);
+        await using var cmd = new SqlCommand(sql, conn);
+
+        foreach (var kvp in data)
+        {
+            cmd.Parameters.AddWithValue("@" + kvp.Key, kvp.Value ?? DBNull.Value);
+        }
+
+        await conn.OpenAsync();
+        var result = await cmd.ExecuteScalarAsync();
+
+        return Convert.ToInt32(result);
+    }
 }
 
