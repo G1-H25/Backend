@@ -1,5 +1,11 @@
-CREATE DATABASE LocalDatabase;
+IF DB_ID('LocalDatabase') IS NOT NULL
+BEGIN
+    ALTER DATABASE LocalDatabase SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE LocalDatabase;
+END
 GO
 
+CREATE DATABASE LocalDatabase;
+GO
 USE LocalDatabase;
 GO

@@ -1,15 +1,7 @@
 FROM mcr.microsoft.com/mssql/server:2022-latest
 
-# Install Python and required libraries
-#RUN apt-get update && \
-#    apt-get install -y python3 python3-pip unixodbc-dev && \
-#    pip3 install pyodbc
-
-
-# Switch to root to install packages
 USER root
 
-# Install SQLCMD and other tools
 RUN apt-get update && \
     apt-get install -y curl apt-transport-https gnupg && \
     curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
@@ -20,12 +12,11 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Switch back to the default user for SQL Server
-
-# Copy scripts and entrypoint
 COPY . /scripts
-RUN chmod +x /scripts/entrypoint.sh
-ENTRYPOINT ["/scripts/entrypoint.sh"]
+RUN chmod +x /scripts/entrypoint.sh && chown -R mssql:mssql /scripts
 
+ENV PATH="$PATH:/opt/mssql-tools18/bin"
 
 USER mssql
+
+ENTRYPOINT ["/scripts/entrypoint.sh"]

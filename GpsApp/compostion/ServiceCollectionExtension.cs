@@ -19,6 +19,7 @@ namespace GpsApp.Composition
             if (!string.IsNullOrEmpty(connectionString))
             {
                 services.AddSingleton(_ => new SqlInsert(connectionString));
+                services.AddSingleton(_ => new SqlGetAdvanced(connectionString));
                 services.AddSingleton(_ => new SqlGet(connectionString));
                 services.AddScoped<GetUser>();
                 services.AddScoped<HealthController>();
