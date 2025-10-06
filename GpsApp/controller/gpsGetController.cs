@@ -50,7 +50,7 @@ public class GpsGetController : ControllerBase
             gpsFilters.Add("Timestamp", data.Timestamp.Value);
 
         // 4. Fetch and return GPS data
-        var gpsData = await _getService.FetchAsync("GpsData", gpsFilters);
+        var gpsData = await _getService.FetchAsync("dbo.GpsData", gpsFilters);
 
         if (gpsData == null)
             return NotFound("No matching GPS data found.");
