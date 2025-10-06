@@ -36,7 +36,7 @@ public class GpsGetController : ControllerBase
         if (ownership == null)
             return NotFound("Device is not registered.");
 
-        var deviceOwnerId = Convert.ToInt32(ownership["UserID"]);
+        var deviceOwnerId = Convert.ToInt32(ownership["UserId"]);
         if (deviceOwnerId != userId)
             return Forbid("You do not have access to this device's data.");
 
