@@ -28,7 +28,7 @@ public class GpsGetController : ControllerBase
             return Unauthorized("User ID not found in token.");
 
         // 2. Confirm device ownership using Gateway table
-        var ownership = await _getService.FetchAsync("Gateway", new Dictionary<string, object>
+        var ownership = await _getService.FetchAsync("Secrets.Gateway", new Dictionary<string, object>
         {
             { "Id", data.DeviceId }
         });
@@ -36,7 +36,7 @@ public class GpsGetController : ControllerBase
         if (ownership == null)
             return NotFound("Device is not registered.");
 
-        var deviceOwnerId = Convert.ToInt32(ownership["UserID"]);
+        var deviceOwnerId = Convert.ToInt32(ownership["UserId"]);
         if (deviceOwnerId != userId)
             return Forbid("You do not have access to this device's data.");
 
@@ -50,7 +50,7 @@ public class GpsGetController : ControllerBase
             gpsFilters.Add("Timestamp", data.Timestamp.Value);
 
         // 4. Fetch and return GPS data
-        var gpsData = await _getService.FetchAsync("GpsData", gpsFilters);
+        var gpsData = await _getService.FetchAsync("dbo.GpsData", gpsFilters);
 
         if (gpsData == null)
             return NotFound("No matching GPS data found.");

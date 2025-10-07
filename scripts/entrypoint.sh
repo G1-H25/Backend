@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH=$PATH:/opt/mssql-tools18/bin
 
 # Start SQL Server in the background
 /opt/mssql/bin/sqlservr &
@@ -29,13 +30,12 @@ else
     echo "init.sql not found — skipping."
 fi
 
-# Run all other .sql files
-for script in /scripts/sql/*.sql; do
-    if [[ "$script" != "/scripts/sql/init.sql" ]]; then
-        echo "Running: $script in LocalDatabase"
-        sqlcmd -S localhost -U SA -P "$SA_PASSWORD" -d LocalDatabase -i "$script" -C
-    fi
+# Run all .sql files recursively except init.sql
+find /scripts/sql -type f -name "*.sql" ! -name "init.sql" | sort | while read -r script; do
+    echo "Running: $script in LocalDatabase"
+    /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P "$SA_PASSWORD" -d LocalDatabase -i "$script" -C
 done
+
 
 echo "All scripts executed."
 

@@ -3,6 +3,7 @@ name: Integration Tests
 on:
   workflow_dispatch:
   pull_request:
+  push:
 
 jobs:
   integration_test:
@@ -30,10 +31,11 @@ jobs:
       - name: List all files recursively
         run: find . -type f
 
-      - name: Run integration test script
-        run: |
-            chmod +x ./GpsApp.Tests/integration/test_api.sh
-            ./GpsApp.Tests/integration/test_api.sh
+      - name: Make all integration test scripts executable
+        run: chmod +x GpsApp.Tests/integration/*.sh
+
+      - name: Run integration test runner
+        run: ./GpsApp.Tests/integration/run_integrationtests.sh
 
       - name: Tear down Docker Compose
         if: always()

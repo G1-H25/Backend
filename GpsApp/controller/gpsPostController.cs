@@ -47,7 +47,7 @@ public class GpsController : ControllerBase
             { "Timestamp", data.Timestamp }
         };
 
-        await _insertService.InsertAsync("GpsData", dataDict);
+        await _insertService.InsertAsync("dbo.GpsData", dataDict);
 
         return Ok("Inserted");
     }
