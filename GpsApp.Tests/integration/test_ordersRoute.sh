@@ -1,24 +1,21 @@
-echo "Waiting for backend to be ready..."
-for i in $(seq 1 60); do
-  status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/health)
-  
-  if [ "$status_code" = "200" ]; then
-    echo "Backend is ready!"
-    break
-  else
-    echo "Backend not ready yet (status $status_code), waiting..."
-    sleep 2
-  fi
+echo "Fetching delivery data from API inside container..."
 
-  if [ "$i" = "60" ]; then
-    echo "Backend did not become ready in time, exiting."
-    exit 1
-  fi
-done
+delivery_response=$(docker exec -i backend-app-1 /bin/sh -c '
+  set -e
+  RESPONSE=$(curl -s -w "\nHTTP Status: %{http_code}\n" http://localhost:8080/DeliveryGet)
+  echo "$RESPONSE"
+')
 
+echo "Delivery data response:"
+echo "$delivery_response"
 
-docker exec -i backend-app-1 /bin/sh -c "
-  echo 'Fetching delivery data from API inside container...'
-  curl -s http://localhost:8080/DeliveryGet
-  echo 'Data retrieved.'
-"
+status_code=$(echo "$delivery_response" | tail -n1 | awk '{print $3}')
+
+if [ "$status_code" != "200" ]; then
+  echo "ERROR: Failed to fetch delivery data, status $status_code"
+  exit 1
+fi
+
+echo "Data retrieved successfully."
+
+What I did:

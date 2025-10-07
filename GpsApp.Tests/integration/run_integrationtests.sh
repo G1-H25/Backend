@@ -15,6 +15,13 @@ echo "Token: $TOKEN"
 echo "Test_Authenication.sh passed"
 echo ""
 
+echo "Step 3: Running orders route tests..."
+ORDERS_OUTPUT=$("$SCRIPT_DIR/test_ordersRoute.sh" "$TOKEN")
+echo "$ORDERS_OUTPUT"
+# You can add checks here if your orders test script outputs something you can grep
+echo "test_ordersRoute.sh passed"
+echo ""
+
 echo "All integration tests completed successfully!"
 
 
