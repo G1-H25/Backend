@@ -33,8 +33,8 @@ jobs:
 
       - name: Run integration test script
         run: |
-            chmod +x ./GpsApp.Tests/integration/test_api.sh
-            ./GpsApp.Tests/integration/test_api.sh
+            chmod +x ./GpsApp.Tests/integration/run_integrationtests.sh
+            ./GpsApp.Tests/integration/run_integrationtests.sh
 
       - name: Tear down Docker Compose
         if: always()

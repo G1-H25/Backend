@@ -1,16 +1,15 @@
 namespace GpsApp.DTO
 {
     public record DeliveryDto(
-        int Id,
-        string RouteId,
-        float ExpectedTempId,
-        float ExpectedHumidId,
-        float minMaxTemp,
-        float minMaxHumid,
-        string CarrierId,
-        string SenderId,
-        string RecipientId,
-        string StateId,
+        int DeliveryId,
+        string RouteCode,
+        float TempMin,
+        float TempMax,
+        float HumidMin,
+        float HumidMax,
+        string CarrierName,
+        string SenderName,
+        string RecipientName,
         DateTime OrderPlaced
     );
 }

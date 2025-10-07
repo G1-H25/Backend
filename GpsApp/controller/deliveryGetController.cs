@@ -50,8 +50,17 @@ public class DeliveryGetController : ControllerBase
         var result = await _sqlAdvanced.FetchWithJoinsAsync(
             baseTable: "Orders.Delivery deliv",
             selectClause: @"
-                deliv.Id, troute.Code, temp.Min, temp.Max, humid.Min,
-                humid.Max, carrCom.CompanyName, senCom.CompanyName, recCom.CompanyName, deliv.OrderPlaced",
+                deliv.Id AS DeliveryId,
+                troute.Code AS RouteCode,
+                temp.Min AS TempMin,
+                temp.Max AS TempMax,
+                humid.Min AS HumidMin,
+                humid.Max AS HumidMax,
+                carrCom.CompanyName AS CarrierName,
+                senCom.CompanyName AS SenderName,
+                recCom.CompanyName AS RecipientName,
+                deliv.OrderPlaced
+            ",
             joins: new List<string>
             {
                 "JOIN Logistics.TransportRoute troute ON deliv.RouteId = troute.Id",
@@ -66,16 +75,15 @@ public class DeliveryGetController : ControllerBase
             },
             filters: filters,
             map: r => new DeliveryDto(
-                Id: Convert.ToInt32(r["Id"]),
-                RouteId: Convert.ToString(r["troute.Id"]),
-                ExpectedTempId: Convert.ToSingle(r["ExpectedTempId"]),
-                ExpectedHumidId: Convert.ToSingle(r["ExpectedHumidId"]),
-                minMaxTemp: Convert.ToSingle(r["minMaxTemp"]),
-                minMaxHumid: Convert.ToSingle(r["minMaxHumid"]),
-                CarrierId: Convert.ToString(r["CarrierId"]),
-                SenderId: Convert.ToString(r["SenderId"]),
-                RecipientId: Convert.ToString(r["RecipientId"]),
-                StateId: Convert.ToString(r["StateId"]),
+                DeliveryId: Convert.ToInt32(r["DeliveryId"]),
+                RouteCode: Convert.ToString(r["RouteCode"]),
+                TempMin: Convert.ToSingle(r["TempMin"]),
+                TempMax: Convert.ToSingle(r["TempMax"]),
+                HumidMin: Convert.ToSingle(r["HumidMin"]),
+                HumidMax: Convert.ToSingle(r["HumidMax"]),
+                CarrierName: Convert.ToString(r["CarrierName"]),
+                SenderName: Convert.ToString(r["SenderName"]),
+                RecipientName: Convert.ToString(r["RecipientName"]),
                 OrderPlaced: Convert.ToDateTime(r["OrderPlaced"])
             )
 
