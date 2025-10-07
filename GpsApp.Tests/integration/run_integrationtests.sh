@@ -1,5 +1,5 @@
 #!/bin/sh
-set -e
+set -ex
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -7,9 +7,14 @@ echo "Step 1: Waiting for backend to be ready..."
 "$SCRIPT_DIR/wait_for_backend.sh"
 
 echo "Step 2: Signing up and logging in..."
-TOKEN=$("$SCRIPT_DIR/testing_authenication.sh")
+OUTPUT=$("$SCRIPT_DIR/testing_authenication.sh")
+echo "$OUTPUT"
+# Extract the token from the output
+TOKEN=$(echo "$OUTPUT" | grep "Token received:" | awk '{print $3}')
+echo "Token: $TOKEN"
 echo "Test_Authenication.sh passed"
 echo ""
 
 echo "All integration tests completed successfully!"
+
 
