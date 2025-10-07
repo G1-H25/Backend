@@ -17,5 +17,3 @@ if [ "$status_code" != "200" ]; then
 fi
 
 echo "Data retrieved successfully."
-
-What I did:
