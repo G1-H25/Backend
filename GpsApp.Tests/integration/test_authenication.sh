@@ -1,72 +1,125 @@
 #!/bin/sh
+set -e
 
+USERNAME="testuser_$(date +%s)"
+PASSWORD="testpass123"
 
-# Now enter the container shell and run the rest of the tests inside the container
-# Replace 'backend-app-1' with your actual container name
-docker exec -i backend-app-1 /bin/sh -c '
-  USERNAME="testuser_$(date +%s)"
-  PASSWORD="testpass123"
+echo "Signing up with username: $USERNAME"
 
-  echo "Signing up with username $USERNAME..."
-  curl -i -X POST http://localhost:8080/signup/signup \
-    -H "Content-Type: application/json" \
-    -d "{\"username\": \"$USERNAME\", \"password\": \"$PASSWORD\"}"
-  echo
+signup_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/signup/signup \
+  -H "Content-Type: application/json" \
+  -d "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}")
 
-  echo "Logging in..."
-  response=$(curl -s -X POST http://localhost:8080/login \
-    -H "Content-Type: application/json" \
-    -d "{\"username\":\"$USERNAME\", \"password\":\"$PASSWORD\"}")
+echo "Signup response:"
+echo "$signup_response"
 
-  echo "Raw login response:"
-  echo "$response"
+signup_status=$(echo "$signup_response" | tail -n1 | awk '{print $3}')
 
-  TOKEN=$(echo "$response" | grep -o "\"token\":\"[^\"]*" | cut -d: -f2 | tr -d "\"")
+if [ "$signup_status" != "200" ]; then
+  echo "ERROR: Signup failed with status $signup_status"
+  exit 1
+fi
 
-  if [ "$TOKEN" = "null" ] || [ -z "$TOKEN" ]; then
-    echo "Login failed, no token received"
-    exit 1
-  fi
+echo "Logging in..."
 
-  echo "Token received: $TOKEN"
-  echo
+login_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/login \
+  -H "Content-Type: application/json" \
+  -d "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}")
 
-  echo "Testing auth..."
-  curl -s -X GET http://localhost:8080/test/user-only \
-    -H "Authorization: Bearer $TOKEN"
-  echo
+echo "Login response:"
+echo "$login_response"
 
-  echo "Registering device..."
-  register_response=$(curl -s -X POST http://localhost:8080/Gateway \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $TOKEN" \
-    -d "{}")
+login_status=$(echo "$login_response" | tail -n1 | awk '{print $3}')
 
-  echo "Register response: $register_response"
+if [ "$login_status" != "200" ]; then
+  echo "ERROR: Login failed with status $login_status"
+  exit 1
+fi
 
-  DEVICEID=$(echo "$register_response" | grep -o "\"deviceId\":[0-9]*" | grep -o "[0-9]*")
+TOKEN=$(echo "$login_response" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
 
-  if [ -z "$DEVICEID" ]; then
-    echo "Failed to get device ID from registration"
-    exit 1
-  fi
+if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+  echo "ERROR: Failed to extract token from login response"
+  exit 1
+fi
 
-  echo "Using Device ID: $DEVICEID"
+echo "Token received: $TOKEN"
 
-  echo "Posting GPS data..."
-  curl -s -X POST http://localhost:8080/Gps \
-    -H "Content-Type: application/json" \
-    -d "{
-      \"DeviceId\": \"$DEVICEID\",
-      \"Latitude\": 51.509865,
-      \"Longitude\": -0.118092,
-      \"Timestamp\": \"2025-09-08T12:00:00Z\"
-    }"
-  echo
+echo "Testing authentication with token..."
 
-  echo "Fetching GPS data..."
-  curl -s -X GET "http://localhost:8080/GpsGet?DeviceId=$DEVICEID" \
-    -H "Authorization: Bearer $TOKEN"
-  echo
-'
+auth_test_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X GET http://localhost:5000/test/user-only \
+  -H "Authorization: Bearer $TOKEN")
 
+echo "Auth test response:"
+echo "$auth_test_response"
+
+auth_test_status=$(echo "$auth_test_response" | tail -n1 | awk '{print $3}')
+
+if [ "$auth_test_status" != "200" ]; then
+  echo "ERROR: Authentication test failed with status $auth_test_status"
+  exit 1
+fi
+
+echo "Registering device..."
+
+register_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/Gateway \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d "{}")
+
+echo "Register response:"
+echo "$register_response"
+
+register_status=$(echo "$register_response" | tail -n1 | awk '{print $3}')
+
+if [ "$register_status" != "200" ]; then
+  echo "ERROR: Device registration failed with status $register_status"
+  exit 1
+fi
+
+DEVICEID=$(echo "$register_response" | grep -o "\"deviceId\":[0-9]*" | grep -o "[0-9]*")
+
+if [ -z "$DEVICEID" ]; then
+  echo "ERROR: Failed to extract device ID"
+  exit 1
+fi
+
+echo "Device ID: $DEVICEID"
+
+echo "Posting GPS data..."
+
+post_gps_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/Gps \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"DeviceId\": \"$DEVICEID\",
+    \"Latitude\": 51.509865,
+    \"Longitude\": -0.118092,
+    \"Timestamp\": \"2025-09-08T12:00:00Z\"
+  }")
+
+echo "Post GPS response:"
+echo "$post_gps_response"
+
+post_gps_status=$(echo "$post_gps_response" | tail -n1 | awk '{print $3}')
+
+if [ "$post_gps_status" != "200" ]; then
+  echo "ERROR: Posting GPS data failed with status $post_gps_status"
+  exit 1
+fi
+
+echo "Fetching GPS data..."
+
+fetch_gps_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X GET "http://localhost:5000/GpsGet?DeviceId=$DEVICEID" \
+  -H "Authorization: Bearer $TOKEN")
+
+echo "Fetch GPS response:"
+echo "$fetch_gps_response"
+
+fetch_gps_status=$(echo "$fetch_gps_response" | tail -n1 | awk '{print $3}')
+
+if [ "$fetch_gps_status" != "200" ]; then
+  echo "ERROR: Fetching GPS data failed with status $fetch_gps_status"
+  exit 1
+fi
+
+echo "$TOKEN"

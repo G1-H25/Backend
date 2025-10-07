@@ -7,7 +7,7 @@ echo "Step 1: Waiting for backend to be ready..."
 "$SCRIPT_DIR/wait_for_backend.sh"
 
 echo "Step 2: Signing up and logging in..."
-OUTPUT=$("$SCRIPT_DIR/testing_authenication.sh")
+OUTPUT=$("$SCRIPT_DIR/test_authenication.sh")
 echo "$OUTPUT"
 # Extract the token from the output
 TOKEN=$(echo "$OUTPUT" | grep "Token received:" | awk '{print $3}')
