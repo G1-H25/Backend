@@ -1,6 +1,5 @@
 #!/bin/sh
 
-CONTAINER_NAME=backend-app-1
 TOKEN=$1
 
 if [ -z "$TOKEN" ]; then
@@ -8,14 +7,12 @@ if [ -z "$TOKEN" ]; then
   exit 1
 fi
 
-register_response=$(docker exec -i $CONTAINER_NAME /bin/sh -c "
-  curl -s -X POST http://localhost:8080/Gateway \
-    -H 'Content-Type: application/json' \
-    -H 'Authorization: Bearer $TOKEN' \
-    -d '{}'
-")
+register_response=$(curl -s -X POST http://localhost:8080/Gateway \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d "{}")
 
-echo "Register response: $register_response"
+echo "$register_response" > /tmp/register_response.json
 
 DEVICEID=$(echo "$register_response" | grep -o "\"deviceId\":[0-9]*" | grep -o "[0-9]*")
 
@@ -25,4 +22,6 @@ if [ -z "$DEVICEID" ]; then
 fi
 
 echo "Using Device ID: $DEVICEID"
-echo "$DEVICEID"
+
+# Save for use in later scripts
+echo "$DEVICEID" > /tmp/test_device_id.txt
