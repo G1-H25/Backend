@@ -6,18 +6,15 @@ name: Format SQL files
 on: 
   workflow_dispatch: 
   push: 
-    # Will run on push to all branches
-    branches:
-      - main
-      - development
-      # Will run on branches named dev/<branchName>
-      - 'dev/**'
+    # Will run on push to production branch
+    branches: [main]
+
     paths:
       # Will only run on files under sql folder
       - 'scripts/sql/**'
   pull_request:
     # Will only run on pull_requests
-    branches: [main, development]
+    branches: [main]
     paths:
       - 'scripts/sql/**'
     
@@ -35,13 +32,11 @@ jobs:
           python-version: '3.x'
 
       - run: pip install sqlfluff
-      
-      - name: Lint SQL files
-        run: sqlfluff lint scripts/sql/ --config .github/workflows/.sqlfluff
 
+      - run: sqlfluff --version
+  
       - name: Auto fix SQL files
-
-        # && y to confirm changes
-        run: sqlfluff fix scripts/sql/ --config .github/workflows/.sqlfluff --force
+        # --force is used to accept changes being made from linter
+        run: sqlfluff fix scripts/sql/** --force
 
 

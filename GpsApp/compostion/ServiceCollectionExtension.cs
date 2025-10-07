@@ -23,6 +23,7 @@ namespace GpsApp.Composition
                 services.AddSingleton(_ => new SqlGet(connectionString));
                 services.AddScoped<GetUser>();
                 services.AddScoped<HealthController>();
+                services.AddScoped<DeliveryGetController>();
             }
 
             return services;

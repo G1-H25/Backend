@@ -17,4 +17,3 @@ GO
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Secrets')
     EXEC('CREATE SCHEMA Secrets');
 GO
-
