@@ -6,7 +6,7 @@ PASSWORD="testpass123"
 
 echo "Signing up with username: $USERNAME"
 
-signup_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:8080/signup/signup \
+signup_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/signup/signup \
   -H "Content-Type: application/json" \
   -d "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}")
 
@@ -22,7 +22,7 @@ fi
 
 echo "Logging in..."
 
-login_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:8080/login \
+login_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/login \
   -H "Content-Type: application/json" \
   -d "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}")
 
@@ -47,7 +47,7 @@ echo "Token received: $TOKEN"
 
 echo "Testing authentication with token..."
 
-auth_test_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X GET http://localhost:8080/test/user-only \
+auth_test_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X GET http://localhost:5000/test/user-only \
   -H "Authorization: Bearer $TOKEN")
 
 echo "Auth test response:"
@@ -62,7 +62,7 @@ fi
 
 echo "Registering device..."
 
-register_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:8080/Gateway \
+register_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/Gateway \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d "{}")
@@ -88,7 +88,7 @@ echo "Device ID: $DEVICEID"
 
 echo "Posting GPS data..."
 
-post_gps_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:8080/Gps \
+post_gps_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/Gps \
   -H "Content-Type: application/json" \
   -d "{
     \"DeviceId\": \"$DEVICEID\",
@@ -109,7 +109,7 @@ fi
 
 echo "Fetching GPS data..."
 
-fetch_gps_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X GET "http://localhost:8080/GpsGet?DeviceId=$DEVICEID" \
+fetch_gps_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X GET "http://localhost:5000/GpsGet?DeviceId=$DEVICEID" \
   -H "Authorization: Bearer $TOKEN")
 
 echo "Fetch GPS response:"
