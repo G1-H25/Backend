@@ -67,7 +67,7 @@ public class DeliveryGetController : ControllerBase
             filters: filters,
             map: r => new DeliveryDto(
                 Id: Convert.ToInt32(r["Id"]),
-                RouteId: Convert.ToString(r["RouteId"]),
+                RouteId: Convert.ToString(r["troute.Id"]),
                 ExpectedTempId: Convert.ToSingle(r["ExpectedTempId"]),
                 ExpectedHumidId: Convert.ToSingle(r["ExpectedHumidId"]),
                 minMaxTemp: Convert.ToSingle(r["minMaxTemp"]),
