@@ -40,7 +40,6 @@ pip-delete-this-directory.txt
 .vscode/
 
 # Tests for SQL
-
 /scritps/sql/Tests
 
 # OS files
