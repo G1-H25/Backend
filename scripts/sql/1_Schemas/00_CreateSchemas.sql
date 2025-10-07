@@ -1,14 +1,19 @@
-CREATE SCHEMA Measurements;
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Measurements')
+    EXEC('CREATE SCHEMA Measurements');
 GO
 
-CREATE SCHEMA Logistics;
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Logistics')
+    EXEC('CREATE SCHEMA Logistics');
 GO
 
-CREATE SCHEMA Orders;
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Orders')
+    EXEC('CREATE SCHEMA Orders');
 GO
 
-CREATE SCHEMA Customers;
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Customers')
+    EXEC('CREATE SCHEMA Customers');
 GO
 
-CREATE SCHEMA Secrets;
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Secrets')
+    EXEC('CREATE SCHEMA Secrets');
 GO

@@ -29,7 +29,7 @@ public class SignupController : ControllerBase
 
         try
         {
-            await _insertService.InsertAsync("dbo.Users", data);
+            await _insertService.InsertAsync("Secrets.Account", data);
             return Ok("User created successfully.");
         }
         catch (Exception ex)

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using GpsApp.DTO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
@@ -8,37 +9,100 @@ using System.ComponentModel.Design;
 [Route("[controller]")]
 public class DeliveryGetController : ControllerBase
 {
-    private readonly string _connectionString;
+    private readonly SqlGetAdvanced _sqlAdvanced;
 
-    public DeliveryGetController(IConfiguration config)
+    public DeliveryGetController(SqlGetAdvanced sqlAdvanced)
     {
-        _connectionString = config.GetConnectionString("DefaultConnection");
+        _sqlAdvanced = sqlAdvanced;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetDeliveryData([FromQuery] DeliveryData data)
+    public async Task<IActionResult> GetDelivery([FromQuery] int? id)
     {
-        string sql = (
-                @"SELECT Id, RouteId, ExpectedTempId, ExpectedHumidId, CarrierId, SenderId, RecipientId, StateId, OrderPlaced
-                FROM Orders.Delivery
-                FULL JOIN Logistics.Route ON  Logistics.Route.Id = Orders.Delivery.RouteId
-                FULL JOIN Measurements ON Measurements.ExpectedTemp.Id = Orders.Delivery.ExpectedTempId
-                FULL JOIN Measurements.ExpectedHumid ON Measurements.ExpectedHumid(Id) = Orders.Delivery.ExpectedHumidId
-                FULL JOIN Logistics.Carrier ON Logistics.Carrier(Id) = Orders.Delivery.CarrierId
-                FULL JOIN Customers.Sender ON Customers.Sender(Id) = Orders.Delivery.SenderId
-                FULL JOIN Customers.Recipient ON Customers.Recipient(Id) = Orders.Delivery.RecipientId
-                FULL JOIN DeliveryState ON DeliveryState(Id) = Orders.Delivery.StateId
-        ");
-        await using var connection = new SqlConnection(_getService);
-        await using var command = new SqlCommand(sql, connection);
+        var filters = new Dictionary<string, object>();
+        if (id.HasValue)
+            filters.Add("d.Id", id.Value);
 
-        command.Parameters.AddWithValue("@", data);
+        /*
+            SELECT
+        deliv.Id AS DeliveryId,
+        troute.Code AS RouteCode,
+        temp.Min AS TempMin,
+        temp.Max AS TempMax,
+        humid.Min AS HumidMin,
+        humid.Max AS HumidMax,
+        carrCom.CompanyName AS CarrierName,
+        senCom.CompanyName AS SenderName,
+        recCom.CompanyName AS RecipientName,
+        deliv.OrderPlaced
+    FROM Orders.Delivery deliv
+        JOIN Logistics.TransportRoute troute ON deliv.RouteId = troute.Id
+        JOIN Measurements.ExpectedTemp temp ON deliv.ExpectedTempId = temp.Id
+        JOIN Measurements.ExpectedHumid humid ON deliv.ExpectedHumidId = humid.Id
+        JOIN Logistics.Recipient rec ON deliv.RecipientId = rec.Id
+        JOIN Customers.Company recCom ON rec.CompanyId = recCom.Id
+        JOIN Logistics.Sender sen ON deliv.SenderId = sen.Id
+        JOIN Customers.Company senCom ON sen.CompanyId = senCom.Id
+        JOIN Logistics.Carrier carr ON deliv.CarrierId = carr.Id
+        JOIN Customers.Company carrCom ON carr.CompanyId = carrCom.Id;
+        */
 
-        await connection.OpenAsync();
+        var result = await _sqlAdvanced.FetchWithJoinsAsync(
+            baseTable: "Orders.Delivery deliv",
+            selectClause: @"
+                deliv.Id AS DeliveryId,
+                troute.Code AS RouteCode,
+                temp.Min AS TempMin,
+                temp.Max AS TempMax,
+                humid.Min AS HumidMin,
+                humid.Max AS HumidMax,
+                carrCom.CompanyName AS CarrierName,
+                senCom.CompanyName AS SenderName,
+                recCom.CompanyName AS RecipientName,
+                deliv.OrderPlaced
+            ",
+            joins: new List<string>
+            {
+                "JOIN Logistics.TransportRoute troute ON deliv.RouteId = troute.Id",
+                "JOIN Measurements.ExpectedTemp temp ON deliv.ExpectedTempId = temp.Id",
+                "JOIN Measurements.ExpectedHumid humid ON deliv.ExpectedHumidId = humid.Id",
+                "JOIN Logistics.Recipient rec ON deliv.RecipientId = rec.Id",
+                "JOIN Customers.Company recCom ON rec.CompanyId = recCom.Id",
+                "JOIN Logistics.Sender sen ON deliv.SenderId = sen.Id",
+                "JOIN Customers.Company senCom ON sen.CompanyId = senCom.Id",
+                "JOIN Logistics.Carrier carr ON deliv.CarrierId = carr.Id",
+                "JOIN Customers.Company carrCom ON carr.CompanyId = carrCom.Id"
+            },
+            filters: filters,
+            map: r => new DeliveryDto(
+                DeliveryId: Convert.ToInt32(r["DeliveryId"]),
+                RouteCode: Convert.ToString(r["RouteCode"]),
+                TempMin: Convert.ToSingle(r["TempMin"]),
+                TempMax: Convert.ToSingle(r["TempMax"]),
+                HumidMin: Convert.ToSingle(r["HumidMin"]),
+                HumidMax: Convert.ToSingle(r["HumidMax"]),
+                CarrierName: Convert.ToString(r["CarrierName"]),
+                SenderName: Convert.ToString(r["SenderName"]),
+                RecipientName: Convert.ToString(r["RecipientName"]),
+                OrderPlaced: Convert.ToDateTime(r["OrderPlaced"])
+            )
 
-        await using var reader = await command.ExecuteReaderAsync();
+            /* DTO
+                    int Id,
+                    string RouteId,
+                    float ExpectedTempId,
+                    float ExpectedHumidId,
+                    float minMaxTemp,
+                    float minMaxHumid,
+                    string CarrierId,
+                    string SenderId,
+                    string RecipientId,
+                    string StateId,
+                    DateTime OrderPlaced
+        */
+        );
 
-
+        return result.Any() ? Ok(result) : NotFound("No delivery records found.");
     }
-    
 }
+

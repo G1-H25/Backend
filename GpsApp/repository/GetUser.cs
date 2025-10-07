@@ -12,7 +12,7 @@ public class GetUser
 
     public async Task<User?> GetUserByUsernameAsync(string username)
     {
-        var result = await _getService.FetchAsync("Users", new Dictionary<string, object>
+        var result = await _getService.FetchAsync("Secrets.Account", new Dictionary<string, object>
         {
             { "Username", username }
         });
