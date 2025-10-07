@@ -11,13 +11,22 @@ BEGIN
 END
 
 -- MOCK DATA With idempotent insert
-IF NOT EXISTS (
-    SELECT 1
-    FROM Customers.Contact
-    WHERE Email = 'johan.andersson@gmail.com'
-)
-BEGIN
-INSERT INTO Customers.Contact (FirstName,LastName,PhoneNumber,Email,Note)
-    VALUES ('Johan', 'Andersson', '0454723847', 'johan.andersson@gmail.com', 'Manager');
-END
+IF
+    NOT EXISTS (
+        SELECT 1
+        FROM Customers.Contact
+        WHERE Email = 'johan.andersson@gmail.com'
+    )
+    BEGIN
+        INSERT INTO Customers.Contact (
+            FirstName, LastName, PhoneNumber, Email, Note
+        )
+        VALUES (
+            'Johan',
+            'Andersson',
+            '0454723847',
+            'johan.andersson@gmail.com',
+            'Manager'
+        );
+    END
 GO
