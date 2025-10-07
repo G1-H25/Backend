@@ -3,7 +3,7 @@
 # Wait for backend to be ready on host port 5000
 echo "Waiting for backend to be ready..."
 for i in $(seq 1 60); do
-  status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/health)
+  status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/health)
   
   if [ "$status_code" = "200" ]; then
     echo "Backend is ready!"
