@@ -12,12 +12,14 @@ register_response=$(curl -s -X POST http://localhost:8080/Gateway \
   -H "Authorization: Bearer $TOKEN" \
   -d "{}")
 
-echo "$register_response" > /tmp/register_response.json
+echo "Register response: $register_response"
 
-DEVICEID=$(echo "$register_response" | grep -o "\"deviceId\":[0-9]*" | grep -o "[0-9]*")
+
+DEVICEID=$(echo "$register_response" | sed -n 's/.*"deviceId":\([0-9]*\).*/\1/p')
+
 
 if [ -z "$DEVICEID" ]; then
-  echo "Failed to get device ID from registration" >&2
+  echo " Failed to extract device ID from response" >&2
   exit 1
 fi
 
