@@ -7,6 +7,10 @@ if [ -z "$TOKEN" ]; then
   exit 1
 fi
 
+echo "Registering device with token: $TOKEN"
+echo
+
+
 register_response=$(curl -s -X POST http://localhost:8080/Gateway \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
