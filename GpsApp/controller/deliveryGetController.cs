@@ -23,33 +23,75 @@ public class DeliveryGetController : ControllerBase
         if (id.HasValue)
             filters.Add("d.Id", id.Value);
 
+        /*
+            SELECT
+        deliv.Id AS DeliveryId,
+        troute.Code AS RouteCode,
+        temp.Min AS TempMin,
+        temp.Max AS TempMax,
+        humid.Min AS HumidMin,
+        humid.Max AS HumidMax,
+        carrCom.CompanyName AS CarrierName,
+        senCom.CompanyName AS SenderName,
+        recCom.CompanyName AS RecipientName,
+        deliv.OrderPlaced
+    FROM Orders.Delivery deliv
+        JOIN Logistics.TransportRoute troute ON deliv.RouteId = troute.Id
+        JOIN Measurements.ExpectedTemp temp ON deliv.ExpectedTempId = temp.Id
+        JOIN Measurements.ExpectedHumid humid ON deliv.ExpectedHumidId = humid.Id
+        JOIN Logistics.Recipient rec ON deliv.RecipientId = rec.Id
+        JOIN Customers.Company recCom ON rec.CompanyId = recCom.Id
+        JOIN Logistics.Sender sen ON deliv.SenderId = sen.Id
+        JOIN Customers.Company senCom ON sen.CompanyId = senCom.Id
+        JOIN Logistics.Carrier carr ON deliv.CarrierId = carr.Id
+        JOIN Customers.Company carrCom ON carr.CompanyId = carrCom.Id;
+        */
+
         var result = await _sqlAdvanced.FetchWithJoinsAsync(
-            baseTable: "Orders.Delivery d",
+            baseTable: "Orders.Delivery deliv",
             selectClause: @"
-                d.Id, d.RouteId, d.ExpectedTempId, d.ExpectedHumidId, d.CarrierId,
-                d.SenderId, d.RecipientId, d.StateId, d.OrderPlaced",
+                deliv.Id, troute.Code, temp.Min, temp.Max, humid.Min,
+                humid.Max, carrCom.CompanyName, senCom.CompanyName, recCom.CompanyName, deliv.OrderPlaced",
             joins: new List<string>
             {
-                "FULL JOIN Logistics.Route r ON r.Id = d.RouteId",
-                "FULL JOIN Measurements.ExpectedTemp t ON t.Id = d.ExpectedTempId",
-                "FULL JOIN Measurements.ExpectedHumid h ON h.Id = d.ExpectedHumidId",
-                "FULL JOIN Logistics.Carrier c ON c.Id = d.CarrierId",
-                "FULL JOIN Customers.Sender s ON s.Id = d.SenderId",
-                "FULL JOIN Customers.Recipient rc ON rc.Id = d.RecipientId",
-                "FULL JOIN DeliveryState ds ON ds.Id = d.StateId"
+                "JOIN Logistics.TransportRoute troute ON deliv.RouteId = troute.Id",
+                "JOIN Measurements.ExpectedTemp temp ON deliv.ExpectedTempId = temp.Id",
+                "JOIN Measurements.ExpectedHumid humid ON deliv.ExpectedHumidId = humid.Id",
+                "JOIN Logistics.Recipient rec ON deliv.RecipientId = rec.Id",
+                "JOIN Customers.Company recCom ON rec.CompanyId = recCom.Id",
+                "JOIN Logistics.Sender sen ON deliv.SenderId = sen.Id",
+                "JOIN Customers.Company senCom ON sen.CompanyId = senCom.Id",
+                "JOIN Logistics.Carrier carr ON deliv.CarrierId = carr.Id",
+                "JOIN Customers.Company carrCom ON carr.CompanyId = carrCom.Id"
             },
             filters: filters,
             map: r => new DeliveryDto(
                 Id: Convert.ToInt32(r["Id"]),
-                RouteId: Convert.ToInt32(r["RouteId"]),
-                ExpectedTempId: Convert.ToInt32(r["ExpectedTempId"]),
-                ExpectedHumidId: Convert.ToInt32(r["ExpectedHumidId"]),
-                CarrierId: Convert.ToInt32(r["CarrierId"]),
-                SenderId: Convert.ToInt32(r["SenderId"]),
-                RecipientId: Convert.ToInt32(r["RecipientId"]),
-                StateId: Convert.ToInt32(r["StateId"]),
+                RouteId: Convert.ToString(r["RouteId"]),
+                ExpectedTempId: Convert.ToSingle(r["ExpectedTempId"]),
+                ExpectedHumidId: Convert.ToSingle(r["ExpectedHumidId"]),
+                minMaxTemp: Convert.ToSingle(r["minMaxTemp"]),
+                minMaxHumid: Convert.ToSingle(r["minMaxHumid"]),
+                CarrierId: Convert.ToString(r["CarrierId"]),
+                SenderId: Convert.ToString(r["SenderId"]),
+                RecipientId: Convert.ToString(r["RecipientId"]),
+                StateId: Convert.ToString(r["StateId"]),
                 OrderPlaced: Convert.ToDateTime(r["OrderPlaced"])
             )
+
+            /* DTO
+                    int Id,
+                    string RouteId,
+                    float ExpectedTempId,
+                    float ExpectedHumidId,
+                    float minMaxTemp,
+                    float minMaxHumid,
+                    string CarrierId,
+                    string SenderId,
+                    string RecipientId,
+                    string StateId,
+                    DateTime OrderPlaced
+        */
         );
 
         return result.Any() ? Ok(result) : NotFound("No delivery records found.");

@@ -19,6 +19,6 @@ done
 
 docker exec -i backend-app-1 /bin/sh -c "
   echo 'Fetching delivery data from API inside container...'
-  curl -s http://localhost:8080/DeliveryGet | jq .
+  curl -s http://localhost:8080/DeliveryGet
   echo 'Data retrieved.'
 "
