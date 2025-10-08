@@ -1,6 +1,6 @@
 namespace GpsApp.Model
 {
-    public class User
+    public class UserData
     {
         public int Id { get; set; }
         public string Username { get; set; }

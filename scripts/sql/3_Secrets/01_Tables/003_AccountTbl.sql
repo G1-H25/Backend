@@ -3,9 +3,9 @@ IF OBJECT_ID('Secrets.Account', 'U') IS NULL
         CREATE TABLE Secrets.Account
         (
             Id INT IDENTITY(1,1) PRIMARY KEY,
-            Username VARCHAR(100) NOT NULL UNIQUE,
-            Password VARCHAR(100) NOT NULL,
-            Role VARCHAR(50) NOT NULL DEFAULT 'User',
+            AccountUsername VARCHAR(100) NOT NULL UNIQUE,
+            AccountPassword VARCHAR(100) NOT NULL,
+            AccountRole VARCHAR(50) NOT NULL DEFAULT 'User',
             DateCreated DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
             Note VARCHAR(50)
         );
