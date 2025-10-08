@@ -46,7 +46,8 @@ jobs:
             -db LocalDatabase \
             -u sa \
             -p ${{ secrets.SA_PASSWORD }} \
-            -o /output
+            -o /output \
+            -debug
 
       - name: Upload docs
         uses: actions/upload-artifact@v4
