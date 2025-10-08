@@ -1,0 +1,49 @@
+name: buildDbDocs
+
+on:
+  push:
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: ${{ secrets.SA_PASSWORD }}
+        ports:
+          - 1433:1433
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Wait for SQL Server to be ready
+        run: |
+          sleep 30  # You can replace this with a real check if needed
+
+      - name: Run migrations or schema setup
+        run: |
+          # TODO: Add command to run your setup SQL files against the db
+
+      - name: Run SchemaSpy
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/dbdocs:/output \
+            -v ${{ github.workspace }}/drivers/sqljdbc.jar:/drivers/sqljdbc.jar \
+            schemaspy/schemaspy:latest \
+            -t mssql \
+            -dp /drivers/sqljdbc.jar \
+            -host sqlserver \
+            -port 1433 \
+            -db LocalDatabase \
+            -u sa \
+            -p ${{ secrets.SA_PASSWORD }} \
+            -o /output
+
+      - name: Upload docs
+        uses: actions/upload-artifact@v3
+        with:
+          name: schema-docs
+          path: dbdocs
