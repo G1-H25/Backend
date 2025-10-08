@@ -19,6 +19,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Download SQL Server JDBC driver
+        run: |
+            mkdir -p drivers
+            curl -L -o drivers/sqljdbc.jar https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/12.6.1.jre11/mssql-jdbc-12.6.1.jre11.jar
+
+
       - name: Wait for SQL Server to be ready
         run: |
           sleep 30  # You can replace this with a real check if needed
@@ -29,9 +35,9 @@ jobs:
 
       - name: Run SchemaSpy
         run: |
-          docker run --rm \
+            docker run --rm \
             -v ${{ github.workspace }}/dbdocs:/output \
-            -v ${{ github.workspace }}/drivers/sqljdbc.jar:/drivers/sqljdbc.jar \
+            -v ${{ github.workspace }}/drivers:/drivers \
             schemaspy/schemaspy:latest \
             -t mssql \
             -dp /drivers/sqljdbc.jar \
