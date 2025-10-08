@@ -9,13 +9,4 @@ IF OBJECT_ID('Secrets.Gateway', 'U') IS NULL
             FOREIGN KEY (CurrentLocationId) REFERENCES Secrets.LocationHistory(Id)
     )
 END
-
-DECLARE @UserId INT, @CurrentLocationId INT;
-SET @UserId = (SELECT Id FROM Secrets.Account WHERE AccountUserName = 'Admin');
-SET @CurrentLocationId = (SELECT Id FROM Secrets.LocationHistory WHERE PolledAt = '2025-10-04T14:30:00');
-
-BEGIN
-INSERT INTO Secrets.Gateway (UserId, CurrentLocationId)
-VALUES (@UserId, @CurrentLocationId)
-END
 GO

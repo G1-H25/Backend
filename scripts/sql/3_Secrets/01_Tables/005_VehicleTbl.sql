@@ -9,13 +9,4 @@ IF OBJECT_ID('Secrets.Vehicle', 'U') IS NULL
                 FOREIGN KEY (RegistrationId) REFERENCES Secrets.Registration(Id)
     )
 END
-
-DECLARE @GatewayId INT, @RegistrationId INT;
-SET @GatewayId = (SELECT Id FROM Secrets.Account WHERE AccountUserName = 'Admin');
-SET @RegistrationId = (SELECT Id FROM Secrets.Registration WHERE Plate = 'AAA111');
-
-BEGIN
-    INSERT INTO Secrets.Vehicle (GatewayId, RegistrationId)
-    VALUES (@GatewayId, @RegistrationId)
-END
 GO

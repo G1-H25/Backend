@@ -7,17 +7,4 @@ BEGIN
         Note VARCHAR(20)
     );
 END
-
-DECLARE @HistoryId INT;
-SET @HistoryId = (SELECT Id FROM Measurements.SensorHistory WHERE Id = 1);
-
-IF NOT EXISTS (
-    SELECT 1 
-    FROM Measurements.Sensor
-    WHERE Note = "TestSensor1"
-)
-BEGIN
-    INSERT INTO Measurements.Sensor(HistoryId, Note)
-    VALUES (@HistoryId, 'TestSensor1');
-END
 GO

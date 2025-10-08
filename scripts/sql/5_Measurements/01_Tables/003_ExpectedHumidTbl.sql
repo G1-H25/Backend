@@ -9,15 +9,3 @@ IF OBJECT_ID('Measurements.ExpectedHumid', 'U') IS NULL
     END
 GO
 
--- SEED DATA 
-IF
-    NOT EXISTS (
-        SELECT 1
-        FROM Measurements.ExpectedHumid
-        WHERE Note = 'Medicine'
-    )
-    BEGIN
-        INSERT INTO Measurements.ExpectedHumid (Note, Min, Max)
-        VALUES ('Medicine', 30, 50)
-    END
-GO
