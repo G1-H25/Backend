@@ -27,7 +27,7 @@ jobs:
 
       - name: Wait for SQL Server to be ready
         run: |
-          sleep 30  # You can replace this with a real check if needed
+          sleep 32  # You can replace this with a real check if needed
 
       - name: Run migrations or schema setup
         run: |
@@ -37,7 +37,7 @@ jobs:
         run: |
             docker run --rm \
             -v ${{ github.workspace }}/dbdocs:/output \
-            -v ${{ github.workspace }}/drivers:/drivers \
+            -v ${{ github.workspace }}/drivers/sqljdbc.jar:/drivers/sqljdbc.jar \
             schemaspy/schemaspy:latest \
             -t mssql \
             -dp /drivers/sqljdbc.jar \
@@ -47,6 +47,7 @@ jobs:
             -u sa \
             -p ${{ secrets.SA_PASSWORD }} \
             -o /output \
+            -connprops "url=jdbc:sqlserver://sqlserver:1433;databaseName=LocalDatabase" \
             -debug
 
       - name: Upload docs
