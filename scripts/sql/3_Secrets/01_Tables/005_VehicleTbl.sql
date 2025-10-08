@@ -11,7 +11,7 @@ IF OBJECT_ID('Secrets.Vehicle', 'U') IS NULL
 END
 
 DECLARE @GatewayId INT, @RegistrationId INT;
-SET @GatewayId = (SELECT Id FROM Secrets.Account WHERE UserName = 'Admin');
+SET @GatewayId = (SELECT Id FROM Secrets.Account WHERE AccountUserName = 'Admin');
 SET @RegistrationId = (SELECT Id FROM Secrets.Registration WHERE Plate = 'AAA111');
 
 BEGIN
