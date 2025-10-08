@@ -11,6 +11,7 @@ var connectionString = builder.Configuration.GetResolvedConnectionString("Defaul
 
 // Register services
 builder.Services
+    .AddCorsPolicy()
     .AddApplicationServices()
     .AddSwaggerDocumentation()
     .AddInfrastructureServices(connectionString)
