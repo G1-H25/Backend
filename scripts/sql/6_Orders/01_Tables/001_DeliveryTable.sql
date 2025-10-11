@@ -6,6 +6,8 @@ BEGIN
         Id INT IDENTITY (1,1) PRIMARY KEY,
         RouteId INT CONSTRAINT FK_Delivery_RouteId 
             FOREIGN KEY (RouteId) REFERENCES Logistics.TransportRoute(Id),
+        SensorId INT CONSTRAINT FK_Delivery_SensorId 
+            FOREIGN KEY (SensorId) REFERENCES Measurements.Sensor(Id),
         ExpectedTempId INT CONSTRAINT FK_Delivery_ExpTempId
             FOREIGN KEY (ExpectedTempId) REFERENCES Measurements.ExpectedTemp(Id),
         ExpectedHumidId INT CONSTRAINT FK_Delivery_ExpHumidId
@@ -20,11 +22,12 @@ BEGIN
     );
 END
 
-DECLARE @RecipientId INT, @SenderId INT, @CarrierId INT,  @Now DATETIME2 = SYSDATETIME();
+DECLARE @RecipientId INT, @SenderId INT, @CarrierId INT,  @Now DATETIME = SYSDATETIME();
 
 SET @CarrierId = (SELECT Id FROM Customers.Company WHERE CompanyName = 'Carrier Logistics AB');
 SET @SenderId = (SELECT Id FROM Customers.Company WHERE CompanyName = 'Sender Foods AB');
 SET @RecipientId = (SELECT Id FROM Customers.Company WHERE CompanyName = 'Recipient Pharma AB');
+
 
 IF NOT EXISTS (SELECT 1 FROM Logistics.Recipient WHERE CompanyId = @RecipientId)
 BEGIN
@@ -40,10 +43,9 @@ SET @SenderId = (SELECT Id FROM Logistics.Sender WHERE CompanyId = @SenderId);
 
 IF NOT EXISTS (SELECT 1 FROM Logistics.Carrier WHERE CompanyId = @CarrierId)
 BEGIN
-    -- NOTE: Carrier also needs VehicleId!
-    INSERT INTO Logistics.Carrier (CompanyId) VALUES (@CarrierId); -- replace with actual VehicleId
+    INSERT INTO Logistics.Carrier (CompanyId) VALUES (@CarrierId);
 END
 SET @CarrierId = (SELECT Id FROM Logistics.Carrier WHERE CompanyId = @CarrierId);
 
-INSERT INTO Orders.Delivery (RouteId, ExpectedTempId, ExpectedHumidId, RecipientId, SenderId, CarrierId, OrderPlaced)
-VALUES (1, 1, 1, @RecipientId, @SenderId, @CarrierId, @Now);
+INSERT INTO Orders.Delivery (RouteId, SensorId, ExpectedTempId, ExpectedHumidId, RecipientId, SenderId, CarrierId, OrderPlaced)
+VALUES (1, 1, 1, 1, @RecipientId, @SenderId, @CarrierId, @Now);
