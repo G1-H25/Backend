@@ -30,10 +30,12 @@ public interface IAuthorizationService
 public class AuthorizationService : IAuthorizationService
 {
     private readonly ISqlGet _getService;
+    private readonly SqlGetAdvanced _SqlGetAdvanced;
 
-    public AuthorizationService(ISqlGet getService)
+    public AuthorizationService(ISqlGet getService, SqlGetAdvanced sqlGetAdvanced)
     {
         _getService = getService;
+        _SqlGetAdvanced = sqlGetAdvanced;
     }
 
     /// <inheritdoc/>
@@ -65,22 +67,31 @@ public class AuthorizationService : IAuthorizationService
 
     public async Task<bool> HasAccessToDevice(int userId, string role, int companyId, int gatewayId)
     {
+        var baseTable = "Secrets.Gateway g";
+        var selectClause = "g.UserId AS OwnerId, a.CompanyId";
+        var joins = new List<string>
+        {
+            "JOIN Secrets.Account a ON a.Id = g.UserId"
+        };
         var filters = new Dictionary<string, object>
         {
-            { "Id", gatewayId }
+            { "g.Id", gatewayId }
         };
 
-        var result = await _getService.FetchAsync(
-            tableName: "Secrets.Gateway",
-            filters: filters,
-            columns: new[] { "OwnerId", "CompanyId" }
+        var results = await _SqlGetAdvanced.FetchWithJoinsAsync<Dictionary<string, object>>(
+            baseTable,
+            selectClause,
+            joins,
+            filters
         );
 
-        if (result == null)
-            return false; // Device not found
 
-        var ownerId = Convert.ToInt32(result["OwnerId"]);
-        var deviceCompanyId = Convert.ToInt32(result["CompanyId"]);
+        if (results.Count == 0)
+            return false; // no device found
+
+
+        var ownerId = Convert.ToInt32(results[0]["OwnerId"]);
+        var deviceCompanyId = Convert.ToInt32(results[0]["CompanyId"]);
 
         // Scenario 1: User owns the devic
         if (ownerId == userId)
