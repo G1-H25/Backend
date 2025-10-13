@@ -8,7 +8,7 @@ echo "Fetching delivery data from API via localhost..."
 
 delivery_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" \
   -H "Authorization: Bearer $TOKEN" \
-  http://localhost:5000/DeliveryGet)
+  http://localhost:5000/DeliveryGet?id=1)
 
 echo "Delivery data response:"
 echo "$delivery_response"
