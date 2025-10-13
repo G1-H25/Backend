@@ -20,14 +20,14 @@ public class DeliveryGetController : ControllerBase
     }
 
     [HttpGet]
-    // [Authorize]
+    [Authorize]
     public async Task<IActionResult> GetDelivery([FromQuery] int? id)
     {
-        /*
+        
         var userId = await _authService.GetUserIdFromClaims(User);
         if (userId == null)
         return Unauthorized("User ID not found in token.");
-        */
+        
 
         var filters = new Dictionary<string, object>();
         if (id.HasValue)
