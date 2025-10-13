@@ -6,6 +6,8 @@ BEGIN
         Id INT IDENTITY (1,1) PRIMARY KEY,
         RouteId INT CONSTRAINT FK_Delivery_RouteId 
             FOREIGN KEY (RouteId) REFERENCES Logistics.TransportRoute(Id),
+        SensorId INT CONSTRAINT FK_Delivery_SensorId
+            FOREIGN KEY (SensorId) REFERENCES Measurements.Sensor(Id),
         ExpectedTempId INT CONSTRAINT FK_Delivery_ExpTempId
             FOREIGN KEY (ExpectedTempId) REFERENCES Measurements.ExpectedTemp(Id),
         ExpectedHumidId INT CONSTRAINT FK_Delivery_ExpHumidId
