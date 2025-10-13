@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 
 
-
+/*
 [ApiController]
 [Route("[controller]")]
 public class GpsController : ControllerBase
@@ -53,3 +53,4 @@ public class GpsController : ControllerBase
     }
 }
 
+*/

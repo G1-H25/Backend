@@ -3,9 +3,9 @@ using GpsApp.Model;
 
 public class GetUser
 {
-    private readonly SqlGet _getService;
+    private readonly ISqlGet _getService;
 
-    public GetUser(SqlGet getService)
+    public GetUser(ISqlGet getService)
     {
         _getService = getService;
     }

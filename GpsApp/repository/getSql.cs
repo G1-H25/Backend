@@ -4,7 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-public class SqlGet
+public interface ISqlGet
+{
+    Task<Dictionary<string, object>?> FetchAsync(
+    string tableName,
+    Dictionary<string, object> filters,
+    IEnumerable<string>? columns = null);
+}
+
+
+public class SqlGet : ISqlGet
 {
     private readonly string _connectionString;
 

@@ -15,16 +15,23 @@ public interface IAuthorizationService
     /// Verifies if the specified user owns the device with the given device ID.
     /// </summary>
     /// <param name="userId">The ID of the user.</param>
-    /// <param name="deviceId">The device ID to verify ownership for.</param>
+    /// <param name="gatewayId">The device ID to verify ownership for.</param>
     /// <returns>True if the user owns the device; otherwise, false.</returns>
-    Task<bool> VerifyDeviceOwnership(int userId, string deviceId);
+    Task<bool> VerifyDeviceOwnership(int userId, int gatewayId);
+
+
+    Task<int?> GetCompanyIdFromClaims(ClaimsPrincipal user);
+
+    Task<bool> HasAccessToDevice(int userId, string role, int companyId, int gatewayId);
+
+    Task<bool> UserCanAccessDevice(ClaimsPrincipal user, int gatewayId);
 }
 
 public class AuthorizationService : IAuthorizationService
 {
-    private readonly SqlGet _getService;
+    private readonly ISqlGet _getService;
 
-    public AuthorizationService(SqlGet getService)
+    public AuthorizationService(ISqlGet getService)
     {
         _getService = getService;
     }
@@ -38,13 +45,66 @@ public class AuthorizationService : IAuthorizationService
         return Task.FromResult<int?>(userId);
     }
 
-    /// <inheritdoc/>
-    public async Task<bool> VerifyDeviceOwnership(int userId, string deviceId)
+    public Task<int?> GetCompanyIdFromClaims(ClaimsPrincipal user)
     {
-        var ownership = await _getService.FetchAsync("Secrets.Gateway", new Dictionary<string, object> { { "Id", deviceId } });
+        var companyIdClaim = user.FindFirst("companyId");
+        if (companyIdClaim == null || !int.TryParse(companyIdClaim.Value, out var companyId))
+            return Task.FromResult<int?>(null);
+        return Task.FromResult<int?>(companyId);
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> VerifyDeviceOwnership(int userId, int gatewayId)
+    {
+        var ownership = await _getService.FetchAsync("Secrets.Gateway", new Dictionary<string, object> { { "Id", gatewayId } });
         if (ownership == null) return false;
 
         var deviceOwnerId = Convert.ToInt32(ownership["UserId"]);
         return deviceOwnerId == userId;
     }
+
+    public async Task<bool> HasAccessToDevice(int userId, string role, int companyId, int gatewayId)
+    {
+        var filters = new Dictionary<string, object>
+        {
+            { "Id", gatewayId }
+        };
+
+        var result = await _getService.FetchAsync(
+            tableName: "Secrets.Gateway",
+            filters: filters,
+            columns: new[] { "OwnerId", "CompanyId" }
+        );
+
+        if (result == null)
+            return false; // Device not found
+
+        var ownerId = Convert.ToInt32(result["OwnerId"]);
+        var deviceCompanyId = Convert.ToInt32(result["CompanyId"]);
+
+        // Scenario 1: User owns the devic
+        if (ownerId == userId)
+            return true;
+
+        // Scenario 2: Admin in same company
+        if (role == "Admin" && companyId == deviceCompanyId)
+            return true;
+        // No access
+        return false;
+    }
+
+    public async Task<bool> UserCanAccessDevice(ClaimsPrincipal user, int gatewayId)
+    {
+        var userId = await GetUserIdFromClaims(user);
+        var companyId = await GetCompanyIdFromClaims(user);
+        var role = user.FindFirst(ClaimTypes.Role)?.Value;
+
+        if (userId == null || companyId == null || string.IsNullOrEmpty(role))
+            return false;
+
+        return await HasAccessToDevice(userId.Value, role, companyId.Value, gatewayId);
+    }
+
+
+
 }

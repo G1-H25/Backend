@@ -1,4 +1,3 @@
-/*
 using Microsoft.AspNetCore.Mvc;
 using GpsApp.DTO;
 
@@ -16,38 +15,37 @@ public class CompanyController : ControllerBase
         _insertService = insertService;
     }
 
-    // curently requires postaddress to be sent in with the request, which may not be ideal since it is a foreign key
-
     [HttpPost("register")]
     public async Task<IActionResult> RegisterCompany([FromBody] CompanyRegistrationRequest data)
     {
-        if (string.IsNullOrWhiteSpace(data.CompanyName))
-            return BadRequest("CompanyName is required.");
+        if (string.IsNullOrWhiteSpace(data.CompanyName) || string.IsNullOrWhiteSpace(data.Email))
+            return BadRequest("CompanyName and Email are required.");
 
-        if (string.IsNullOrWhiteSpace(data.Email))
-            return BadRequest("Email is required.");
+        // 1. Insert address first
+        var addressValues = new Dictionary<string, object>
+        {
+            { "Street", data.Address.Street },
+            { "StreetNumber", data.Address.StreetNumber },
+            { "ZipCode", data.Address.PostalCode },  
+            { "Locality", data.Address.City },       
+            { "Country", data.Address.Country }
+        };
 
-        if (string.IsNullOrWhiteSpace(data.Street))
-            return BadRequest("Street is required.");
 
-        if (data.StreetNumber <= 0)
-            return BadRequest("StreetNumber must be a positive integer.");
+        int postAddressId = await _insertService.InsertAndReturnIdAsync("Customers.PostAddress", addressValues);
 
-        // Optional: you could validate ContactId and PostAddressId against the database here
-
-        var values = new Dictionary<string, object>
+        // 2. Insert company
+        var companyValues = new Dictionary<string, object>
         {
             { "CompanyName", data.CompanyName },
             { "Email", data.Email },
-            { "Street", data.Street },
-            { "StreetNumber", data.StreetNumber },
             { "ContactId", data.ContactId },
-            { "PostAddressId", data.PostAddressId }
+            { "PostAddressId", postAddressId }
         };
 
-        await _insertService.InsertAsync("Customers.Company", values);
+        int companyId = await _insertService.InsertAndReturnIdAsync("Customers.Company", companyValues);
 
-        return Ok("Company inserted.");
+        // Return JSON response with companyId
+        return Ok(new { message = "Company inserted.", companyId });
     }
 }
-*/

@@ -32,11 +32,11 @@ public class LoginController : ControllerBase
         if (user == null || user.Password != request.Password)
             return Unauthorized("Invalid credentials");
 
-        var token = GenerateJwtToken(user.Username, user.Role, user.Id);
+        var token = GenerateJwtToken(user.Username, user.Role, user.Id, user.CompanyId);
         return Ok(new { token });
     }
 
-    private string GenerateJwtToken(string username, string role, int userID)
+    private string GenerateJwtToken(string username, string role, int userID, int companyId)
     {
         var issuer = _config.GetResolvedIssuer();
         var audience = _config.GetResolvedAudience();
@@ -51,6 +51,7 @@ public class LoginController : ControllerBase
             new Claim(ClaimTypes.Name, username),
             new Claim(ClaimTypes.Role, role),
             new Claim("userId", userID.ToString()),
+            new Claim("companyId", companyId.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

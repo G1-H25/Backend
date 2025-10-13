@@ -7,7 +7,10 @@ IF OBJECT_ID('Secrets.Account', 'U') IS NULL
             AccountPassword VARCHAR(100) NOT NULL,
             AccountRole VARCHAR(50) NOT NULL DEFAULT 'User',
             DateCreated DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-            Note VARCHAR(50)
+            Note VARCHAR(50),
+            CompanyId INT NULL,
+            CONSTRAINT FK_Account_Company FOREIGN KEY (CompanyId)
+                REFERENCES Customers.Company(Id)
         );
     END
 GO

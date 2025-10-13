@@ -1,14 +1,45 @@
 #!/bin/sh
 set -e
 
+echo "Registering company..."
+
+COMPANY_NAME="TestCompany_$(date +%s)"
+
+company_response=$(curl -v -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/company/register \
+  -H "Content-Type: application/json" \
+  -d "{\"companyName\":\"$COMPANY_NAME\"}")
+
+echo "Company registration response:"
+echo "$company_response"
+
+company_status=$(echo "$company_response" | tail -n1 | awk '{print $3}')
+
+if [ "$company_status" != "200" ]; then
+  echo "ERROR: Company registration failed with status $company_status"
+  exit 1
+fi
+
+COMPANY_ID=$(echo "$company_response" | sed -n 's/.*"companyId":"\([^"]*\)".*/\1/p')
+
+if [ -z "$COMPANY_ID" ] || [ "$COMPANY_ID" = "null" ]; then
+  echo "ERROR: Failed to extract company ID from response"
+  exit 1
+fi
+
+echo "Company ID: $COMPANY_ID"
+
 USERNAME="testuser_$(date +%s)"
 PASSWORD="testpass123"
 
 echo "Signing up with username: $USERNAME"
 
-signup_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/signup/signup \
+signup_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/signup \
   -H "Content-Type: application/json" \
-  -d "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}")
+  -d "{
+        \"username\":\"$USERNAME\",
+        \"password\":\"$PASSWORD\",
+        \"companyId\":\"$COMPANY_ID\"
+      }")
 
 echo "Signup response:"
 echo "$signup_response"

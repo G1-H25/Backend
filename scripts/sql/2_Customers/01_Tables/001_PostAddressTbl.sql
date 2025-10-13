@@ -4,7 +4,9 @@ BEGIN
         Id INT IDENTITY (1,1) PRIMARY KEY,
         ZipCode VARCHAR(8) NOT NULL,
         Locality VARCHAR(30) NOT NULL,
-        Country VARCHAR(30)
+        Country VARCHAR(30),
+        Street NVARCHAR(40) NOT NULL,
+        StreetNumber INT NOT NULL
     );
 END
 GO

@@ -6,6 +6,7 @@ namespace GpsApp.Model
         public string Username { get; set; }
         public string Password { get; set; }
         public string Role { get; set; }
+        public int CompanyId { get; set; }
         public DateTime DateCreated { get; set; }
     }
 }
