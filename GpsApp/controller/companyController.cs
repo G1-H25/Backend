@@ -39,7 +39,6 @@ public class CompanyController : ControllerBase
         {
             { "CompanyName", data.CompanyName },
             { "Email", data.Email },
-            { "ContactId", data.ContactId },
             { "PostAddressId", postAddressId }
         };
 

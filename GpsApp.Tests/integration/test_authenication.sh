@@ -10,7 +10,6 @@ company_response=$(curl -v -s -w "\nHTTP Status: %{http_code}\n" -X POST http://
   -d "{
         \"companyName\": \"$COMPANY_NAME\",
         \"email\": \"test@example.com\",
-        \"contactId\": 123,
         \"address\": {
           \"street\": \"123 Test St\",
           \"streetNumber\": 10,
