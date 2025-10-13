@@ -39,7 +39,7 @@ public class SqlGetAdvanced
         // 3. Append WHERE clause if filters are provided
         if (filters != null && filters.Any())
         {
-            var whereClause = string.Join(" AND ", filters.Keys.Select(k => $"{k} = @{k}"));
+            var whereClause = string.Join(" AND ", filters.Select(kvp => $"g.{kvp.Key} = @{kvp.Key}"));
             sql += $" WHERE {whereClause}";
         }
 
