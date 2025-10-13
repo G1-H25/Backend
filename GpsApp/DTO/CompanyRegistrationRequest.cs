@@ -1,4 +1,3 @@
-using GpsApp.DTO;
 // CompanyRegistrationRequest.cs
 
 namespace GpsApp.DTO

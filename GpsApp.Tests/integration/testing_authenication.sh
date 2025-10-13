@@ -131,40 +131,26 @@ fi
 
 echo "Device ID: $DEVICEID"
 
-echo "Posting GPS data..."
+echo "Posting sensor data..."
 
-post_gps_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:8080/Gps \
+sensor_post_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:8080/Sensor \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
   -d "{
-    \"DeviceId\": \"$DEVICEID\",
-    \"Latitude\": 51.509865,
-    \"Longitude\": -0.118092,
-    \"Timestamp\": \"2025-09-08T12:00:00Z\"
-  }")
+        \"gatewayId\": $DEVICEID,
+        \"temperatureCel\": 22.5,
+        \"humdityPct\": 55.2
+      }")
 
-echo "Post GPS response:"
-echo "$post_gps_response"
+echo "Sensor post response:"
+echo "$sensor_post_response"
 
-post_gps_status=$(echo "$post_gps_response" | tail -n1 | awk '{print $3}')
+sensor_post_status=$(echo "$sensor_post_response" | tail -n1 | awk '{print $3}')
 
-if [ "$post_gps_status" != "200" ]; then
-  echo "ERROR: Posting GPS data failed with status $post_gps_status"
+if [ "$sensor_post_status" != "200" ]; then
+  echo "ERROR: Posting sensor data failed with status $sensor_post_status"
   exit 1
 fi
 
-echo "Fetching GPS data..."
-
-fetch_gps_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X GET "http://localhost:8080/GpsGet?DeviceId=$DEVICEID" \
-  -H "Authorization: Bearer $TOKEN")
-
-echo "Fetch GPS response:"
-echo "$fetch_gps_response"
-
-fetch_gps_status=$(echo "$fetch_gps_response" | tail -n1 | awk '{print $3}')
-
-if [ "$fetch_gps_status" != "200" ]; then
-  echo "ERROR: Fetching GPS data failed with status $fetch_gps_status"
-  exit 1
-fi
 
 echo "$TOKEN"
