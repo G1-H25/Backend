@@ -56,7 +56,7 @@ public class SensorController : ControllerBase
             { "HumdityPct", data.HumdityPct }
         };
 
-        await _insertService.InsertAsync("Measurements.GpsData", dataDict);
+        await _insertService.InsertAsync("Measurements.Sensor", dataDict);
 
         return Ok("Inserted");
     }
