@@ -75,7 +75,7 @@ public class AuthorizationService : IAuthorizationService
         };
         var filters = new Dictionary<string, object>
         {
-            { "Id", gatewayId }
+            { "g.Id", gatewayId }
         };
 
         var results = await _SqlGetAdvanced.FetchWithJoinsAsync<Dictionary<string, object>>(
