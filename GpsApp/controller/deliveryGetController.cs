@@ -10,10 +10,10 @@ using System.ComponentModel.Design;
 [Route("[controller]")]
 public class DeliveryGetController : ControllerBase
 {
-    private readonly SqlGetAdvanced _sqlAdvanced;
+    private readonly ISqlGetAdvanced _sqlAdvanced;
     private readonly IAuthorizationService _authService;
 
-    public DeliveryGetController(SqlGetAdvanced sqlAdvanced, IAuthorizationService authService)
+    public DeliveryGetController(ISqlGetAdvanced sqlAdvanced, IAuthorizationService authService)
     {
         _sqlAdvanced = sqlAdvanced;
         _authService = authService;

@@ -30,9 +30,9 @@ public interface IAuthorizationService
 public class AuthorizationService : IAuthorizationService
 {
     private readonly ISqlGet _getService;
-    private readonly SqlGetAdvanced _SqlGetAdvanced;
+    private readonly ISqlGetAdvanced _SqlGetAdvanced;
 
-    public AuthorizationService(ISqlGet getService, SqlGetAdvanced sqlGetAdvanced)
+    public AuthorizationService(ISqlGet getService, ISqlGetAdvanced sqlGetAdvanced)
     {
         _getService = getService;
         _SqlGetAdvanced = sqlGetAdvanced;

@@ -1,7 +1,18 @@
 using Microsoft.Data.SqlClient;
 using System.Data;
 
-public class SqlGetAdvanced
+public interface ISqlGetAdvanced
+{
+Task<List<T>> FetchWithJoinsAsync<T>(
+    string baseTable,
+    string selectClause,
+    List<string> joins,
+    Dictionary<string, object>? filters = null,
+    Func<IDataRecord, T>? map = null);
+}
+
+
+public class SqlGetAdvanced : ISqlGetAdvanced
 {
     private readonly string _connectionString;
 
