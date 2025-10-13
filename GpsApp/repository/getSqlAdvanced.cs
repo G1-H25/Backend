@@ -50,9 +50,12 @@ public class SqlGetAdvanced : ISqlGetAdvanced
         // 3. Append WHERE clause if filters are provided
         if (filters != null && filters.Any())
         {
-            var whereClause = string.Join(" AND ", filters.Select(kvp => $"g.{kvp.Key} = @{kvp.Key}"));
+            var whereClause = string.Join(" AND ", filters.Select(kvp =>
+                $"{kvp.Key} = @{kvp.Key.Replace(".", "_")}"
+            ));
             sql += $" WHERE {whereClause}";
         }
+
 
         await using var conn = new SqlConnection(_connectionString);
         await using var cmd = new SqlCommand(sql, conn);
@@ -62,9 +65,11 @@ public class SqlGetAdvanced : ISqlGetAdvanced
         {
             foreach (var (key, value) in filters)
             {
-                cmd.Parameters.AddWithValue("@" + key, value ?? DBNull.Value);
+                var paramName = key.Replace(".", "_");
+                cmd.Parameters.AddWithValue("@" + paramName, value ?? DBNull.Value);
             }
         }
+
 
         await conn.OpenAsync();
         await using var reader = await cmd.ExecuteReaderAsync();
