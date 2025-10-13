@@ -2,6 +2,7 @@
 set -e
 
 TOKEN=$1
+echo "Using token in orders route test: $TOKEN"
 
 echo "Fetching delivery data from API inside container..."
 

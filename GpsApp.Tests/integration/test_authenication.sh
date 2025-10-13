@@ -152,4 +152,4 @@ if [ "$sensor_post_status" != "200" ]; then
 fi
 
 
-echo "$TOKEN"
+echo "Token received: $TOKEN"
