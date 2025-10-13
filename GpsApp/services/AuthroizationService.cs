@@ -34,8 +34,8 @@ public class AuthorizationService : IAuthorizationService
 
     public AuthorizationService(ISqlGet getService, ISqlGetAdvanced sqlGetAdvanced)
     {
-        _getService = getService;
-        _SqlGetAdvanced = sqlGetAdvanced;
+        _getService = getService ?? throw new ArgumentNullException(nameof(getService));
+        _SqlGetAdvanced = sqlGetAdvanced ?? throw new ArgumentNullException(nameof(sqlGetAdvanced));
     }
 
     /// <inheritdoc/>
@@ -86,8 +86,8 @@ public class AuthorizationService : IAuthorizationService
         );
 
 
-        if (results.Count == 0)
-            return false; // no device found
+        if (results == null || results.Count == 0)
+            return false;
 
 
         var ownerId = Convert.ToInt32(results[0]["OwnerId"]);

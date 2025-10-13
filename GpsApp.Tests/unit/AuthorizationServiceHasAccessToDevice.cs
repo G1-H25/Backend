@@ -7,17 +7,23 @@ using System.Data;
 public class AuthorizationServiceTests
 {
     private AuthorizationService CreateServiceWithMocks(
-        Dictionary<string, object>? mockResult)
+        List<Dictionary<string, object>>? mockAdvancedResult)
     {
         var mockSqlGet = new Mock<ISqlGet>();
         mockSqlGet.Setup(x => x.FetchAsync(
             It.IsAny<string>(),
             It.IsAny<Dictionary<string, object>>(),
             It.IsAny<IEnumerable<string>?>()))
-        .ReturnsAsync(mockResult);
+        .ReturnsAsync((Dictionary<string, object>?)null); // You can adjust if needed
 
         var mockSqlGetAdvanced = new Mock<ISqlGetAdvanced>();
-        // Optionally: setup FetchWithJoinsAsync if your test calls it
+        mockSqlGetAdvanced.Setup(x => x.FetchWithJoinsAsync<Dictionary<string, object>>(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<List<string>>(),
+                It.IsAny<Dictionary<string, object>>(),
+                null))
+            .ReturnsAsync(mockAdvancedResult ?? new List<Dictionary<string, object>>());
 
         return new AuthorizationService(mockSqlGet.Object, mockSqlGetAdvanced.Object);
     }
