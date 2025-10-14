@@ -1,3 +1,4 @@
+/*
 CREATE OR ALTER PROCEDURE Measurements.UpdateHumidTimeOutside
 AS
 BEGIN
@@ -27,3 +28,4 @@ BEGIN
     PRINT 'Procedure finished.';
 END
 GO
+*/
