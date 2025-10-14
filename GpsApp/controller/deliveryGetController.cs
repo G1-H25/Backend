@@ -16,7 +16,7 @@ public class DeliveryGetController : ControllerBase
     public DeliveryGetController(ISqlGetAdvanced sqlAdvanced, IAuthorizationService authService)
     {
         _sqlAdvanced = sqlAdvanced;
-        _authService = authService;
+        // _authService = authService;
     }
 
     [HttpGet]
