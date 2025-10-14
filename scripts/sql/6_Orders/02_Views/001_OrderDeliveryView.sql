@@ -1,3 +1,4 @@
+/*
 CREATE VIEW Orders.DeliveryDetailsView
 AS
     SELECT
@@ -30,3 +31,4 @@ AS
         JOIN Logistics.Carrier carr ON deliv.CarrierId = carr.Id
         JOIN Customers.Company carrCom ON carr.CompanyId = carrCom.Id;
 GO
+*/
