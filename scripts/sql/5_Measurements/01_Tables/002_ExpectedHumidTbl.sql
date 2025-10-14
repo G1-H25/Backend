@@ -18,6 +18,6 @@ IF
     )
     BEGIN
         INSERT INTO Measurements.ExpectedHumid (Note, Min, Max)
-        VALUES ('Medicine', 30, 50)
+        VALUES ('Medicine', 30, 70)
     END
 GO
