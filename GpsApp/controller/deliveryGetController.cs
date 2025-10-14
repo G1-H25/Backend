@@ -22,7 +22,7 @@ public class DeliveryGetController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetDelivery([FromQuery] int? id)
     {
-        
+
 
         var filters = new Dictionary<string, object>();
         if (id.HasValue)

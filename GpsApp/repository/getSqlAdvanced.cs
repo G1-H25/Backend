@@ -3,12 +3,12 @@ using System.Data;
 
 public interface ISqlGetAdvanced
 {
-Task<List<T>> FetchWithJoinsAsync<T>(
-    string baseTable,
-    string selectClause,
-    List<string> joins,
-    Dictionary<string, object>? filters = null,
-    Func<IDataRecord, T>? map = null);
+    Task<List<T>> FetchWithJoinsAsync<T>(
+        string baseTable,
+        string selectClause,
+        List<string> joins,
+        Dictionary<string, object>? filters = null,
+        Func<IDataRecord, T>? map = null);
 }
 
 

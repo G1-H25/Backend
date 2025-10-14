@@ -44,7 +44,7 @@ public class SensorController : ControllerBase
         }
         if (data.TemperatureCel == null)
             return BadRequest("TemperatureCel must be provided");
-        
+
         if (data.HumdityPct == null)
             return BadRequest("HumdityPct must be provided");
 

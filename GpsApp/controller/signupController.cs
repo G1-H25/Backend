@@ -31,7 +31,7 @@ public class SignupController : ControllerBase
         var data = new Dictionary<string, object>
         {
             ["AccountUsername"] = request.Username,
-            ["AccountPassword"] = request.Password, 
+            ["AccountPassword"] = request.Password,
             ["AccountRole"] = request.Role,
             ["CompanyId"] = request.CompanyId,
             ["DateCreated"] = DateTime.UtcNow

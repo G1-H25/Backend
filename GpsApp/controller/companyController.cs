@@ -26,8 +26,8 @@ public class CompanyController : ControllerBase
         {
             { "Street", data.Address.Street },
             { "StreetNumber", data.Address.StreetNumber },
-            { "ZipCode", data.Address.PostalCode },  
-            { "Locality", data.Address.City },       
+            { "ZipCode", data.Address.PostalCode },
+            { "Locality", data.Address.City },
             { "Country", data.Address.Country }
         };
 
