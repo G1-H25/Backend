@@ -1,3 +1,4 @@
+/*
 CREATE OR ALTER PROCEDURE Measurements.UpdateHumidTimeOutside
 AS
 BEGIN
@@ -11,7 +12,7 @@ BEGIN
     JOIN Measurements.ExpectedHumid humid ON humid.Id = sens.Id
     WHERE sens.CurrentHumid NOT BETWEEN humid.Min AND humid.Max;
 
-    PRINT CONCAT('Step 1 done. Rows affected: ', @@ROWCOUNT);
+   PRINT CONCAT('Step 1 done. Rows affected: ', @@ROWCOUNT);
 
     UPDATE sens
     SET 
@@ -27,3 +28,4 @@ BEGIN
     PRINT 'Procedure finished.';
 END
 GO
+*/

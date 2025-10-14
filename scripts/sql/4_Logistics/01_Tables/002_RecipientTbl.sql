@@ -6,3 +6,4 @@ IF OBJECT_ID('Logistics.Recipient', 'U') IS NULL
                 FOREIGN KEY (CompanyId) REFERENCES Customers.Company(Id)
         )
     END
+GO
