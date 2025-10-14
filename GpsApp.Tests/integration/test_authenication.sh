@@ -1,14 +1,58 @@
 #!/bin/sh
 set -e
 
+echo "Registering company..."
+
+COMPANY_NAME="TestCompany_$(date +%s)"
+
+company_response=$(curl -v -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/company/register \
+  -H "Content-Type: application/json" \
+  -d "{
+        \"companyName\": \"$COMPANY_NAME\",
+        \"email\": \"test@example.com\",
+        \"address\": {
+          \"street\": \"123 Test St\",
+          \"streetNumber\": 10,
+          \"postalCode\": \"12345\",
+          \"city\": \"Testville\",
+          \"country\": \"Testland\"
+        }
+      }")
+
+
+
+echo "Company registration response:"
+echo "$company_response"
+
+company_status=$(echo "$company_response" | tail -n1 | awk '{print $3}')
+
+if [ "$company_status" != "200" ]; then
+  echo "ERROR: Company registration failed with status $company_status"
+  exit 1
+fi
+
+COMPANY_ID=$(echo "$company_response" | sed -n 's/.*"companyId":\([^,}]*\).*/\1/p')
+
+if [ -z "$COMPANY_ID" ] || [ "$COMPANY_ID" = "null" ]; then
+  echo "ERROR: Failed to extract company ID from response"
+  exit 1
+fi
+
+echo "Company ID: $COMPANY_ID"
+
 USERNAME="testuser_$(date +%s)"
 PASSWORD="testpass123"
 
 echo "Signing up with username: $USERNAME"
 
-signup_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/signup/signup \
+signup_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/signup \
   -H "Content-Type: application/json" \
-  -d "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}")
+  -d "{
+        \"username\":\"$USERNAME\",
+        \"password\":\"$PASSWORD\",
+        \"companyId\":\"$COMPANY_ID\",
+        \"role\":\"User\"  
+      }")
 
 echo "Signup response:"
 echo "$signup_response"
@@ -86,40 +130,26 @@ fi
 
 echo "Device ID: $DEVICEID"
 
-echo "Posting GPS data..."
+echo "Posting sensor data..."
 
-post_gps_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/Gps \
+sensor_post_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/Sensor \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
   -d "{
-    \"DeviceId\": \"$DEVICEID\",
-    \"Latitude\": 51.509865,
-    \"Longitude\": -0.118092,
-    \"Timestamp\": \"2025-09-08T12:00:00Z\"
-  }")
+        \"gatewayId\": $DEVICEID,
+        \"temperatureCel\": 22.5,
+        \"humdityPct\": 55.2
+      }")
 
-echo "Post GPS response:"
-echo "$post_gps_response"
+echo "Sensor post response:"
+echo "$sensor_post_response"
 
-post_gps_status=$(echo "$post_gps_response" | tail -n1 | awk '{print $3}')
+sensor_post_status=$(echo "$sensor_post_response" | tail -n1 | awk '{print $3}')
 
-if [ "$post_gps_status" != "200" ]; then
-  echo "ERROR: Posting GPS data failed with status $post_gps_status"
+if [ "$sensor_post_status" != "200" ]; then
+  echo "ERROR: Posting sensor data failed with status $sensor_post_status"
   exit 1
 fi
 
-echo "Fetching GPS data..."
 
-fetch_gps_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X GET "http://localhost:5000/GpsGet?DeviceId=$DEVICEID" \
-  -H "Authorization: Bearer $TOKEN")
-
-echo "Fetch GPS response:"
-echo "$fetch_gps_response"
-
-fetch_gps_status=$(echo "$fetch_gps_response" | tail -n1 | awk '{print $3}')
-
-if [ "$fetch_gps_status" != "200" ]; then
-  echo "ERROR: Fetching GPS data failed with status $fetch_gps_status"
-  exit 1
-fi
-
-echo "$TOKEN"
+echo "Token received: $TOKEN"

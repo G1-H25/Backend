@@ -1,2 +1,2 @@
 Use command
--    dotnet test GpsApp.Tests
+-    dotnet test GpsApp.Tests/unit

@@ -23,6 +23,8 @@ namespace GpsApp.Middleware
             app.UseHttpsRedirection();
             app.UseRouting();
 
+            app.UseCors("AllowFrontend");
+
             app.UseAuthentication();
             app.UseAuthorization();
 

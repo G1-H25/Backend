@@ -8,9 +8,9 @@ using Microsoft.Data.SqlClient;
 public class GatewayController : ControllerBase
 {
     private readonly SqlInsert _insertService;
-    private readonly SqlGet _getService; // Added for checking ownership
+    private readonly ISqlGet _getService; // Added for checking ownership
 
-    public GatewayController(SqlInsert insertService, SqlGet getService)
+    public GatewayController(SqlInsert insertService, ISqlGet getService)
     {
         _insertService = insertService;
         _getService = getService;

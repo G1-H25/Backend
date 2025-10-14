@@ -1,7 +1,18 @@
 using Microsoft.Data.SqlClient;
 using System.Data;
 
-public class SqlGetAdvanced
+public interface ISqlGetAdvanced
+{
+    Task<List<T>> FetchWithJoinsAsync<T>(
+        string baseTable,
+        string selectClause,
+        List<string> joins,
+        Dictionary<string, object>? filters = null,
+        Func<IDataRecord, T>? map = null);
+}
+
+
+public class SqlGetAdvanced : ISqlGetAdvanced
 {
     private readonly string _connectionString;
 
@@ -39,9 +50,12 @@ public class SqlGetAdvanced
         // 3. Append WHERE clause if filters are provided
         if (filters != null && filters.Any())
         {
-            var whereClause = string.Join(" AND ", filters.Keys.Select(k => $"{k} = @{k}"));
+            var whereClause = string.Join(" AND ", filters.Select(kvp =>
+                $"{kvp.Key} = @{kvp.Key.Replace(".", "_")}"
+            ));
             sql += $" WHERE {whereClause}";
         }
+
 
         await using var conn = new SqlConnection(_connectionString);
         await using var cmd = new SqlCommand(sql, conn);
@@ -51,9 +65,11 @@ public class SqlGetAdvanced
         {
             foreach (var (key, value) in filters)
             {
-                cmd.Parameters.AddWithValue("@" + key, value ?? DBNull.Value);
+                var paramName = key.Replace(".", "_");
+                cmd.Parameters.AddWithValue("@" + paramName, value ?? DBNull.Value);
             }
         }
+
 
         await conn.OpenAsync();
         await using var reader = await cmd.ExecuteReaderAsync();

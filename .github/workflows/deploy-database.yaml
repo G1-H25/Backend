@@ -30,22 +30,15 @@ jobs:
           AZURE_SQL_PASSWORD: ${{ secrets.AZURE_SQL_PASSWORD }}
           AZURE_SQL_DB: ${{ secrets.AZURE_SQL_DB }}
         run: |
+          set -e  # Fail if any command fails
 
-          set -e
-
-          for script in $(find scripts/sql/ -type f -name "*.sql" | sort ); do
-            if [[ "$(basename "$script")" == "init.sql" ]]; then
-              echo "Skipping init.sql in production: $script"
-              continue
-            fi
-
-            echo "Running: $script"
+          find scripts/sql -type f -name "*.sql" ! -name "init.sql" | sort | while read -r script; do
+            echo "Running: $script on Azure SQL"
             /opt/mssql-tools/bin/sqlcmd \
-            -S "$AZURE_SQL_SERVER" \
-            -U "$AZURE_SQL_USER" \
-            -P "$AZURE_SQL_PASSWORD" \
-            -d "$AZURE_SQL_DB" \
-            -i "$script" \
-            -C
+              -S "$AZURE_SQL_SERVER" \
+              -U "$AZURE_SQL_USER" \
+              -P "$AZURE_SQL_PASSWORD" \
+              -d "$AZURE_SQL_DB" \
+              -i "$script" \
+              -C
           done
-

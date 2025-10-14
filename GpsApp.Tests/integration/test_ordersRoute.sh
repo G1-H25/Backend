@@ -1,10 +1,13 @@
-echo "Fetching delivery data from API inside container..."
+#!/bin/sh
+set -e
 
-delivery_response=$(docker exec -i backend-app-1 /bin/sh -c '
-  set -e
-  RESPONSE=$(curl -s -w "\nHTTP Status: %{http_code}\n" http://localhost:8080/DeliveryGet)
-  echo "$RESPONSE"
-')
+TOKEN=$1
+echo "Using token in orders route test: $TOKEN"
+
+echo "Fetching delivery data from API via localhost..."
+
+delivery_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" \
+  "http://localhost:5000/DeliveryGet?id=1")
 
 echo "Delivery data response:"
 echo "$delivery_response"

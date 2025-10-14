@@ -4,13 +4,14 @@ using Microsoft.Data.SqlClient;
 using System.Security.Claims;
 using GpsApp.DTO;
 
+/*
 [ApiController]
 [Route("[controller]")]
 public class GpsGetController : ControllerBase
 {
-    private readonly SqlGet _getService;
+    private readonly ISqlGet _getService;
 
-    public GpsGetController(SqlGet getService)
+    public GpsGetController(ISqlGet getService)
     {
         _getService = getService;
     }
@@ -58,3 +59,5 @@ public class GpsGetController : ControllerBase
         return Ok(gpsData);
     }
 }
+
+*/

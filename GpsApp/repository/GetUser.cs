@@ -3,28 +3,28 @@ using GpsApp.Model;
 
 public class GetUser
 {
-    private readonly SqlGet _getService;
+    private readonly ISqlGet _getService;
 
-    public GetUser(SqlGet getService)
+    public GetUser(ISqlGet getService)
     {
         _getService = getService;
     }
 
-    public async Task<User?> GetUserByUsernameAsync(string username)
+    public async Task<UserData?> GetUserByUsernameAsync(string username)
     {
         var result = await _getService.FetchAsync("Secrets.Account", new Dictionary<string, object>
         {
-            { "Username", username }
+            { "AccountUsername", username }
         });
 
         if (result == null) return null;
 
-        return new User
+        return new UserData
         {
             Id = Convert.ToInt32(result["Id"]),
-            Username = result["Username"].ToString()!,
-            Password = result["Password"].ToString()!,
-            Role = result["Role"].ToString()!,
+            Username = result["AccountUsername"].ToString()!,
+            Password = result["AccountPassword"].ToString()!,
+            Role = result["AccountRole"].ToString()!,
             DateCreated = Convert.ToDateTime(result["DateCreated"])
         };
     }
