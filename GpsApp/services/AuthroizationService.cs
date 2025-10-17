@@ -25,6 +25,10 @@ public interface IAuthorizationService
     Task<bool> HasAccessToDevice(int userId, string role, int companyId, int gatewayId);
 
     Task<bool> UserCanAccessDevice(ClaimsPrincipal user, int gatewayId);
+
+    Task<bool> UserHasRoleAsync(ClaimsPrincipal user, string[] allowedRoles);
+
+    Task<string?> GetUserRoleFromClaims(ClaimsPrincipal user);
 }
 
 public class AuthorizationService : IAuthorizationService
@@ -53,6 +57,12 @@ public class AuthorizationService : IAuthorizationService
         if (companyIdClaim == null || !int.TryParse(companyIdClaim.Value, out var companyId))
             return Task.FromResult<int?>(null);
         return Task.FromResult<int?>(companyId);
+    }
+
+    public Task<string?> GetUserRoleFromClaims(ClaimsPrincipal user)
+    {
+        var roleClaim = user.FindFirst(ClaimTypes.Role);
+        return Task.FromResult(roleClaim?.Value);
     }
 
     /// <inheritdoc/>
@@ -114,6 +124,13 @@ public class AuthorizationService : IAuthorizationService
             return false;
 
         return await HasAccessToDevice(userId.Value, role, companyId.Value, gatewayId);
+    }
+
+    // only checks that the user has a role, for when the route is only between frontend and backend, with no devices involved
+    public Task<bool> UserHasRoleAsync(ClaimsPrincipal user, string[] allowedRoles)
+    {
+    var role = user.FindFirst(ClaimTypes.Role)?.Value;
+    return Task.FromResult(role != null && allowedRoles.Contains(role));
     }
 
 
