@@ -32,5 +32,5 @@ AS
         JOIN Logistics.Sender sen ON deliv.SenderId = sen.Id
         JOIN Customers.Company senCom ON sen.CompanyId = senCom.Id
         JOIN Logistics.Carrier carr ON deliv.CarrierId = carr.Id
-        JOIN Customers.Company carrCom ON carr.CompanyId = carrCom.Id;
+        JOIN Customers.Company carrCom ON carr.CompanyId = carrCom.Id
 GO
