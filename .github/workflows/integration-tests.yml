@@ -33,9 +33,11 @@ jobs:
       # Wait for backend to be ready
       - name: Wait for backend readiness
         run: |
+          echo "Sleeping 5 seconds to allow backend startup..."
+          sleep 5
           echo "Waiting for backend to be ready..."
           for i in $(seq 1 60); do
-            status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/health)
+            status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/health || echo "000")
             
             if [ "$status_code" = "200" ]; then
               echo "Backend is ready!"
@@ -50,6 +52,7 @@ jobs:
               exit 1
             fi
           done
+
 
 
       # Setup .NET SDK
