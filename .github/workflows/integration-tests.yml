@@ -26,9 +26,15 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
 
+      - name: Restore test project dependencies
+        run: dotnet restore ./GpsApp.Tests/integration/GpsApp.Tests.Integration.csproj
+
+      - name: Build test project
+        run: dotnet build GpsApp.Tests/integration/GpsApp.Tests.Integration.csproj --configuration Release
+
       # Start docker-compose services
       - name: Start Docker Compose services
-        run: docker-compose up -d
+        run: docker-compose up -d --build
 
       # Wait for backend to be ready
       - name: Wait for backend readiness
@@ -53,28 +59,13 @@ jobs:
             fi
           done
 
-
-
-      # Setup .NET SDK
-      - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.0.x'
-
-      # Restore dependencies
-      - name: Restore dependencies
-        run: dotnet restore GpsApp/GpsApp.csproj
-
-      # Build the project
-      - name: Build project
-        run: dotnet build GpsApp/GpsApp.csproj --configuration Release
       
       - name: List integration folder contents
         run: ls -l GpsApp.Tests/integration
       
       # Run integration tests
       - name: Run integration tests
-        run: dotnet test GpsApp.Tests/integration/GpsApp.Tests.Integration.csproj --configuration Release --logger "trx"
+        run: dotnet test ./GpsApp.Tests/integration/GpsApp.Tests.Integration.csproj --configuration Release --logger "trx"
 
       # Upload test results artifact
       - name: Upload integration test results
