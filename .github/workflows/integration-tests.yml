@@ -1,43 +1,76 @@
 name: Integration Tests
 
 on:
-  workflow_dispatch:
-  pull_request:
   push:
+    branches:
+      - main
+      - development
+  pull_request:
+    branches:
+      - main
+      - development
+  workflow_dispatch:
 
 jobs:
-  integration_test:
+  build_and_run_integration_tests:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
+      # Install docker-compose (if not already installed)
       - name: Install docker-compose
         run: |
           sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
 
-      - name: Set up Docker Compose
-        run: docker-compose -v
-
+      # Start docker-compose services (your backend API etc)
       - name: Start Docker Compose services
         run: docker-compose up -d
 
-      - name: List root directory
-        run: ls -la
+      # Wait for backend to be ready (adjust URL if needed)
+      - name: Wait for backend readiness
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:5000/health; then
+              echo "Backend is ready!"
+              break
+            else
+              echo "Waiting for backend..."
+              sleep 2
+            fi
+          done
 
-      - name: List all files recursively
-        run: find . -type f
+      # Setup .NET SDK
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
 
-      - name: Make all integration test scripts executable
-        run: chmod +x GpsApp.Tests/integration/*.sh
+      # Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore GpsApp/GpsApp.csproj
 
-      - name: Run integration test runner
-        run: ./GpsApp.Tests/integration/run_integrationtests.sh
+      # Build the project
+      - name: Build project
+        run: dotnet build GpsApp/GpsApp.csproj --configuration Release
 
+      # Run integration tests
+      - name: Run integration tests
+        run: dotnet test GpsApp.Tests/integration/GpsApp.Tests.Integration.csproj --configuration Release --logger "trx"
+
+      # Upload test results artifact
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: '**/TestResults/*.trx'
+
+      # Tear down Docker Compose services regardless of previous step status
       - name: Tear down Docker Compose
         if: always()
         run: docker-compose down
+
 
