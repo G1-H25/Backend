@@ -1,5 +1,5 @@
 #!/bin/sh
-set -e
+set -euxo pipefail
 
 echo "Registering company..."
 
@@ -109,7 +109,7 @@ echo "Registering device..."
 register_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/Gateway/register \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
-  -d "{"deviceId":1}")
+  --data-binary '{"deviceId":1}')
 
 echo "Register response:"
 echo "$register_response"
