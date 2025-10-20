@@ -1,5 +1,5 @@
 #!/bin/sh
-set -euxo pipefail
+set -e
 
 echo "Registering company..."
 
@@ -104,7 +104,7 @@ if [ "$auth_test_status" != "200" ]; then
   exit 1
 fi
 
-echo "Registering device..."
+echo "Registering device with payload: {'deviceId':1}"
 
 register_response=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST http://localhost:5000/Gateway/register \
   -H "Content-Type: application/json" \
