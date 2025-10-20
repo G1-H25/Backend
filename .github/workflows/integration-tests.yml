@@ -30,10 +30,10 @@ jobs:
         run: ls -l GpsApp.Tests/integration
 
       - name: Restore test project dependencies
-        run: dotnet restore ./GpsApp.Tests/integration/GpsApp.Tests.Integration.csproj
+        run: dotnet restore ./GpsApp.Tests/integration/GpsApp.tests.Integration.csproj
 
       - name: Build test project
-        run: dotnet build GpsApp.Tests/integration/GpsApp.Tests.Integration.csproj --configuration Release
+        run: dotnet build GpsApp.Tests/integration/GpsApp.tests.Integration.csproj --configuration Release
 
       # Start docker-compose services
       - name: Start Docker Compose services
@@ -68,7 +68,7 @@ jobs:
       
       # Run integration tests
       - name: Run integration tests
-        run: dotnet test ./GpsApp.Tests/integration/GpsApp.Tests.Integration.csproj --configuration Release --logger "trx"
+        run: dotnet test ./GpsApp.Tests/integration/GpsApp.tests.Integration.csproj --configuration Release --logger "trx"
 
       # Upload test results artifact
       - name: Upload integration test results
