@@ -53,10 +53,11 @@ public class DeliveryController : ControllerBase
                         senCom.CompanyName AS Sender,
                         recCom.CompanyName AS Recipient,
                         delstate.CurrentState AS CurrentState,
+                        delstate.UpdatedAt AS StatusUpdated,
                         deliv.OrderPlaced
             ",
             joins: new List<string>
-            {   
+            {
                     "JOIN Orders.DeliveryState delstate ON deliv.Id = delstate.Id",
                     "JOIN Logistics.TransportRoute troute ON deliv.RouteId = troute.Id",
                     "JOIN Measurements.Sensor sens ON deliv.SensorId = sens.Id",
@@ -88,34 +89,17 @@ public class DeliveryController : ControllerBase
                 Carrier: Convert.ToString(r["Carrier"]),
                 Sender: Convert.ToString(r["Sender"]),
                 Recipient: Convert.ToString(r["Recipient"]),
-                OrderPlaced: Convert.ToDateTime(r["OrderPlaced"])
+                OrderPlaced: Convert.ToDateTime(r["OrderPlaced"]),
+                Status: new StatusDto(
+                    Text: Convert.ToString(r["CurrentState"]),
+                    Timestamp: Convert.ToDateTime(r["StatusUpdated"]).ToString("o")
+                )
             )
         );
 
-
-/*
-        int DeliveryId,
-        string RouteCode,
-        float CurrentTemp,
-        float ExpectedTempMin,
-        float ExpectedTempMax,
-        float TempMinMeasured,
-        float TempMaxMeasured,
-        float TempOutOfRange,
-        float CurrentHumid,
-        float ExpectedHumidMin,
-        float ExpectedHumidMax,
-        float HumidMinMeasured,
-        float HumidMaxMeasured,
-        float HumidOutOfRange,
-        string Carrier,
-        string Sender,
-        string Recipient,
-        DateTime OrderPlaced
-
-*/
         return result.Any() ? Ok(result) : NotFound("No delivery records found.");
     }
+    /*
     [HttpPost("create")]
     [Authorize]
     public async Task<IActionResult> CreateDelivery([FromBody] DeliveryCreateRequest request)
@@ -177,6 +161,7 @@ public class DeliveryController : ControllerBase
         int deliveryId = await _insertService.InsertAndReturnIdAsync("Orders.Delivery", deliveryValues);
 
         return Ok(new { message = "Delivery created", deliveryId });
-    }
+    } 
+    */
 }
 
