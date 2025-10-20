@@ -26,11 +26,11 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
 
-      # Start docker-compose services (your backend API etc)
+      # Start docker-compose services
       - name: Start Docker Compose services
         run: docker-compose up -d
 
-      # Wait for backend to be ready (adjust URL if needed)
+      # Wait for backend to be ready
       - name: Wait for backend readiness
         run: |
           echo "Waiting for backend to be ready..."
