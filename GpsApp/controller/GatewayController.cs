@@ -107,7 +107,7 @@ public class GatewayController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, $"DB error: {ex.Message}");
+            return StatusCode(500, "An unexpected error occurred while accessing the database.");
         }
     }
 
