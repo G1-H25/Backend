@@ -1,20 +1,23 @@
-/*
 CREATE VIEW Orders.DeliveryDetailsView
 AS
     SELECT
         deliv.Id AS DeliveryId,
         troute.Code AS RouteCode,
-        sens.CurrentTemp AS CurrentTemp,
+        sens.TemperatureCel AS CurrentTemp,
         temp.Min AS ExpTempMin,
         temp.Max AS ExpTempMax,
-        sens.CurrentHumid AS CurrentHumid,
+        sens.TempMinMeasured AS TempMinMeasured,
+        sens.TempMaxMeasured AS TempMaxMeasured,
+        sens.TempTimeOutside AS TempOutOfRange,
+        sens.HumdityPct AS CurrentHumid,
         humid.Min AS ExpHumidMin,
         humid.Max AS ExpHumidMax,
-        sens.TempTimeOutside AS TempOutOfRange,
+        sens.HumidMinMeasured AS HumidMinMeasured,
+        sens.HumidMaxMeasured AS HumidMaxMeasured,
         sens.HumidTimeOutside AS HumidOutOfRange,
-        carrCom.CompanyName AS CarrierName,
-        senCom.CompanyName AS SenderName,
-        recCom.CompanyName AS RecipientName,
+        carrCom.CompanyName AS Carrier,
+        senCom.CompanyName AS Sender,
+        recCom.CompanyName AS Recipient,
         delstate.CurrentState AS CurrentState,
         deliv.OrderPlaced
 
@@ -29,6 +32,5 @@ AS
         JOIN Logistics.Sender sen ON deliv.SenderId = sen.Id
         JOIN Customers.Company senCom ON sen.CompanyId = senCom.Id
         JOIN Logistics.Carrier carr ON deliv.CarrierId = carr.Id
-        JOIN Customers.Company carrCom ON carr.CompanyId = carrCom.Id;
+        JOIN Customers.Company carrCom ON carr.CompanyId = carrCom.Id
 GO
-*/
