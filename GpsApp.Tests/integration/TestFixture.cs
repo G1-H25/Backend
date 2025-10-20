@@ -9,7 +9,7 @@ public class TestFixture : IDisposable
     {
         Client = new HttpClient
         {
-            BaseAddress = new Uri("http://localhost:5000")  // Your backend base URL
+            BaseAddress = new Uri("http://localhost:5000")  // backend base URL
         };
     }
 

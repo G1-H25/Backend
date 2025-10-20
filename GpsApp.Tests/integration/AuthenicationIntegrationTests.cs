@@ -92,7 +92,7 @@ public class IntegrationTests : IClassFixture<TestFixture>
         else
         {
             // Some responses may not return deviceId, handle that
-            deviceId = 1; // fallback or handle accordingly
+            deviceId = 1; // fallback 
         }
 
         // 6. Post sensor data
