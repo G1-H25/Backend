@@ -26,6 +26,9 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
 
+      - name: List integration folder contents
+        run: ls -l GpsApp.Tests/integration
+
       - name: Restore test project dependencies
         run: dotnet restore ./GpsApp.Tests/integration/GpsApp.Tests.Integration.csproj
 
