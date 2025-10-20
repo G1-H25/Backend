@@ -56,7 +56,7 @@ public class SensorController : ControllerBase
         var canAccess = await _authService.UserCanAccessDevice(User, data.GatewayId);
         if (!canAccess)
             return Forbid("You do not have access to this gateway.");
-        
+
 
         //  2. Validate input fields
         if (data.GatewayId <= 0)
@@ -118,7 +118,7 @@ public class SensorController : ControllerBase
             .FirstOrDefault();
 
         // set the lowest and highest temperature value, that has been ever recorded on the sensor
-        float tempMinMeasured = Math.Min(data.TemperatureCel.Value, lastReading?.TempMinMeasured ?? data.TemperatureCel.Value); 
+        float tempMinMeasured = Math.Min(data.TemperatureCel.Value, lastReading?.TempMinMeasured ?? data.TemperatureCel.Value);
         float tempMaxMeasured = Math.Max(data.TemperatureCel.Value, lastReading?.TempMaxMeasured ?? data.TemperatureCel.Value);
 
         float humidMinMeasured = Math.Min(data.HumdityPct.Value, lastReading?.HumidMinMeasured ?? data.HumdityPct.Value);

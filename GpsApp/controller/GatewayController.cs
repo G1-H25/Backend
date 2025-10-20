@@ -72,7 +72,7 @@ public class GatewayController : ControllerBase
             });
         }
     }
-    
+
 
     /// <summary>
     /// Inserts a new gateway record into the database.
