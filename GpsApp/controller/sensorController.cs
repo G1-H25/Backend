@@ -23,12 +23,25 @@ public class SensorController : ControllerBase
     }
 
     /// <summary>
-    /// Adds new Sensor data.
+    /// Adds new sensor data entry to the database for the specified gateway.
     /// </summary>
-    /// <param name="data">The Sensor data to insert.</param>
-    /// <returns>Returns OK if inserted successfully.</returns>
+    /// <param name="data">The <see cref="SensorDto"/> containing temperature, humidity, and timestamp data.</param>
+    /// <returns>Returns 200 OK if the sensor data was successfully inserted; otherwise, returns an error code.</returns>
     /// <remarks>
+    /// This endpoint performs the following:
+    /// 1. Verifies JWT-based access to the specified GatewayId.
+    /// 2. Validates required fields in the <see cref="SensorDto"/>:
+    ///     - <c>GatewayId</c> must be a positive integer.
+    ///     - <c>TemperatureCel</c> and <c>HumdityPct</c> must be non-null.
+    /// 3. Retrieves the latest existing sensor reading for the same gateway to compare past state.
+    /// 4. Calculates:
+    ///     - Total time the temperature and humidity have been outside predefined limits (hardcoded: 10–30°C, 20–80%).
+    ///     - Updated timer start timestamps for both temperature and humidity.
+    ///     - The lowest and highest recorded temperature and humidity values to date.
+    /// 5. Constructs and inserts a new database entry into <c>Measurements.Sensor</c>.
     /// 
+    /// Note:
+    /// - If no previous sensor reading exists, current values are assumed as the initial min/max.
     /// </remarks>
     [HttpPost]
     [Authorize] // Require JWT
@@ -43,6 +56,7 @@ public class SensorController : ControllerBase
         var canAccess = await _authService.UserCanAccessDevice(User, data.GatewayId);
         if (!canAccess)
             return Forbid("You do not have access to this gateway.");
+        
 
         //  2. Validate input fields
         if (data.GatewayId <= 0)
@@ -57,6 +71,13 @@ public class SensorController : ControllerBase
         if (data.HumdityPct == null)
             return BadRequest("HumdityPct must be provided.");
 
+        // validate that gateway does exist, if not return error 400
+        var gatewayExists = await _sqlGet.FetchAsync("Secrets.Gateway", new Dictionary<string, object> { { "Id", data.GatewayId } });
+        if (gatewayExists == null || !gatewayExists.Any())
+        {
+            return BadRequest($"GatewayId {data.GatewayId} does not exist.");
+        }
+
         //  3. Fetch the latest sensor reading for this gateway to compare previous state
         var readings = await _sqlGetAdvanced.FetchWithJoinsAsync(
             baseTable: "Measurements.Sensor sensor",
@@ -67,7 +88,11 @@ public class SensorController : ControllerBase
             sensor.HumidTimeOutside,
             sensor.TemperatureCel,
             sensor.HumdityPct,
-            sensor.PolledAt
+            sensor.PolledAt,
+            sensor.TempMinMeasured,
+            sensor.TempMaxMeasured,
+            sensor.HumidMinMeasured,
+            sensor.HumidMaxMeasured
         ",
             joins: new List<string>(), // No JOINs needed — just the same table
             filters: new Dictionary<string, object> {
@@ -79,7 +104,11 @@ public class SensorController : ControllerBase
                 TempTimeOutside = r["TempTimeOutside"] == DBNull.Value ? 0 : Convert.ToInt32(r["TempTimeOutside"]),
                 HumidTimerStart = r["HumidTimerStart"] as DateTime?,
                 HumidTimeOutside = r["HumidTimeOutside"] == DBNull.Value ? 0 : Convert.ToInt32(r["HumidTimeOutside"]),
-                PolledAt = Convert.ToDateTime(r["PolledAt"])
+                PolledAt = Convert.ToDateTime(r["PolledAt"]),
+                TempMinMeasured = r["TempMinMeasured"] == DBNull.Value ? data.TemperatureCel.Value : Convert.ToSingle(r["TempMinMeasured"]),
+                TempMaxMeasured = r["TempMaxMeasured"] == DBNull.Value ? data.TemperatureCel.Value : Convert.ToSingle(r["TempMaxMeasured"]),
+                HumidMinMeasured = r["HumidMinMeasured"] == DBNull.Value ? data.HumdityPct.Value : Convert.ToSingle(r["HumidMinMeasured"]),
+                HumidMaxMeasured = r["HumidMaxMeasured"] == DBNull.Value ? data.HumdityPct.Value : Convert.ToSingle(r["HumidMaxMeasured"]),
             }
         );
 
@@ -88,60 +117,34 @@ public class SensorController : ControllerBase
             .OrderByDescending(r => r.PolledAt)
             .FirstOrDefault();
 
+        // set the lowest and highest temperature value, that has been ever recorded on the sensor
+        float tempMinMeasured = Math.Min(data.TemperatureCel.Value, lastReading?.TempMinMeasured ?? data.TemperatureCel.Value); 
+        float tempMaxMeasured = Math.Max(data.TemperatureCel.Value, lastReading?.TempMaxMeasured ?? data.TemperatureCel.Value);
+
+        float humidMinMeasured = Math.Min(data.HumdityPct.Value, lastReading?.HumidMinMeasured ?? data.HumdityPct.Value);
+        float humidMaxMeasured = Math.Max(data.HumdityPct.Value, lastReading?.HumidMaxMeasured ?? data.HumdityPct.Value);
+
+
         // Use the timestamp of the current reading as reference
         var now = data.PolledAt;
 
         //  5. Handle temperature out-of-range logic
-        //    If outside 10-30°C, track how long it has been out of range (LOGIC HERE WILL NEED TO CHANGE TO USE DATA MIN/MAX INSTEAD)
-        bool tempOutOfRange = data.TemperatureCel < 10 || data.TemperatureCel > 30;
+        (tempTimeOutside, tempTimerStart) = TrackingTimeOutsideRange.TrackTimeOutsideRange(
+            currentValue: data.TemperatureCel.Value,
+            expectedMin: 10,
+            expectedMax: 30,
+            currentTimestamp: data.PolledAt,
+            lastTimerStart: lastReading?.TempTimerStart
+        );
 
-        if (tempOutOfRange)
-        {
-            if (lastReading?.TempTimerStart != null)
-            {
-                // Already out of range previously — continue counting
-                tempTimerStart = lastReading.TempTimerStart;
-                tempTimeOutside = (int)(now - lastReading.TempTimerStart.Value).TotalSeconds;
-            }
-            else
-            {
-                // Just went out of range now — start new timer
-                tempTimerStart = now;
-                tempTimeOutside = 0;
-            }
-        }
-        else
-        {
-            // Back within range — reset timer and duration
-            tempTimerStart = null;
-            tempTimeOutside = 0;
-        }
-
-        //  6. Handle humidity out-of-range logic
-        //    If outside 20–80%, track how long it has been out of range (LOGIC HERE WILL NEED TO CHANGE TO USE DATA MIN/MAX INSTEAD)
-        bool humidOutOfRange = data.HumdityPct < 20 || data.HumdityPct > 80;
-
-        if (humidOutOfRange)
-        {
-            if (lastReading?.HumidTimerStart != null)
-            {
-                // Already out of range — continue counting
-                humidTimerStart = lastReading.HumidTimerStart;
-                humidTimeOutside = (int)(now - lastReading.HumidTimerStart.Value).TotalSeconds;
-            }
-            else
-            {
-                // Just went out of range — start new timer
-                humidTimerStart = now;
-                humidTimeOutside = 0;
-            }
-        }
-        else
-        {
-            // Back within range — reset humidity timer
-            humidTimerStart = null;
-            humidTimeOutside = 0;
-        }
+        //  6. Handle Humid out-of-range logic
+        (humidTimeOutside, humidTimerStart) = TrackingTimeOutsideRange.TrackTimeOutsideRange(
+        currentValue: data.HumdityPct.Value,
+        expectedMin: 20,
+        expectedMax: 80,
+        currentTimestamp: data.PolledAt,
+        lastTimerStart: lastReading?.HumidTimerStart
+        );
 
         //  7. Prepare the data dictionary for insertion
         var dataDict = new Dictionary<string, object>
@@ -153,7 +156,11 @@ public class SensorController : ControllerBase
         { "TempTimeOutside", tempTimeOutside },
         { "HumidTimeOutside", humidTimeOutside },
         { "TempTimerStart", tempTimerStart },
-        { "HumidTimerStart", humidTimerStart }
+        { "HumidTimerStart", humidTimerStart },
+        { "TempMinMeasured", tempMinMeasured },
+        { "TempMaxMeasured", tempMaxMeasured },
+        { "HumidMinMeasured", humidMinMeasured },
+        { "HumidMaxMeasured", humidMaxMeasured }
     };
 
         //  8. Insert new sensor record into the database
