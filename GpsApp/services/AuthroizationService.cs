@@ -129,8 +129,8 @@ public class AuthorizationService : IAuthorizationService
     // only checks that the user has a role, for when the route is only between frontend and backend, with no devices involved
     public Task<bool> UserHasRoleAsync(ClaimsPrincipal user, string[] allowedRoles)
     {
-    var role = user.FindFirst(ClaimTypes.Role)?.Value;
-    return Task.FromResult(role != null && allowedRoles.Contains(role));
+        var role = user.FindFirst(ClaimTypes.Role)?.Value;
+        return Task.FromResult(role != null && allowedRoles.Contains(role));
     }
 
 

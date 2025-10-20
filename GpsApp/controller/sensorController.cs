@@ -30,37 +30,37 @@ public class SensorController : ControllerBase
     /// <remarks>
     /// 
     /// </remarks>
-[HttpPost]
-[Authorize] // Require JWT
-public async Task<IActionResult> PostSensorData([FromBody] SensorDto data)
-{
-    // declare temporary variables
-    int tempTimeOutside;
-    DateTime? tempTimerStart;
-    int humidTimeOutside;
-    DateTime? humidTimerStart;
-    //  1. Validate user access to the specified GatewayId via JWT-based authorization
-    var canAccess = await _authService.UserCanAccessDevice(User, data.GatewayId);
-    if (!canAccess)
-        return Forbid("You do not have access to this gateway.");
+    [HttpPost]
+    [Authorize] // Require JWT
+    public async Task<IActionResult> PostSensorData([FromBody] SensorDto data)
+    {
+        // declare temporary variables
+        int tempTimeOutside;
+        DateTime? tempTimerStart;
+        int humidTimeOutside;
+        DateTime? humidTimerStart;
+        //  1. Validate user access to the specified GatewayId via JWT-based authorization
+        var canAccess = await _authService.UserCanAccessDevice(User, data.GatewayId);
+        if (!canAccess)
+            return Forbid("You do not have access to this gateway.");
 
-    //  2. Validate input fields
-    if (data.GatewayId <= 0)
-        return BadRequest("GatewayId must be a positive integer.");
+        //  2. Validate input fields
+        if (data.GatewayId <= 0)
+            return BadRequest("GatewayId must be a positive integer.");
 
-    if (data.PolledAt == default)
-        data.PolledAt = DateTime.UtcNow; // Default to current UTC time if none provided
+        if (data.PolledAt == default)
+            data.PolledAt = DateTime.UtcNow; // Default to current UTC time if none provided
 
-    if (data.TemperatureCel == null)
-        return BadRequest("TemperatureCel must be provided.");
+        if (data.TemperatureCel == null)
+            return BadRequest("TemperatureCel must be provided.");
 
-    if (data.HumdityPct == null)
-        return BadRequest("HumdityPct must be provided.");
+        if (data.HumdityPct == null)
+            return BadRequest("HumdityPct must be provided.");
 
-    //  3. Fetch the latest sensor reading for this gateway to compare previous state
-    var readings = await _sqlGetAdvanced.FetchWithJoinsAsync(
-        baseTable: "Measurements.Sensor sensor",
-        selectClause: @"
+        //  3. Fetch the latest sensor reading for this gateway to compare previous state
+        var readings = await _sqlGetAdvanced.FetchWithJoinsAsync(
+            baseTable: "Measurements.Sensor sensor",
+            selectClause: @"
             sensor.TempTimerStart,
             sensor.TempTimeOutside,
             sensor.HumidTimerStart,
@@ -69,82 +69,82 @@ public async Task<IActionResult> PostSensorData([FromBody] SensorDto data)
             sensor.HumdityPct,
             sensor.PolledAt
         ",
-        joins: new List<string>(), // No JOINs needed — just the same table
-        filters: new Dictionary<string, object> {
+            joins: new List<string>(), // No JOINs needed — just the same table
+            filters: new Dictionary<string, object> {
             { "sensor.GatewayId", data.GatewayId }
-        },
-        map: r => new
+            },
+            map: r => new
+            {
+                TempTimerStart = r["TempTimerStart"] as DateTime?,
+                TempTimeOutside = r["TempTimeOutside"] == DBNull.Value ? 0 : Convert.ToInt32(r["TempTimeOutside"]),
+                HumidTimerStart = r["HumidTimerStart"] as DateTime?,
+                HumidTimeOutside = r["HumidTimeOutside"] == DBNull.Value ? 0 : Convert.ToInt32(r["HumidTimeOutside"]),
+                PolledAt = Convert.ToDateTime(r["PolledAt"])
+            }
+        );
+
+        //  4. Get the most recent reading (i.e. latest by PolledAt)
+        var lastReading = readings
+            .OrderByDescending(r => r.PolledAt)
+            .FirstOrDefault();
+
+        // Use the timestamp of the current reading as reference
+        var now = data.PolledAt;
+
+        //  5. Handle temperature out-of-range logic
+        //    If outside 10-30°C, track how long it has been out of range (LOGIC HERE WILL NEED TO CHANGE TO USE DATA MIN/MAX INSTEAD)
+        bool tempOutOfRange = data.TemperatureCel < 10 || data.TemperatureCel > 30;
+
+        if (tempOutOfRange)
         {
-            TempTimerStart = r["TempTimerStart"] as DateTime?,
-            TempTimeOutside = r["TempTimeOutside"] == DBNull.Value ? 0 : Convert.ToInt32(r["TempTimeOutside"]),
-            HumidTimerStart = r["HumidTimerStart"] as DateTime?,
-            HumidTimeOutside = r["HumidTimeOutside"] == DBNull.Value ? 0 : Convert.ToInt32(r["HumidTimeOutside"]),
-            PolledAt = Convert.ToDateTime(r["PolledAt"])
-        }
-    );
-
-    //  4. Get the most recent reading (i.e. latest by PolledAt)
-    var lastReading = readings
-        .OrderByDescending(r => r.PolledAt)
-        .FirstOrDefault();
-
-    // Use the timestamp of the current reading as reference
-    var now = data.PolledAt;
-
-    //  5. Handle temperature out-of-range logic
-    //    If outside 10-30°C, track how long it has been out of range (LOGIC HERE WILL NEED TO CHANGE TO USE DATA MIN/MAX INSTEAD)
-    bool tempOutOfRange = data.TemperatureCel < 10 || data.TemperatureCel > 30;
-
-    if (tempOutOfRange)
-    {
-        if (lastReading?.TempTimerStart != null)
-        {
-            // Already out of range previously — continue counting
-            tempTimerStart = lastReading.TempTimerStart;
-            tempTimeOutside = (int)(now - lastReading.TempTimerStart.Value).TotalSeconds;
+            if (lastReading?.TempTimerStart != null)
+            {
+                // Already out of range previously — continue counting
+                tempTimerStart = lastReading.TempTimerStart;
+                tempTimeOutside = (int)(now - lastReading.TempTimerStart.Value).TotalSeconds;
+            }
+            else
+            {
+                // Just went out of range now — start new timer
+                tempTimerStart = now;
+                tempTimeOutside = 0;
+            }
         }
         else
         {
-            // Just went out of range now — start new timer
-            tempTimerStart = now;
+            // Back within range — reset timer and duration
+            tempTimerStart = null;
             tempTimeOutside = 0;
         }
-    }
-    else
-    {
-        // Back within range — reset timer and duration
-        tempTimerStart = null;
-        tempTimeOutside = 0;
-    }
 
-    //  6. Handle humidity out-of-range logic
-    //    If outside 20–80%, track how long it has been out of range (LOGIC HERE WILL NEED TO CHANGE TO USE DATA MIN/MAX INSTEAD)
-    bool humidOutOfRange = data.HumdityPct < 20 || data.HumdityPct > 80;
+        //  6. Handle humidity out-of-range logic
+        //    If outside 20–80%, track how long it has been out of range (LOGIC HERE WILL NEED TO CHANGE TO USE DATA MIN/MAX INSTEAD)
+        bool humidOutOfRange = data.HumdityPct < 20 || data.HumdityPct > 80;
 
-    if (humidOutOfRange)
-    {
-        if (lastReading?.HumidTimerStart != null)
+        if (humidOutOfRange)
         {
-            // Already out of range — continue counting
-            humidTimerStart = lastReading.HumidTimerStart;
-            humidTimeOutside = (int)(now - lastReading.HumidTimerStart.Value).TotalSeconds;
+            if (lastReading?.HumidTimerStart != null)
+            {
+                // Already out of range — continue counting
+                humidTimerStart = lastReading.HumidTimerStart;
+                humidTimeOutside = (int)(now - lastReading.HumidTimerStart.Value).TotalSeconds;
+            }
+            else
+            {
+                // Just went out of range — start new timer
+                humidTimerStart = now;
+                humidTimeOutside = 0;
+            }
         }
         else
         {
-            // Just went out of range — start new timer
-            humidTimerStart = now;
+            // Back within range — reset humidity timer
+            humidTimerStart = null;
             humidTimeOutside = 0;
         }
-    }
-    else
-    {
-        // Back within range — reset humidity timer
-        humidTimerStart = null;
-        humidTimeOutside = 0;
-    }
 
-    //  7. Prepare the data dictionary for insertion
-    var dataDict = new Dictionary<string, object>
+        //  7. Prepare the data dictionary for insertion
+        var dataDict = new Dictionary<string, object>
     {
         { "GatewayId", data.GatewayId },
         { "PolledAt", data.PolledAt },
@@ -156,12 +156,13 @@ public async Task<IActionResult> PostSensorData([FromBody] SensorDto data)
         { "HumidTimerStart", humidTimerStart }
     };
 
-    //  8. Insert new sensor record into the database
-    await _insertService.InsertAsync("Measurements.Sensor", dataDict);
+        //  8. Insert new sensor record into the database
+        await _insertService.InsertAsync("Measurements.Sensor", dataDict);
 
-    //  9. Return success response
-    return Ok("Inserted");
-}
+        //  9. Return success response
+        return Ok("Inserted");
+    }
+
 
     [HttpGet("available")]
     [Authorize]
