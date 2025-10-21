@@ -25,7 +25,8 @@ public class GetUser
             Username = result["AccountUsername"].ToString()!,
             Password = result["AccountPassword"].ToString()!,
             Role = result["AccountRole"].ToString()!,
-            DateCreated = Convert.ToDateTime(result["DateCreated"])
+            DateCreated = Convert.ToDateTime(result["DateCreated"]),
+            CompanyId = result["CompanyId"] != DBNull.Value ? Convert.ToInt32(result["CompanyId"]) : 0 // returns a result if DB is not null
         };
     }
 }

@@ -16,7 +16,7 @@ public class GatewayController : ControllerBase
         _getService = getService;
     }
 
-    [HttpPost]
+    [HttpPost("register")]
     [Authorize]
     public async Task<IActionResult> RegisterDevice([FromBody] GatewayRequest request)
     {
@@ -72,4 +72,45 @@ public class GatewayController : ControllerBase
             });
         }
     }
+
+
+    /// <summary>
+    /// Inserts a new gateway record into the database.
+    /// </summary>
+    /// <param name="request">The gateway insert request containing the required GatewayId, and optional GatewayURL and CurrentLocationId.</param>
+    /// <returns>
+    /// Returns an <see cref="OkObjectResult"/> if the gateway is inserted successfully,
+    /// <see cref="BadRequestObjectResult"/> if the GatewayId is invalid or missing,
+    /// or <see cref="StatusCodeResult"/> with status code 500 if a database error occurs.
+    /// </returns>
+    /// <remarks>
+    /// The GatewayId must be provided by the IoT device and must be greater than 0.
+    /// GatewayURL and CurrentLocationId can be omitted if not available.
+    /// </remarks>
+    [HttpPost("insert")]
+    public async Task<IActionResult> InsertGateway([FromBody] GatewayInsertRequest request)
+    {
+        if (request.GatewayId <= 0)
+            return BadRequest("DeviceId must be provided by IoT and must be greater than 0.");
+
+        var data = new Dictionary<string, object>
+        {
+            ["Id"] = request.GatewayId, // From IoT
+            ["GatewayURL"] = request.GatewayURL,
+            ["CurrentLocationId"] = request.CurrentLocationId
+        };
+
+        try
+        {
+            await _insertService.InsertAsync("Secrets.Gateway", data);
+            return Ok("Gateway inserted successfully.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "An unexpected error occurred while accessing the database.");
+        }
+    }
+
+
 }
+

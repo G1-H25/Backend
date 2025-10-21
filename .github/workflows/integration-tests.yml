@@ -1,43 +1,85 @@
 name: Integration Tests
 
 on:
-  workflow_dispatch:
-  pull_request:
   push:
+  #  branches:
+  #    - main
+  #    - development
+  pull_request:
+    branches:
+      - main
+      - development
+  workflow_dispatch:
 
 jobs:
-  integration_test:
+  build_and_run_integration_tests:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
+      # Install docker-compose (if not already installed)
       - name: Install docker-compose
         run: |
           sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
 
-      - name: Set up Docker Compose
-        run: docker-compose -v
+      - name: List integration folder contents
+        run: ls -l GpsApp.Tests/integration
 
+      - name: Restore test project dependencies
+        run: dotnet restore ./GpsApp.Tests/integration/GpsApp.tests.Integration.csproj
+
+      - name: Build test project
+        run: dotnet build GpsApp.Tests/integration/GpsApp.tests.Integration.csproj --configuration Release
+
+      # Start docker-compose services
       - name: Start Docker Compose services
-        run: docker-compose up -d
+        run: docker-compose up -d --build
 
-      - name: List root directory
-        run: ls -la
+      # Wait for backend to be ready
+      - name: Wait for backend readiness
+        run: |
+          echo "Sleeping 5 seconds to allow backend startup..."
+          sleep 5
+          echo "Waiting for backend to be ready..."
+          for i in $(seq 1 60); do
+            status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/health || echo "000")
+            
+            if [ "$status_code" = "200" ]; then
+              echo "Backend is ready!"
+              break
+            else
+              echo "Backend not ready yet (status $status_code), waiting..."
+              sleep 2
+            fi
 
-      - name: List all files recursively
-        run: find . -type f
+            if [ "$i" = "60" ]; then
+              echo "Backend did not become ready in time, exiting."
+              exit 1
+            fi
+          done
 
-      - name: Make all integration test scripts executable
-        run: chmod +x GpsApp.Tests/integration/*.sh
+      
+      - name: List integration folder contents
+        run: ls -l GpsApp.Tests/integration
+      
+      # Run integration tests
+      - name: Run integration tests
+        run: dotnet test ./GpsApp.Tests/integration/GpsApp.tests.Integration.csproj --configuration Release --logger "trx"
 
-      - name: Run integration test runner
-        run: ./GpsApp.Tests/integration/run_integrationtests.sh
+      # Upload test results artifact
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: '**/TestResults/*.trx'
 
+      # Tear down Docker Compose services regardless of previous step status
       - name: Tear down Docker Compose
         if: always()
         run: docker-compose down
+
 
