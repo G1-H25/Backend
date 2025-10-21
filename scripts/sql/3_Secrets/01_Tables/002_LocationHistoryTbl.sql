@@ -1,4 +1,4 @@
-IF OBJECT_ID('Secrets.CurrentLocation', 'U') IS NULL
+IF OBJECT_ID('Secrets.LocationHistory', 'U') IS NULL
     BEGIN
         CREATE TABLE Secrets.LocationHistory
         (

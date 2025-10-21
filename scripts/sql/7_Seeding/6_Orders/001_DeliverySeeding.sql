@@ -23,5 +23,5 @@ BEGIN
 END
 SET @CarrierId = (SELECT Id FROM Logistics.Carrier WHERE CompanyId = @CarrierId);
 
-INSERT INTO Orders.Delivery (RouteId, SensorId, ExpectedTempId, ExpectedHumidId, RecipientId, SenderId, CarrierId, OrderPlaced)
-VALUES (1, 1, 1, 1, @RecipientId, @SenderId, @CarrierId, @Now);
+INSERT INTO Orders.Delivery (RouteId, SensorId, RecipientId, SenderId, CarrierId, OrderPlaced)
+VALUES (1, 1, @RecipientId, @SenderId, @CarrierId, @Now);
