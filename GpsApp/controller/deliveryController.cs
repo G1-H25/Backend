@@ -38,14 +38,14 @@ public class DeliveryController : ControllerBase
                         deliv.Id AS DeliveryId,
                         troute.Code AS RouteCode,
                         sens.TemperatureCel AS CurrentTemp,
-                        temp.Min AS ExpectedTempMin,
-                        temp.Max AS ExpectedTempMax,
+                        sensTemp.Min AS ExpectedTempMin,
+                        sensTemp.Max AS ExpectedTempMax,
                         sens.TempMinMeasured AS TempMinMeasured,
                         sens.TempMaxMeasured AS TempMaxMeasured,
                         sens.TempTimeOutside AS TempOutOfRange,
                         sens.HumdityPct AS CurrentHumid,
-                        humid.Min AS ExpectedHumidMin,
-                        humid.Max AS ExpectedHumidMax,
+                        sensHumid.Min AS ExpectedHumidMin,
+                        sensHumid.Max AS ExpectedHumidMax,
                         sens.HumidMinMeasured AS HumidMinMeasured,
                         sens.HumidMaxMeasured AS HumidMaxMeasured,
                         sens.HumidTimeOutside AS HumidOutOfRange,
@@ -56,13 +56,18 @@ public class DeliveryController : ControllerBase
                         delstate.UpdatedAt AS StatusUpdated,
                         deliv.OrderPlaced
             ",
+        /*
+                JOIN Measurements.Sensor sens ON deliv.SensorId = sens.Id
+        JOIN Measurements.ExpectedTemp sensTemp ON sens.Id = sensTemp.Id
+        JOIN Measurements.ExpectedHumid sensHumid ON sens.Id = sensTemp.Id
+        */
             joins: new List<string>
             {
                     "JOIN Orders.DeliveryState delstate ON deliv.Id = delstate.Id",
                     "JOIN Logistics.TransportRoute troute ON deliv.RouteId = troute.Id",
                     "JOIN Measurements.Sensor sens ON deliv.SensorId = sens.Id",
-                    "JOIN Measurements.ExpectedTemp temp ON deliv.ExpectedTempId = temp.Id",
-                    "JOIN Measurements.ExpectedHumid humid ON deliv.ExpectedHumidId = humid.Id",
+                    "JOIN Measurements.ExpectedTemp sensTemp ON sens.Id = sensTemp.Id",
+                    "JOIN Measurements.ExpectedHumid sensHumid ON sens.Id = sensHumid.Id",
                     "JOIN Logistics.Recipient rec ON deliv.RecipientId = rec.Id",
                     "JOIN Customers.Company recCom ON rec.CompanyId = recCom.Id",
                     "JOIN Logistics.Sender sen ON deliv.SenderId = sen.Id",

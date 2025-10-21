@@ -1,8 +1,12 @@
 IF
     NOT EXISTS (
-        SELECT 1
+        SELECT TOP 1
+            Id,
+            Longitude,
+            Latitude,
+            PolledAt
         FROM Secrets.LocationHistory
-        WHERE PolledAt = '2025-10-04T14:30:00'
+        ORDER BY PolledAt DESC
     )
     BEGIN
         INSERT INTO Secrets.LocationHistory (Longitude, Latitude, PolledAt)
