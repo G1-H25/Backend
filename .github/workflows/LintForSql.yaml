@@ -1,0 +1,42 @@
+# Linter for SQL Code using the tsqllint
+# Link : https://github.com/tsqllint/tsqllint
+
+name: Format SQL files
+
+on: 
+  workflow_dispatch: 
+  push: 
+    # Will run on push to production branch
+    branches: [main]
+
+    paths:
+      # Will only run on files under sql folder
+      - 'scripts/sql/**'
+  pull_request:
+    # Will only run on pull_requests
+    branches: [main]
+    paths:
+      - 'scripts/sql/**'
+    
+
+jobs: 
+
+  sql-lint: 
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - run: pip install sqlfluff
+
+      - run: sqlfluff --version
+  
+      - name: Auto fix SQL files
+        # --force is used to accept changes being made from linter
+        run: sqlfluff fix scripts/sql/** --force
+
+
