@@ -90,6 +90,7 @@ public class GatewayController : ControllerBase
     [HttpPost("insert")]
     public async Task<IActionResult> InsertGateway([FromBody] GatewayInsertRequest request)
     {
+<<<<<<< HEAD
         if (request == null)
          return BadRequest("Request body is missing.");
 
@@ -126,6 +127,17 @@ public class GatewayController : ControllerBase
         if (request.CurrentLocationId.HasValue)
             data["CurrentLocationId"] = request.CurrentLocationId.Value;
 
+=======
+        if (request.GatewayId <= 0)
+            return BadRequest("DeviceId must be provided by IoT and must be greater than 0.");
+
+        var data = new Dictionary<string, object>
+        {
+            ["Id"] = request.GatewayId, // From IoT
+            ["GatewayURL"] = request.GatewayURL,
+            ["CurrentLocationId"] = request.CurrentLocationId
+        };
+>>>>>>> origin/development
 
         try
         {
@@ -138,6 +150,7 @@ public class GatewayController : ControllerBase
         }
     }
 
+<<<<<<< HEAD
     /// <summary>
     /// Fetches the ID of a gateway using optional filters.
     /// </summary>
@@ -181,6 +194,8 @@ public class GatewayController : ControllerBase
 
 
 
+=======
+>>>>>>> origin/development
 
 }
 
