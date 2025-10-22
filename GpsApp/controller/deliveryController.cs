@@ -28,6 +28,7 @@ public class DeliveryController : ControllerBase
     }
 
     [HttpGet("retrieve")]
+    [Authorize]
     public async Task<IActionResult> GetDelivery([FromQuery] int? id)
     {
 
