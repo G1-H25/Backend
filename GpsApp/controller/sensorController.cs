@@ -348,6 +348,43 @@ public class SensorController : ControllerBase
         return result.Any() ? Ok(result) : NotFound("No sensor humidity records found.");
     }
 
+    /// <summary>
+    /// Fetches the ID of a sensor data record using optional filters.
+    /// </summary>
+    /// <param name="gatewayId">Required: The ID of the gateway associated with the sensor reading.</param>
+    /// <param name="polledAt">Required: The timestamp when the sensor data was recorded.</param>
+    /// <returns>
+    /// Returns the ID of the matching sensor data record if found; 404 if not found or if parameters are invalid.
+    /// </returns>
+    [HttpGet("id")]
+    public async Task<IActionResult> GetSensorIdByFilters(
+        [FromQuery] int? gatewayId,
+        [FromQuery] DateTime? polledAt)
+    {
+        if (!gatewayId.HasValue || gatewayId.Value <= 0)
+            return BadRequest("Valid GatewayId is required.");
+
+        if (!polledAt.HasValue)
+            return BadRequest("PolledAt timestamp is required.");
+
+        var filters = new Dictionary<string, object>
+        {
+            ["GatewayId"] = gatewayId.Value,
+            ["PolledAt"] = polledAt.Value
+        };
+
+        var result = await _sqlGet.FetchAsync(
+            tableName: "Measurements.SensorData",
+            filters: filters,
+            columns: new[] { "Id" }
+        );
+
+        if (result == null || !result.Any())
+            return NotFound("Sensor data not found.");
+
+        return Ok(new { Id = Convert.ToInt32(result["Id"]) });
+    }
+
 
 
 

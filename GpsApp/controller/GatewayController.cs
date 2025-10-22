@@ -90,15 +90,42 @@ public class GatewayController : ControllerBase
     [HttpPost("insert")]
     public async Task<IActionResult> InsertGateway([FromBody] GatewayInsertRequest request)
     {
+        if (request == null)
+         return BadRequest("Request body is missing.");
+
         if (request.GatewayId <= 0)
             return BadRequest("DeviceId must be provided by IoT and must be greater than 0.");
 
+        // validate that the inserted existinglocation exists, only checks if provided a value
+        if (request.CurrentLocationId.HasValue)
+        {
+            var existingLocation = await _getService.FetchAsync(
+                "Secrets.LocationHistory",
+                new Dictionary<string, object> { ["Id"] = request.CurrentLocationId.Value }
+            );
+            if (existingLocation == null)
+                return BadRequest($"Location with ID {request.CurrentLocationId.Value} does not exist.");
+        }
+
+        // Check if gateway already exists
+        var existingGateway = await _getService.FetchAsync(
+            "Secrets.Gateway",
+            new Dictionary<string, object> { ["Id"] = request.GatewayId }
+        );
+        if (existingGateway != null)
+            return Conflict($"A gateway with ID {request.GatewayId} already exists.");
+
+
         var data = new Dictionary<string, object>
         {
-            ["Id"] = request.GatewayId, // From IoT
-            ["GatewayURL"] = request.GatewayURL,
-            ["CurrentLocationId"] = request.CurrentLocationId
+            ["Id"] = request.GatewayId
         };
+        if (!string.IsNullOrWhiteSpace(request.GatewayURL))
+            data["GatewayURL"] = request.GatewayURL;
+
+        if (request.CurrentLocationId.HasValue)
+            data["CurrentLocationId"] = request.CurrentLocationId.Value;
+
 
         try
         {
@@ -110,6 +137,49 @@ public class GatewayController : ControllerBase
             return StatusCode(500, "An unexpected error occurred while accessing the database.");
         }
     }
+
+    /// <summary>
+    /// Fetches the ID of a gateway using optional filters.
+    /// </summary>
+    /// <param name="gatewayId">Optional: The device-assigned gateway ID.</param>
+    /// <param name="gatewayUrl">Optional: The URL of the gateway.</param>
+    /// <param name="currentLocationId">Optional: Current location associated with the gateway.</param>
+    /// <returns>
+    /// Returns a single gateway ID if found, or 404 if not.
+    /// </returns>
+    [HttpGet("id")]
+    public async Task<IActionResult> GetGatewayIdByFilters(
+        [FromQuery] int? gatewayId,
+        [FromQuery] string? gatewayUrl,
+        [FromQuery] int? currentLocationId)
+    {
+        var filters = new Dictionary<string, object>();
+
+        if (gatewayId.HasValue && gatewayId.Value > 0)
+            filters.Add("Id", gatewayId.Value);
+
+        if (!string.IsNullOrWhiteSpace(gatewayUrl))
+            filters.Add("GatewayURL", gatewayUrl);
+
+        if (currentLocationId.HasValue && currentLocationId.Value > 0)
+            filters.Add("CurrentLocationId", currentLocationId.Value);
+
+        if (filters.Count == 0)
+            return BadRequest("At least one filter parameter is required.");
+
+        var result = await _getService.FetchAsync(
+            tableName: "Secrets.Gateway",
+            filters: filters,
+            columns: new[] { "Id" }
+        );
+
+        if (result == null || !result.Any())
+            return NotFound("Gateway not found.");
+
+        return Ok(new { Id = Convert.ToInt32(result["Id"]) });
+    }
+
+
 
 
 }
