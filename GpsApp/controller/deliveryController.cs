@@ -15,16 +15,20 @@ public class DeliveryController : ControllerBase
     private readonly ISqlGet _sqlGet;
     private readonly IAuthorizationService _authService;
 
+    private readonly SqlUpdate _sqlUpdate;
+
     // get the connectionstring to azure database, authorization access
-    public DeliveryController(SqlInsert insertService, IAuthorizationService authService, ISqlGetAdvanced sqlGetAdvanced, ISqlGet sqlGet)
+    public DeliveryController(SqlInsert insertService, IAuthorizationService authService, ISqlGetAdvanced sqlGetAdvanced, ISqlGet sqlGet, SqlUpdate sqlUpdate)
     {
         _insertService = insertService;
         _authService = authService;
         _sqlAdvanced = sqlGetAdvanced;
         _sqlGet = sqlGet;
+        _sqlUpdate = sqlUpdate;
     }
 
     [HttpGet("retrieve")]
+    [Authorize]
     public async Task<IActionResult> GetDelivery([FromQuery] int? id)
     {
 
@@ -104,15 +108,23 @@ public class DeliveryController : ControllerBase
 
         return result.Any() ? Ok(result) : NotFound("No delivery records found.");
     }
-    /*
+
     [HttpPost("create")]
     [Authorize]
     public async Task<IActionResult> CreateDelivery([FromBody] DeliveryCreateRequest request)
     {
-        var sensor = await _sqlGet.FetchAsync("Measurements.Sensor", new Dictionary<string, object>
+        // Validate IDs upfront
+        if (request.RouteId <= 0 || request.SensorId <= 0 ||
+            request.RecipientId <= 0 || request.SenderId <= 0 ||
+            request.CarrierId <= 0)
         {
-            { "Id", request.SensorId }
-        });
+            return BadRequest("Missing or invalid IDs.");
+        }
+
+        var sensor = await _sqlGet.FetchAsync("Measurements.Sensor", new Dictionary<string, object>
+    {
+        { "Id", request.SensorId }
+    });
 
         if (sensor == null)
             return NotFound("Sensor not found.");
@@ -126,47 +138,23 @@ public class DeliveryController : ControllerBase
         if (!canAccess)
             return Forbid("You do not have access to this sensor's gateway.");
 
-
-        // Validate required fields (add more validations as needed)
-        if (request.RouteId <= 0 || request.SensorId <= 0 || 
-            request.RecipientId <= 0 || request.SenderId <= 0 || request.CarrierId <= 0)
-            return BadRequest("Missing or invalid IDs.");
-
-        // 1. Insert ExpectedTemp
-        var expectedTempValues = new Dictionary<string, object>
-        {
-            { "Note", request.ExpectedTemp.Note },
-            { "Min", request.ExpectedTemp.Min },
-            { "Max", request.ExpectedTemp.Max }
-        };
-        int expectedTempId = await _insertService.InsertAndReturnIdAsync("Measurements.ExpectedTemp", expectedTempValues);
-
-        // 2. Insert ExpectedHumid
-        var expectedHumidValues = new Dictionary<string, object>
-        {
-            { "Note", request.ExpectedHumid.Note },
-            { "Min", request.ExpectedHumid.Min },
-            { "Max", request.ExpectedHumid.Max }
-        };
-        int expectedHumidId = await _insertService.InsertAndReturnIdAsync("Measurements.ExpectedHumid", expectedHumidValues);
-
-        // 3. Insert Delivery
+        // Insert delivery record
         var deliveryValues = new Dictionary<string, object>
-        {
-            { "RouteId", request.RouteId },
-            { "SensorId", request.SensorId },
-            { "ExpectedTempId", expectedTempId },
-            { "ExpectedHumidId", expectedHumidId },
-            { "RecipientId", request.RecipientId },
-            { "SenderId", request.SenderId },
-            { "CarrierId", request.CarrierId },
-            { "OrderPlaced", request.OrderPlaced }
-        };
+    {
+        { "RouteId", request.RouteId },
+        { "SensorId", request.SensorId },
+        { "RecipientId", request.RecipientId },
+        { "SenderId", request.SenderId },
+        { "CarrierId", request.CarrierId },
+        { "OrderPlaced", request.OrderPlaced }
+    };
 
         int deliveryId = await _insertService.InsertAndReturnIdAsync("Orders.Delivery", deliveryValues);
 
         return Ok(new { message = "Delivery created", deliveryId });
-    } 
-    */
+    }
+
+
+
 }
 
