@@ -91,7 +91,7 @@ public class GatewayController : ControllerBase
     public async Task<IActionResult> InsertGateway([FromBody] GatewayInsertRequest request)
     {
         if (request == null)
-         return BadRequest("Request body is missing.");
+            return BadRequest("Request body is missing.");
 
         if (request.GatewayId <= 0)
             return BadRequest("DeviceId must be provided by IoT and must be greater than 0.");

@@ -108,38 +108,38 @@ public class DeliveryController : ControllerBase
 
         return result.Any() ? Ok(result) : NotFound("No delivery records found.");
     }
-    
-[HttpPost("create")]
-[Authorize]
-public async Task<IActionResult> CreateDelivery([FromBody] DeliveryCreateRequest request)
-{
-    // Validate IDs upfront
-    if (request.RouteId <= 0 || request.SensorId <= 0 || 
-        request.RecipientId <= 0 || request.SenderId <= 0 || 
-        request.CarrierId <= 0)
-    {
-        return BadRequest("Missing or invalid IDs.");
-    }
 
-    var sensor = await _sqlGet.FetchAsync("Measurements.Sensor", new Dictionary<string, object>
+    [HttpPost("create")]
+    [Authorize]
+    public async Task<IActionResult> CreateDelivery([FromBody] DeliveryCreateRequest request)
+    {
+        // Validate IDs upfront
+        if (request.RouteId <= 0 || request.SensorId <= 0 ||
+            request.RecipientId <= 0 || request.SenderId <= 0 ||
+            request.CarrierId <= 0)
+        {
+            return BadRequest("Missing or invalid IDs.");
+        }
+
+        var sensor = await _sqlGet.FetchAsync("Measurements.Sensor", new Dictionary<string, object>
     {
         { "Id", request.SensorId }
     });
 
-    if (sensor == null)
-        return NotFound("Sensor not found.");
+        if (sensor == null)
+            return NotFound("Sensor not found.");
 
-    if (!sensor.ContainsKey("GatewayId"))
-        return BadRequest("Sensor has no associated gateway.");
+        if (!sensor.ContainsKey("GatewayId"))
+            return BadRequest("Sensor has no associated gateway.");
 
-    int gatewayId = Convert.ToInt32(sensor["GatewayId"]);
+        int gatewayId = Convert.ToInt32(sensor["GatewayId"]);
 
-    bool canAccess = await _authService.UserCanAccessDevice(User, gatewayId);
-    if (!canAccess)
-        return Forbid("You do not have access to this sensor's gateway.");
+        bool canAccess = await _authService.UserCanAccessDevice(User, gatewayId);
+        if (!canAccess)
+            return Forbid("You do not have access to this sensor's gateway.");
 
-    // Insert delivery record
-    var deliveryValues = new Dictionary<string, object>
+        // Insert delivery record
+        var deliveryValues = new Dictionary<string, object>
     {
         { "RouteId", request.RouteId },
         { "SensorId", request.SensorId },
@@ -149,12 +149,12 @@ public async Task<IActionResult> CreateDelivery([FromBody] DeliveryCreateRequest
         { "OrderPlaced", request.OrderPlaced }
     };
 
-    int deliveryId = await _insertService.InsertAndReturnIdAsync("Orders.Delivery", deliveryValues);
+        int deliveryId = await _insertService.InsertAndReturnIdAsync("Orders.Delivery", deliveryValues);
 
-    return Ok(new { message = "Delivery created", deliveryId });
-}
+        return Ok(new { message = "Delivery created", deliveryId });
+    }
 
 
-    
+
 }
 

@@ -39,7 +39,7 @@ public class ExpectedTempController : ControllerBase
         int expectedTempId = await _insertService.InsertAndReturnIdAsync("Measurements.ExpectedTemp", values);
 
         // 2. Update sensor to point to the new ExpectedTemp
-        await _sqlUpdate.UpdateAsync("Measurements.Sensor", 
+        await _sqlUpdate.UpdateAsync("Measurements.Sensor",
             new Dictionary<string, object> { { "ExpectedTempId", expectedTempId } },
             new Dictionary<string, object> { { "Id", request.SensorId } });
 

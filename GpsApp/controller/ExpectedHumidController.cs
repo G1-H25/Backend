@@ -39,7 +39,7 @@ public class ExpectedHumidController : ControllerBase
         int expectedHumidId = await _insertService.InsertAndReturnIdAsync("Measurements.ExpectedHumid", values);
 
         // 2. Update sensor to point to the new ExpectedHumid
-        await _sqlUpdate.UpdateAsync("Measurements.Sensor", 
+        await _sqlUpdate.UpdateAsync("Measurements.Sensor",
             new Dictionary<string, object> { { "ExpectedHumidId", expectedHumidId } },
             new Dictionary<string, object> { { "Id", request.SensorId } });
 
