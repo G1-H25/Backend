@@ -12,6 +12,7 @@ IF NOT EXISTS (
 BEGIN
     INSERT INTO Measurements.Sensor(
         GatewayId, 
+        UUID,
         PolledAt, 
         TemperatureCel, 
         HumdityPct, 
@@ -20,6 +21,6 @@ BEGIN
         HumidMinMeasured,
         HumidMaxMeasured
         )
-    VALUES (@GatewayId, @Now, 5.4, 60.0, 4.9, 6.7, 40, 78.0);
+    VALUES (@GatewayId, NEWID(), @Now, 5.4, 60.0, 4.9, 6.7, 40, 78.0);
 END
 GO

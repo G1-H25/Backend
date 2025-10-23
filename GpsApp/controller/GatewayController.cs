@@ -77,7 +77,7 @@ public class GatewayController : ControllerBase
     /// <summary>
     /// Inserts a new gateway record into the database.
     /// </summary>
-    /// <param name="request">The gateway insert request containing the required GatewayId, and optional GatewayURL and CurrentLocationId.</param>
+    /// <param name="request">The gateway insert request containing the required GatewayId, UUID and optional GatewayURL and CurrentLocationId.</param>
     /// <returns>
     /// Returns an <see cref="OkObjectResult"/> if the gateway is inserted successfully,
     /// <see cref="BadRequestObjectResult"/> if the GatewayId is invalid or missing,
@@ -93,8 +93,9 @@ public class GatewayController : ControllerBase
         if (request == null)
             return BadRequest("Request body is missing.");
 
-        if (request.GatewayId <= 0)
-            return BadRequest("DeviceId must be provided by IoT and must be greater than 0.");
+        // validate that UUID is passed in
+        if (request.UUID == Guid.Empty)
+            return BadRequest("UUID must be a valid non-empty GUID.");
 
         // validate that the inserted existinglocation exists, only checks if provided a value
         if (request.CurrentLocationId.HasValue)
@@ -110,15 +111,15 @@ public class GatewayController : ControllerBase
         // Check if gateway already exists
         var existingGateway = await _getService.FetchAsync(
             "Secrets.Gateway",
-            new Dictionary<string, object> { ["Id"] = request.GatewayId }
+            new Dictionary<string, object> { ["UUID"] = request.UUID }
         );
         if (existingGateway != null)
-            return Conflict($"A gateway with ID {request.GatewayId} already exists.");
+            return Conflict($"A gateway with UUID {request.UUID} already exists.");
 
 
         var data = new Dictionary<string, object>
         {
-            ["Id"] = request.GatewayId
+            ["UUID"] =  request.UUID
         };
         if (!string.IsNullOrWhiteSpace(request.GatewayURL))
             data["GatewayURL"] = request.GatewayURL;
@@ -130,7 +131,7 @@ public class GatewayController : ControllerBase
         try
         {
             await _insertService.InsertAsync("Secrets.Gateway", data);
-            return Ok("Gateway inserted successfully.");
+            return Ok($"Inserted, {request.UUID}");
         }
         catch (Exception ex)
         {

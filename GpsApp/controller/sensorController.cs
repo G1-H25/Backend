@@ -12,14 +12,16 @@ public class SensorController : ControllerBase
     private readonly ISqlGetAdvanced _sqlGetAdvanced;
     private readonly ISqlGet _sqlGet;
     private readonly IAuthorizationService _authService;
+    private readonly SqlUpdate _sqlUpdate;
 
     // get the connectionstring to azure database, authorization access
-    public SensorController(SqlInsert insertService, IAuthorizationService authService, ISqlGetAdvanced sqlGetAdvanced, ISqlGet sqlGet)
+    public SensorController(SqlInsert insertService, IAuthorizationService authService, ISqlGetAdvanced sqlGetAdvanced, ISqlGet sqlGet, SqlUpdate sqlupdate)
     {
         _insertService = insertService;
         _authService = authService;
         _sqlGetAdvanced = sqlGetAdvanced;
         _sqlGet = sqlGet;
+        _sqlUpdate = sqlupdate;
     }
 
     /// <summary>
@@ -44,7 +46,7 @@ public class SensorController : ControllerBase
     /// - If no previous sensor reading exists, current values are assumed as the initial min/max.
     /// </remarks>
     [HttpPost]
-    [Authorize] // Require JWT
+    // [Authorize] // Require JWT
     public async Task<IActionResult> PostSensorData([FromBody] SensorDto data)
     {
         // declare temporary variables
@@ -52,10 +54,11 @@ public class SensorController : ControllerBase
         DateTime? tempTimerStart;
         int humidTimeOutside;
         DateTime? humidTimerStart;
+
         //  1. Validate user access to the specified GatewayId via JWT-based authorization
-        var canAccess = await _authService.UserCanAccessDevice(User, data.GatewayId);
-        if (!canAccess)
-            return Forbid("You do not have access to this gateway.");
+        // var canAccess = await _authService.UserCanAccessDevice(User, data.GatewayId);
+        // if (!canAccess)
+        //    return Forbid("You do not have access to this gateway.");
 
 
         //  2. Validate input fields
@@ -70,6 +73,10 @@ public class SensorController : ControllerBase
 
         if (data.HumdityPct == null)
             return BadRequest("HumdityPct must be provided.");
+        
+        // validate that UUID is passed in
+        if (data.UUID == Guid.Empty)
+            return BadRequest("UUID must be a valid non-empty GUID.");
 
         // validate that gateway does exist, if not return error 400
         var gatewayExists = await _sqlGet.FetchAsync("Secrets.Gateway", new Dictionary<string, object> { { "Id", data.GatewayId } });
@@ -124,7 +131,6 @@ public class SensorController : ControllerBase
         float humidMinMeasured = Math.Min(data.HumdityPct.Value, lastReading?.HumidMinMeasured ?? data.HumdityPct.Value);
         float humidMaxMeasured = Math.Max(data.HumdityPct.Value, lastReading?.HumidMaxMeasured ?? data.HumdityPct.Value);
 
-
         // Use the timestamp of the current reading as reference
         var now = data.PolledAt;
 
@@ -150,6 +156,7 @@ public class SensorController : ControllerBase
         var dataDict = new Dictionary<string, object>
     {
         { "GatewayId", data.GatewayId },
+        { "UUID", data.UUID },
         { "PolledAt", data.PolledAt },
         { "TemperatureCel", data.TemperatureCel },
         { "HumdityPct", data.HumdityPct },
@@ -161,13 +168,39 @@ public class SensorController : ControllerBase
         { "TempMaxMeasured", tempMaxMeasured },
         { "HumidMinMeasured", humidMinMeasured },
         { "HumidMaxMeasured", humidMaxMeasured }
-    };
+    };  
 
+            // Fetch existing sensor record by GatewayId + UUID
+    var existingRecord = await _sqlGet.FetchAsync("Measurements.Sensor", new Dictionary<string, object>
+    {
+        { "GatewayId", data.GatewayId },
+        { "UUID", data.UUID }
+    });
+
+    if (existingRecord != null)
+    {
+        // Update live data fields only
+        var updateDict = new Dictionary<string, object>
+        {
+            { "TemperatureCel", data.TemperatureCel },
+            { "HumdityPct", data.HumdityPct },
+            { "PolledAt", data.PolledAt }
+            // Add more fields here if you want to update summarized data on update
+        };
+
+        await _sqlUpdate.UpdateAsync("Measurements.Sensor", updateDict, new Dictionary<string, object>
+        {
+            { "Id", existingRecord["Id"] }
+        });
+    }
+    else
+    {
         //  8. Insert new sensor record into the database
         await _insertService.InsertAsync("Measurements.Sensor", dataDict);
+    }
 
         //  9. Return success response
-        return Ok("Inserted");
+        return Ok($"Inserted, {data.UUID}");
     }
 
 

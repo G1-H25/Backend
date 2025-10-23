@@ -2,6 +2,7 @@ IF OBJECT_ID('Measurements.Sensor', 'U') IS NULL
 BEGIN
     CREATE TABLE Measurements.Sensor (
         Id INT IDENTITY (1, 1) PRIMARY KEY,
+        UUID UNIQUEIDENTIFIER NOT NULL,
         GatewayId INT NOT NULL CONSTRAINT FK_Sensor_Gateway
             FOREIGN KEY (GatewayId) REFERENCES Secrets.Gateway(Id),
         ExpectedTempId INT NULL CONSTRAINT FK_Delivery_ExpTempId
