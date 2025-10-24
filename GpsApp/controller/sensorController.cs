@@ -67,6 +67,12 @@ public class SensorController : ControllerBase
     /// </para>
     /// </remarks>
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [Consumes("application/json")]
+    [Produces("application/json")]
     // [Authorize] // Require JWT
     public async Task<IActionResult> PostSensorData([FromBody] SensorDto data)
     {
@@ -443,7 +449,7 @@ public class SensorController : ControllerBase
     /// <summary>
     /// Processes multiple sensor readings in a single batch operation.
     /// </summary>
-    /// <param name="batchedRequest">Batched sensor data containing gateway UUID and multiple sensor readings.</param>
+    /// <param name="request">Batched sensor data containing gateway UUID and multiple sensor readings.</param>
     /// <returns>
     /// Returns:
     /// <list type="bullet">
@@ -455,8 +461,20 @@ public class SensorController : ControllerBase
     /// This endpoint processes multiple sensor readings in a single request for improved efficiency.
     /// Each reading is validated individually, and only valid readings are processed.
     /// Invalid readings are skipped and reported in the response.
+    ///
+    /// The request should contain:
+    /// - GatewayUUID: Valid GUID identifying the gateway
+    /// - Readings: Collection of sensor data with measurements
+    ///
+    /// Response includes processing summary with counts of successful and failed operations.
     /// </remarks>
     [HttpPost("batch")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [Consumes("application/json")]
+    [Produces("application/json")]
     // [Authorize] // Require JWT
     public async Task<IActionResult> PostBatchedSensorData([FromBody] ConnectedToGateway request)
     {
