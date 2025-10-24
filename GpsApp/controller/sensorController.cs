@@ -848,45 +848,14 @@ public class SensorController : ControllerBase
         // Calculate OFFSET for pagination
         var offset = (page - 1) * pageSize;
 
-        // Build the main query with pagination
-        var sql = @"
-            SELECT
-                sensor.Id AS SensorId,
-                sensor.GatewayId,
-                sensor.PolledAt,
-                sensor.TemperatureCel,
-                sensor.HumdityPct,
-                sensor.TempTimeOutside,
-                sensor.HumidTimeOutside
-            FROM Measurements.Sensor sensor
-            WHERE sensor.GatewayId = @GatewayId";
-
-        if (fromDate.HasValue)
-            sql += " AND sensor.PolledAt >= @FromDate";
-        if (toDate.HasValue)
-            sql += " AND sensor.PolledAt <= @ToDate";
-
-        sql += @"
-            ORDER BY sensor.PolledAt DESC
-            OFFSET @Offset ROWS
-            FETCH NEXT @PageSize ROWS ONLY";
-
-        await using var conn = new SqlConnection(_sqlGetAdvanced.ConnectionString);
-        await using var cmd = new SqlCommand(sql, conn);
-
-        cmd.Parameters.AddWithValue("@GatewayId", gatewayId);
-        if (fromDate.HasValue)
-            cmd.Parameters.AddWithValue("@FromDate", fromDate.Value);
-        if (toDate.HasValue)
-            cmd.Parameters.AddWithValue("@ToDate", toDate.Value);
-        cmd.Parameters.AddWithValue("@Offset", offset);
-        cmd.Parameters.AddWithValue("@PageSize", pageSize);
-
-        await conn.OpenAsync();
-        await using var reader = await cmd.ExecuteReaderAsync();
-
-        var readings = new List<SensorReadingDto>();
-
+        // Use repository abstraction for paginated sensor readings
+        var readings = await _sqlGetAdvanced.GetSensorReadingsPaginatedAsync(
+            gatewayId,
+            fromDate,
+            toDate,
+            offset,
+            pageSize
+        );
         while (await reader.ReadAsync())
         {
             readings.Add(new SensorReadingDto(
