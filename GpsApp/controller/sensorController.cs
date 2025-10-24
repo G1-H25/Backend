@@ -24,45 +24,45 @@ public class SensorController : ControllerBase
         _sqlUpdate = sqlupdate;
     }
 
-/// <summary>
-/// Inserts or updates sensor data for a specified gateway and sensor device.
-/// </summary>
-/// <param name="data">Sensor reading data (gateway ID, UUID, optional Timestamp, Temperature Value, Humidity Value.</param>
-/// <returns>
-/// Returns:
-/// <list type="bullet">
-/// <item><description>200 OK with confirmation message if the data was successfully inserted or updated.</description></item>
-/// <item><description>400 Bad Request if validation fails (invalid GatewayId, missing fields, or gateway does not exist).</description></item>
-/// </list>
-/// </returns>
-/// <remarks>
-/// This endpoint performs the following steps:
-/// <para>1. Validates required fields in <see cref="SensorDto"/>:</para>
-/// <list type="bullet">
-///   <item><description><c>GatewayId</c> must be a positive integer.</description></item>
-///   <item><description><c>TemperatureCel</c> and <c>HumdityPct</c> must be non-null.</description></item>
-///   <item><description><c>UUID</c> must be a valid, non-empty GUID.</description></item>
-/// </list>
-/// <para>3. Confirms that the specified gateway exists in the database; otherwise, returns a 400 error.</para>
-/// <para>4. Retrieves the most recent sensor reading  for the given gateway and sensor <c>UUID</c> to compare previous sensor state and summarization data.</para>
-/// <para>5. Calculates:</para>
-/// <list type="bullet">
-///   <item><description>Total time the temperature and humidity have been outside predefined acceptable ranges (temperature: 10–30°C, humidity: 20–80% (Currently Mocked)).</description></item>
-///   <item><description>Updated timer start timestamps for both temperature and humidity, tracking when values go out of range.</description></item>
-///   <item><description>The lowest and highest recorded temperature and humidity values to date (min/max tracking).</description></item>
-/// </list>
-/// <para>6. If an existing sensor record is found (matched by <c>GatewayId</c> and <c>UUID</c>), the endpoint performs an <b>UPDATE</b> on the live sensor fields (<c>TemperatureCel</c>, <c>HumdityPct</c>, <c>PolledAt</c>) and can optionally update summarized data.</para>
-/// <para>7. If no previous sensor record exists, a new record is <b>INSERTED</b> into <c>Measurements.Sensor</c> with all calculated values.</para>
-/// <para>8. Returns 200 OK with confirmation on success.</para>
-/// <para>
-/// <b>Important:</b> The sensor <c>UUID</c> is used to identify individual sensor devices attached to gateways. 
-/// Multiple sensors can belong to a single gateway. Updates and inserts are based on <c>GatewayId</c> + <c>UUID</c>.
-/// </para>
-/// <para>
-/// 
-/// This route maintains live sensor values and aggregates summary data in one record per sensor while tracking historical min/max and out-of-range durations.
-/// </para>
-/// </remarks>
+    /// <summary>
+    /// Inserts or updates sensor data for a specified gateway and sensor device.
+    /// </summary>
+    /// <param name="data">Sensor reading data (gateway ID, UUID, optional Timestamp, Temperature Value, Humidity Value.</param>
+    /// <returns>
+    /// Returns:
+    /// <list type="bullet">
+    /// <item><description>200 OK with confirmation message if the data was successfully inserted or updated.</description></item>
+    /// <item><description>400 Bad Request if validation fails (invalid GatewayId, missing fields, or gateway does not exist).</description></item>
+    /// </list>
+    /// </returns>
+    /// <remarks>
+    /// This endpoint performs the following steps:
+    /// <para>1. Validates required fields in <see cref="SensorDto"/>:</para>
+    /// <list type="bullet">
+    ///   <item><description><c>GatewayId</c> must be a positive integer.</description></item>
+    ///   <item><description><c>TemperatureCel</c> and <c>HumdityPct</c> must be non-null.</description></item>
+    ///   <item><description><c>UUID</c> must be a valid, non-empty GUID.</description></item>
+    /// </list>
+    /// <para>3. Confirms that the specified gateway exists in the database; otherwise, returns a 400 error.</para>
+    /// <para>4. Retrieves the most recent sensor reading  for the given gateway and sensor <c>UUID</c> to compare previous sensor state and summarization data.</para>
+    /// <para>5. Calculates:</para>
+    /// <list type="bullet">
+    ///   <item><description>Total time the temperature and humidity have been outside predefined acceptable ranges (temperature: 10–30°C, humidity: 20–80% (Currently Mocked)).</description></item>
+    ///   <item><description>Updated timer start timestamps for both temperature and humidity, tracking when values go out of range.</description></item>
+    ///   <item><description>The lowest and highest recorded temperature and humidity values to date (min/max tracking).</description></item>
+    /// </list>
+    /// <para>6. If an existing sensor record is found (matched by <c>GatewayId</c> and <c>UUID</c>), the endpoint performs an <b>UPDATE</b> on the live sensor fields (<c>TemperatureCel</c>, <c>HumdityPct</c>, <c>PolledAt</c>) and can optionally update summarized data.</para>
+    /// <para>7. If no previous sensor record exists, a new record is <b>INSERTED</b> into <c>Measurements.Sensor</c> with all calculated values.</para>
+    /// <para>8. Returns 200 OK with confirmation on success.</para>
+    /// <para>
+    /// <b>Important:</b> The sensor <c>UUID</c> is used to identify individual sensor devices attached to gateways. 
+    /// Multiple sensors can belong to a single gateway. Updates and inserts are based on <c>GatewayId</c> + <c>UUID</c>.
+    /// </para>
+    /// <para>
+    /// 
+    /// This route maintains live sensor values and aggregates summary data in one record per sensor while tracking historical min/max and out-of-range durations.
+    /// </para>
+    /// </remarks>
     [HttpPost]
     // [Authorize] // Require JWT
     public async Task<IActionResult> PostSensorData([FromBody] SensorDto data)
@@ -91,7 +91,7 @@ public class SensorController : ControllerBase
 
         if (data.HumdityPct == null)
             return BadRequest("HumdityPct must be provided.");
-        
+
         // validate that UUID is passed in
         if (data.UUID == Guid.Empty)
             return BadRequest("UUID must be a valid non-empty GUID.");
@@ -194,19 +194,19 @@ public class SensorController : ControllerBase
         { "TempMaxMeasured", tempMaxMeasured },
         { "HumidMinMeasured", humidMinMeasured },
         { "HumidMaxMeasured", humidMaxMeasured }
-    };  
+    };
 
-            // Fetch existing sensor record by GatewayId + UUID
-    var existingRecord = await _sqlGet.FetchAsync("Measurements.Sensor", new Dictionary<string, object>
+        // Fetch existing sensor record by GatewayId + UUID
+        var existingRecord = await _sqlGet.FetchAsync("Measurements.Sensor", new Dictionary<string, object>
     {
         { "GatewayId", gatewayId },
         { "UUID", data.UUID }
     });
 
-    if (existingRecord != null)
-    {
-        // Update live data fields only
-        var updateDict = new Dictionary<string, object>
+        if (existingRecord != null)
+        {
+            // Update live data fields only
+            var updateDict = new Dictionary<string, object>
         {
             { "TemperatureCel", data.TemperatureCel },
             { "HumdityPct", data.HumdityPct },
@@ -214,16 +214,16 @@ public class SensorController : ControllerBase
             // Add more fields here if you want to update summarized data on update
         };
 
-        await _sqlUpdate.UpdateAsync("Measurements.Sensor", updateDict, new Dictionary<string, object>
+            await _sqlUpdate.UpdateAsync("Measurements.Sensor", updateDict, new Dictionary<string, object>
         {
             { "Id", existingRecord["Id"] }
         });
-    }
-    else
-    {
-        //  8. Insert new sensor record into the database
-        await _insertService.InsertAsync("Measurements.Sensor", dataDict);
-    }
+        }
+        else
+        {
+            //  8. Insert new sensor record into the database
+            await _insertService.InsertAsync("Measurements.Sensor", dataDict);
+        }
 
         //  9. Return success response
         return Ok($"Inserted, {data.UUID}");

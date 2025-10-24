@@ -119,7 +119,7 @@ public class GatewayController : ControllerBase
 
         var data = new Dictionary<string, object>
         {
-            ["UUID"] =  request.UUID
+            ["UUID"] = request.UUID
         };
         if (!string.IsNullOrWhiteSpace(request.GatewayURL))
             data["GatewayURL"] = request.GatewayURL;
