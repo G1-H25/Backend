@@ -652,18 +652,55 @@ public class SensorController : ControllerBase
             float humidMaxMeasured = Math.Max(data.HumdityPct.Value, lastReading?.HumidMaxMeasured ?? data.HumdityPct.Value);
 
             // Calculate time outside range
+            // Retrieve expected temperature and humidity ranges for this sensor
+            float expectedTempMin = 10f;
+            float expectedTempMax = 30f;
+            float expectedHumidMin = 20f;
+            float expectedHumidMax = 80f;
+
+            using (var conn = new SqlConnection(_insertService.ConnectionString))
+            {
+                conn.Open();
+                // Get expected temperature range
+                using (var cmd = new SqlCommand("SELECT MinTemp, MaxTemp FROM ExpectedTemp WHERE GatewayId = @GatewayId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@GatewayId", gatewayId);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            expectedTempMin = reader["MinTemp"] != DBNull.Value ? Convert.ToSingle(reader["MinTemp"]) : expectedTempMin;
+                            expectedTempMax = reader["MaxTemp"] != DBNull.Value ? Convert.ToSingle(reader["MaxTemp"]) : expectedTempMax;
+                        }
+                    }
+                }
+                // Get expected humidity range
+                using (var cmd = new SqlCommand("SELECT MinHumid, MaxHumid FROM ExpectedHumid WHERE GatewayId = @GatewayId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@GatewayId", gatewayId);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            expectedHumidMin = reader["MinHumid"] != DBNull.Value ? Convert.ToSingle(reader["MinHumid"]) : expectedHumidMin;
+                            expectedHumidMax = reader["MaxHumid"] != DBNull.Value ? Convert.ToSingle(reader["MaxHumid"]) : expectedHumidMax;
+                        }
+                    }
+                }
+            }
+
             var (tempTimeOutside, tempTimerStart) = TrackingTimeOutsideRange.TrackTimeOutsideRange(
                 currentValue: data.TemperatureCel.Value,
-                expectedMin: 10,
-                expectedMax: 30,
+                expectedMin: expectedTempMin,
+                expectedMax: expectedTempMax,
                 currentTimestamp: data.PolledAt,
                 lastTimerStart: lastReading?.TempTimerStart
             );
 
             var (humidTimeOutside, humidTimerStart) = TrackingTimeOutsideRange.TrackTimeOutsideRange(
                 currentValue: data.HumdityPct.Value,
-                expectedMin: 20,
-                expectedMax: 80,
+                expectedMin: expectedHumidMin,
+                expectedMax: expectedHumidMax,
                 currentTimestamp: data.PolledAt,
                 lastTimerStart: lastReading?.HumidTimerStart
             );
