@@ -3,6 +3,7 @@ using System.Data;
 
 public interface ISqlGetAdvanced
 {
+    string ConnectionString { get; }
     Task<List<T>> FetchWithJoinsAsync<T>(
         string baseTable,
         string selectClause,
@@ -20,6 +21,8 @@ public class SqlGetAdvanced : ISqlGetAdvanced
     {
         _connectionString = connectionString;
     }
+
+    public string ConnectionString => _connectionString;
 
     /// <summary>
     /// Executes a dynamic SELECT query with JOINs, optional WHERE filters, and optional mapping to a custom type.

@@ -12,6 +12,7 @@ namespace GpsApp.Tests.Unit
         public DbSet<TestGateway> Gateways { get; set; }
         public DbSet<TestSensor> Sensors { get; set; }
         public DbSet<TestAccount> Accounts { get; set; }
+        public DbSet<TestDelivery> Deliveries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -40,6 +41,19 @@ namespace GpsApp.Tests.Unit
                 entity.ToTable("Account", "Secrets");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.CompanyId).IsRequired();
+            });
+
+            // Delivery table
+            modelBuilder.Entity<TestDelivery>(entity =>
+            {
+                entity.ToTable("Delivery", "Orders");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.SensorId).IsRequired();
+                entity.Property(e => e.RouteId).IsRequired();
+                entity.Property(e => e.RecipientId).IsRequired();
+                entity.Property(e => e.SenderId).IsRequired();
+                entity.Property(e => e.CarrierId).IsRequired();
+                entity.Property(e => e.OrderPlaced).IsRequired();
             });
         }
     }
@@ -73,5 +87,16 @@ namespace GpsApp.Tests.Unit
     {
         public int Id { get; set; }
         public int CompanyId { get; set; }
+    }
+
+    public class TestDelivery
+    {
+        public int Id { get; set; }
+        public int SensorId { get; set; }
+        public int RouteId { get; set; }
+        public int RecipientId { get; set; }
+        public int SenderId { get; set; }
+        public int CarrierId { get; set; }
+        public DateTime OrderPlaced { get; set; }
     }
 }

@@ -22,4 +22,45 @@ namespace GpsApp.DTO
         public float HumidMinMeasured { get; set; }
         public float HumidMaxMeasured { get; set; }
     }
+
+    // DTO for sensor reading response
+    public record SensorReadingDto(
+        int SensorId,
+        int GatewayId,
+        DateTime PolledAt,
+        float? TemperatureCel,
+        float? HumidityPct,
+        int TempTimeOutside,
+        int HumidTimeOutside
+    );
+
+    // DTO for paginated sensor readings response
+    public record PaginatedSensorReadingsResponse(
+        List<SensorReadingDto> Readings,
+        int Page,
+        int PageSize,
+        int TotalCount,
+        int TotalPages,
+        DateTime? FromDate,
+        DateTime? ToDate
+    );
+
+    // DTO for API endpoint information
+    public record ApiEndpointInfo(
+        string Method,
+        string Path,
+        string Description,
+        string[] Parameters,
+        string[] ResponseTypes,
+        bool RequiresAuth
+    );
+
+    // DTO for API discovery response
+    public record ApiDiscoveryResponse(
+        string ApiName,
+        string Version,
+        string BaseUrl,
+        List<ApiEndpointInfo> Endpoints,
+        Dictionary<string, string> Metadata
+    );
 }

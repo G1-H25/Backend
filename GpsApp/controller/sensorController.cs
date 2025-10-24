@@ -2,6 +2,7 @@ using GpsApp.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using GpsApp.Services;
+using Microsoft.Data.SqlClient;
 
 
 
@@ -721,8 +722,358 @@ public class SensorController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Retrieves sensor readings for a specific delivery with pagination and optional time filtering.
+    /// </summary>
+    /// <param name="deliveryId">The ID of the delivery to get sensor readings for.</param>
+    /// <param name="page">Page number for pagination (default: 1).</param>
+    /// <param name="pageSize">Number of records per page (default: 50, max: 100).</param>
+    /// <param name="fromDate">Optional start date filter for readings.</param>
+    /// <param name="toDate">Optional end date filter for readings.</param>
+    /// <returns>
+    /// Returns a paginated list of sensor readings for the delivery.
+    /// </returns>
+    /// <remarks>
+    /// This endpoint retrieves all sensor readings associated with a delivery's sensor.
+    /// The readings can be filtered by time range and paginated for better performance.
+    /// </remarks>
+    [HttpGet("delivery/{deliveryId}/readings")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PaginatedSensorReadingsResponse))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetSensorReadingsForDelivery(
+        [FromRoute] int deliveryId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null)
+    {
+        // Validate pagination parameters
+        if (page < 1)
+            return BadRequest("Page number must be greater than 0.");
 
+        if (pageSize < 1 || pageSize > 100)
+            return BadRequest("Page size must be between 1 and 100.");
 
+        // Validate date range
+        if (fromDate.HasValue && toDate.HasValue && fromDate.Value > toDate.Value)
+            return BadRequest("From date cannot be later than to date.");
+
+        // Get user claims for authorization
+        var companyId = await _authService.GetCompanyIdFromClaims(User);
+        var userId = await _authService.GetUserIdFromClaims(User);
+        var role = await _authService.GetUserRoleFromClaims(User);
+
+        if (companyId == null || userId == null || string.IsNullOrEmpty(role))
+            return Forbid("Invalid user claims.");
+
+        // First, get the delivery and its associated sensor
+        var deliveryQuery = await _sqlGetAdvanced.FetchWithJoinsAsync<Dictionary<string, object>>(
+            baseTable: "Orders.Delivery deliv",
+            selectClause: @"
+                deliv.Id AS DeliveryId,
+                deliv.SensorId,
+                deliv.RouteId,
+                sensor.GatewayId,
+                g.UserId,
+                g.CompanyId
+            ",
+            joins: new List<string>
+            {
+                "JOIN Measurements.Sensor sensor ON deliv.SensorId = sensor.Id",
+                "JOIN Secrets.Gateway g ON sensor.GatewayId = g.Id"
+            },
+            filters: new Dictionary<string, object>
+            {
+                { "deliv.Id", deliveryId }
+            }
+        );
+
+        if (!deliveryQuery.Any())
+            return NotFound($"Delivery with ID {deliveryId} not found.");
+
+        var delivery = deliveryQuery.First();
+        var sensorId = Convert.ToInt32(delivery["SensorId"]);
+        var gatewayId = Convert.ToInt32(delivery["GatewayId"]);
+        var gatewayUserId = Convert.ToInt32(delivery["UserId"]);
+        var gatewayCompanyId = Convert.ToInt32(delivery["CompanyId"]);
+
+        // Check authorization - user must have access to the gateway
+        bool canAccess = false;
+        if (role == "Admin")
+        {
+            canAccess = companyId.Value == gatewayCompanyId;
+        }
+        else
+        {
+            canAccess = userId.Value == gatewayUserId;
+        }
+
+        if (!canAccess)
+            return Forbid("You do not have access to this delivery's sensor data.");
+
+        // Build filters for sensor readings query - get all readings for the same gateway and sensor UUID
+        var sensorFilters = new Dictionary<string, object>
+        {
+            { "sensor.GatewayId", gatewayId }
+        };
+
+        if (fromDate.HasValue)
+        {
+            sensorFilters.Add("sensor.PolledAt >= ", fromDate.Value);
+        }
+
+        if (toDate.HasValue)
+        {
+            sensorFilters.Add("sensor.PolledAt <= ", toDate.Value);
+        }
+
+        // Get total count for pagination
+        var countQuery = await _sqlGetAdvanced.FetchWithJoinsAsync(
+            baseTable: "Measurements.Sensor sensor",
+            selectClause: "COUNT(*) as TotalCount",
+            joins: new List<string>(),
+            filters: sensorFilters
+        );
+
+        var totalCount = Convert.ToInt32(countQuery.First()["TotalCount"]);
+        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+        if (page > totalPages && totalCount > 0)
+            return BadRequest($"Page {page} exceeds total pages ({totalPages}).");
+
+        // Calculate OFFSET for pagination
+        var offset = (page - 1) * pageSize;
+
+        // Build the main query with pagination
+        var sql = @"
+            SELECT
+                sensor.Id AS SensorId,
+                sensor.GatewayId,
+                sensor.PolledAt,
+                sensor.TemperatureCel,
+                sensor.HumdityPct,
+                sensor.TempTimeOutside,
+                sensor.HumidTimeOutside
+            FROM Measurements.Sensor sensor
+            WHERE sensor.GatewayId = @GatewayId";
+
+        if (fromDate.HasValue)
+            sql += " AND sensor.PolledAt >= @FromDate";
+        if (toDate.HasValue)
+            sql += " AND sensor.PolledAt <= @ToDate";
+
+        sql += @"
+            ORDER BY sensor.PolledAt DESC
+            OFFSET @Offset ROWS
+            FETCH NEXT @PageSize ROWS ONLY";
+
+        await using var conn = new SqlConnection(_sqlGetAdvanced.ConnectionString);
+        await using var cmd = new SqlCommand(sql, conn);
+
+        cmd.Parameters.AddWithValue("@GatewayId", gatewayId);
+        if (fromDate.HasValue)
+            cmd.Parameters.AddWithValue("@FromDate", fromDate.Value);
+        if (toDate.HasValue)
+            cmd.Parameters.AddWithValue("@ToDate", toDate.Value);
+        cmd.Parameters.AddWithValue("@Offset", offset);
+        cmd.Parameters.AddWithValue("@PageSize", pageSize);
+
+        await conn.OpenAsync();
+        await using var reader = await cmd.ExecuteReaderAsync();
+
+        var readings = new List<SensorReadingDto>();
+
+        while (await reader.ReadAsync())
+        {
+            readings.Add(new SensorReadingDto(
+                SensorId: reader.GetInt32(reader.GetOrdinal("SensorId")),
+                GatewayId: reader.GetInt32(reader.GetOrdinal("GatewayId")),
+                PolledAt: reader.GetDateTime(reader.GetOrdinal("PolledAt")),
+                TemperatureCel: reader.IsDBNull(reader.GetOrdinal("TemperatureCel")) ? null : (float?)reader.GetDecimal(reader.GetOrdinal("TemperatureCel")),
+                HumidityPct: reader.IsDBNull(reader.GetOrdinal("HumdityPct")) ? null : (float?)reader.GetDecimal(reader.GetOrdinal("HumdityPct")),
+                TempTimeOutside: reader.GetInt32(reader.GetOrdinal("TempTimeOutside")),
+                HumidTimeOutside: reader.GetInt32(reader.GetOrdinal("HumidTimeOutside"))
+            ));
+        }
+
+        var response = new PaginatedSensorReadingsResponse(
+            Readings: readings,
+            Page: page,
+            PageSize: pageSize,
+            TotalCount: totalCount,
+            TotalPages: totalPages,
+            FromDate: fromDate,
+            ToDate: toDate
+        );
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Returns API discovery information for all sensor-related endpoints.
+    /// </summary>
+    /// <returns>
+    /// Returns a comprehensive list of all sensor API endpoints with their descriptions,
+    /// parameters, and usage information.
+    /// </returns>
+    /// <remarks>
+    /// This endpoint provides API discoverability for the entire sensor subsystem,
+    /// including data ingestion, querying, and delivery-related endpoints.
+    /// Useful for API documentation and client integration.
+    /// </remarks>
+    [HttpGet("api")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiDiscoveryResponse))]
+    public IActionResult GetSensorApiInfo()
+    {
+        var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/sensor";
+        var endpoints = new List<ApiEndpointInfo>
+        {
+            // Data Ingestion Endpoints
+            new ApiEndpointInfo(
+                Method: "POST",
+                Path: $"{baseUrl}",
+                Description: "Inserts or updates sensor data for a specified gateway and sensor device. Validates input, checks authorization, and maintains historical min/max values and out-of-range duration tracking.",
+                Parameters: new[] { "GatewayUUID (GUID)", "UUID (GUID)", "PolledAt (DateTime)", "TemperatureCel (float)", "HumdityPct (float)" },
+                ResponseTypes: new[] { "200 OK", "400 Bad Request", "401 Unauthorized", "403 Forbidden" },
+                RequiresAuth: false
+            ),
+            new ApiEndpointInfo(
+                Method: "POST",
+                Path: $"{baseUrl}/batch",
+                Description: "Processes multiple sensor readings in a single batch operation for improved efficiency. Each reading is validated individually.",
+                Parameters: new[] { "GatewayUUID (GUID)", "Readings (BatchedSensorRequest)" },
+                ResponseTypes: new[] { "200 OK", "400 Bad Request", "401 Unauthorized", "403 Forbidden" },
+                RequiresAuth: false
+            ),
+
+            // Query Endpoints
+            new ApiEndpointInfo(
+                Method: "GET",
+                Path: $"{baseUrl}/available",
+                Description: "Retrieves all available sensors accessible to the authenticated user. Returns sensor details with current readings.",
+                Parameters: new string[0],
+                ResponseTypes: new[] { "200 OK", "401 Unauthorized", "403 Forbidden" },
+                RequiresAuth: true
+            ),
+            new ApiEndpointInfo(
+                Method: "GET",
+                Path: $"{baseUrl}/sensor-temperature",
+                Description: "Retrieves sensor temperature data with optional filtering by sensor ID, exact temperature, or temperature range.",
+                Parameters: new[] { "id (int, optional)", "temperature (decimal, optional)", "temperatureFrom (decimal, optional)", "temperatureTo (decimal, optional)" },
+                ResponseTypes: new[] { "200 OK", "404 Not Found" },
+                RequiresAuth: false
+            ),
+            new ApiEndpointInfo(
+                Method: "GET",
+                Path: $"{baseUrl}/sensor-humidity",
+                Description: "Retrieves sensor humidity data with optional filtering by sensor ID, exact humidity, or humidity range.",
+                Parameters: new[] { "id (int, optional)", "humidity (decimal, optional)", "humidityFrom (decimal, optional)", "humidityTo (decimal, optional)" },
+                ResponseTypes: new[] { "200 OK", "404 Not Found" },
+                RequiresAuth: false
+            ),
+            new ApiEndpointInfo(
+                Method: "GET",
+                Path: $"{baseUrl}/id",
+                Description: "Fetches the ID of a sensor data record using gateway ID and timestamp filters.",
+                Parameters: new[] { "gatewayId (int, required)", "polledAt (DateTime, required)" },
+                ResponseTypes: new[] { "200 OK", "400 Bad Request", "404 Not Found" },
+                RequiresAuth: false
+            ),
+
+            // Delivery-Related Endpoints
+            new ApiEndpointInfo(
+                Method: "GET",
+                Path: $"{baseUrl}/delivery/{{deliveryId}}/readings",
+                Description: "Retrieves sensor readings for a specific delivery with pagination and optional time filtering. Returns paginated sensor data associated with the delivery's sensor.",
+                Parameters: new[] { "deliveryId (int, required)", "page (int, optional)", "pageSize (int, optional)", "fromDate (DateTime, optional)", "toDate (DateTime, optional)" },
+                ResponseTypes: new[] { "200 OK", "400 Bad Request", "401 Unauthorized", "403 Forbidden", "404 Not Found" },
+                RequiresAuth: true
+            )
+        };
+
+        var metadata = new Dictionary<string, string>
+        {
+            { "description", "GPS Tracking System Sensor API - Manages environmental sensor data collection, monitoring, and historical analysis" },
+            { "version", "1.0.0" },
+            { "contact", "GPS Tracking System Team" },
+            { "documentation", $"{Request.Scheme}://{Request.Host}{Request.PathBase}/swagger" },
+            { "healthCheck", $"{Request.Scheme}://{Request.Host}{Request.PathBase}/health" }
+        };
+
+        var response = new ApiDiscoveryResponse(
+            ApiName: "GPS Sensor API",
+            Version: "1.0.0",
+            BaseUrl: baseUrl,
+            Endpoints: endpoints,
+            Metadata: metadata
+        );
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Returns API discovery information specifically for delivery-related sensor endpoints.
+    /// </summary>
+    /// <returns>
+    /// Returns information about sensor endpoints that are related to delivery tracking,
+    /// including sensor readings for specific deliveries.
+    /// </returns>
+    /// <remarks>
+    /// This endpoint provides focused API discoverability for delivery-related sensor operations,
+    /// useful for logistics and shipment tracking integrations.
+    /// </remarks>
+    [HttpGet("delivery/api")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiDiscoveryResponse))]
+    public IActionResult GetDeliverySensorApiInfo()
+    {
+        var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/sensor/delivery";
+        var endpoints = new List<ApiEndpointInfo>
+        {
+            new ApiEndpointInfo(
+                Method: "GET",
+                Path: $"{baseUrl}/{{deliveryId}}/readings",
+                Description: "Retrieves paginated sensor readings for a specific delivery. Returns temperature, humidity, and environmental data collected by the sensor associated with the delivery, with optional time filtering and pagination support.",
+                Parameters: new[] {
+                    "deliveryId (int, required) - The delivery/shipment ID",
+                    "page (int, optional, default: 1) - Page number for pagination",
+                    "pageSize (int, optional, default: 50, max: 100) - Number of records per page",
+                    "fromDate (DateTime, optional) - Start date filter (ISO 8601 format)",
+                    "toDate (DateTime, optional) - End date filter (ISO 8601 format)"
+                },
+                ResponseTypes: new[] {
+                    "200 OK - PaginatedSensorReadingsResponse",
+                    "400 Bad Request - Invalid parameters",
+                    "401 Unauthorized - Missing or invalid authentication",
+                    "403 Forbidden - Access denied to delivery data",
+                    "404 Not Found - Delivery not found"
+                },
+                RequiresAuth: true
+            )
+        };
+
+        var metadata = new Dictionary<string, string>
+        {
+            { "description", "Delivery Sensor API - Provides sensor readings and environmental monitoring data for shipment tracking" },
+            { "version", "1.0.0" },
+            { "useCase", "Logistics tracking, environmental monitoring, shipment condition analysis" },
+            { "parentApi", $"{Request.Scheme}://{Request.Host}{Request.PathBase}/sensor/api" },
+            { "documentation", $"{Request.Scheme}://{Request.Host}{Request.PathBase}/swagger" }
+        };
+
+        var response = new ApiDiscoveryResponse(
+            ApiName: "Delivery Sensor API",
+            Version: "1.0.0",
+            BaseUrl: baseUrl,
+            Endpoints: endpoints,
+            Metadata: metadata
+        );
+
+        return Ok(response);
+    }
 
 }
 
