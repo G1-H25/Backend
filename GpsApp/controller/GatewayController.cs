@@ -3,14 +3,30 @@ using Microsoft.AspNetCore.Mvc;
 using GpsApp.DTO;
 using Microsoft.Data.SqlClient;
 
+/// <summary>
+/// Gateway device management controller using dependency inversion principle.
+/// </summary>
+/// <remarks>
+/// Manages IoT gateway device registration and ownership.
+/// Demonstrates SOLID: SRP (device management), OCP (interface-based), LSP (substitutable),
+/// ISP (focused interfaces), DIP (abstraction over concretions).
+/// Uses direct SQL access for complex device reassignment operations.
+/// Constructor injection enables testing and loose coupling.
+/// </remarks>
 [ApiController]
 [Route("[controller]")]
 public class GatewayController : ControllerBase
 {
-    private readonly SqlInsert _insertService;
+    private readonly ISqlInsert _insertService;
     private readonly ISqlGet _getService; // Added for checking ownership
 
-    public GatewayController(SqlInsert insertService, ISqlGet getService)
+    /// <summary>
+    /// Initializes gateway controller with injected dependencies.
+    /// </summary>
+    /// <param name="insertService">Database insertion service with ConnectionString access (ISqlInsert).</param>
+    /// <param name="getService">Database query service (ISqlGet).</param>
+    /// <remarks>Constructor injection - dependencies provided by DI container for testability. Uses ConnectionString for direct SQL operations.</remarks>
+    public GatewayController(ISqlInsert insertService, ISqlGet getService)
     {
         _insertService = insertService;
         _getService = getService;

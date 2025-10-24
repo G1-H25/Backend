@@ -2,16 +2,31 @@ using Microsoft.AspNetCore.Mvc;
 using GpsApp.DTO;
 
 
+/// <summary>
+/// User signup and account creation controller using dependency inversion principle.
+/// </summary>
+/// <remarks>
+/// Handles user account registration with role-based access control.
+/// Demonstrates SOLID: SRP (user management), OCP (interface-based), LSP (substitutable),
+/// ISP (focused interfaces), DIP (abstraction over concretions).
+/// Supports Admin and User roles with security validation.
+/// Constructor injection enables testing and loose coupling.
+/// </remarks>
 [ApiController]
 [Route("[controller]")]
 public class SignupController : ControllerBase
 {
-    private readonly SqlInsert _insertService;
+    private readonly ISqlInsert _insertService;
 
     // roles that are valid
     private static readonly HashSet<string> ValidRoles = new() { "Admin", "User" };
 
-    public SignupController(SqlInsert insertService)
+    /// <summary>
+    /// Initializes signup controller with injected dependencies.
+    /// </summary>
+    /// <param name="insertService">Database insertion service (ISqlInsert).</param>
+    /// <remarks>Constructor injection - dependencies provided by DI container for testability. Creates accounts with role validation.</remarks>
+    public SignupController(ISqlInsert insertService)
     {
         _insertService = insertService;
     }

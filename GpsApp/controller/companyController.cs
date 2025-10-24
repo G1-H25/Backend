@@ -3,15 +3,29 @@ using GpsApp.DTO;
 
 
 
+/// <summary>
+/// Company registration controller using dependency inversion principle.
+/// </summary>
+/// <remarks>
+/// Handles company setup and management operations.
+/// Demonstrates SOLID: SRP (company management), OCP (interface-based), LSP (substitutable),
+/// ISP (focused interfaces), DIP (abstraction over concretions).
+/// Constructor injection enables testing and loose coupling.
+/// </remarks>
 [ApiController]
 [Route("[controller]")]
 public class CompanyController : ControllerBase
 {
-    private readonly SqlInsert _insertService;
+    private readonly ISqlInsert _insertService;
     private readonly ISqlGet _getService;
 
-    // get the connectionstring to azure database
-    public CompanyController(SqlInsert insertService, ISqlGet getService)
+    /// <summary>
+    /// Initializes company controller with injected dependencies.
+    /// </summary>
+    /// <param name="insertService">Database insertion service (ISqlInsert).</param>
+    /// <param name="getService">Database query service (ISqlGet).</param>
+    /// <remarks>Constructor injection - dependencies provided by DI container for testability.</remarks>
+    public CompanyController(ISqlInsert insertService, ISqlGet getService)
     {
         _insertService = insertService;
         _getService = getService;

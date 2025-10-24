@@ -5,6 +5,15 @@ using GpsApp.Services;
 
 
 
+/// <summary>
+/// Sensor data management controller using dependency inversion principle.
+/// </summary>
+/// <remarks>
+/// Core GPS tracking system controller handling real-time sensor data (temperature, humidity).
+/// Demonstrates SOLID principles: SRP (data management), OCP (interface-based), LSP (substitutable),
+/// ISP (focused interfaces), DIP (abstraction over concretions).
+/// Dependencies injected via constructor - testable and decoupled design.
+/// </remarks>
 [ApiController]
 [Route("[controller]")]
 public class SensorController : ControllerBase
@@ -16,7 +25,16 @@ public class SensorController : ControllerBase
     private readonly ISqlUpdate _sqlUpdate;
     private readonly ISensorValidationService _validationService;
 
-    // get the connectionstring to azure database, authorization access
+    /// <summary>
+    /// Initializes sensor controller with injected dependencies.
+    /// </summary>
+    /// <param name="insertService">Database insertion service (ISqlInsert).</param>
+    /// <param name="authService">Authorization service for access validation.</param>
+    /// <param name="sqlGetAdvanced">Advanced query service with JOINs (ISqlGetAdvanced).</param>
+    /// <param name="sqlGet">Basic query service (ISqlGet).</param>
+    /// <param name="sqlUpdate">Database update service (ISqlUpdate).</param>
+    /// <param name="validationService">Sensor data validation service (ISensorValidationService).</param>
+    /// <remarks>Constructor injection - dependencies provided by DI container for testability.</remarks>
     public SensorController(ISqlInsert insertService, IAuthorizationService authService, ISqlGetAdvanced sqlGetAdvanced, ISqlGet sqlGet, ISqlUpdate sqlupdate, ISensorValidationService validationService)
     {
         _insertService = insertService;
