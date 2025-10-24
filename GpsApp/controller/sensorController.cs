@@ -531,7 +531,14 @@ public class SensorController : ControllerBase
             if (sensorErrors.Any())
             {
                 errors.AddRange(sensorErrors);
-                skippedCount += sensorData.measurements.Count; // Skip all measurements for this invalid sensor
+                if (sensorData.measurements != null)
+                {
+                    skippedCount += sensorData.measurements.Count; // Skip all measurements for this invalid sensor
+                }
+                else
+                {
+                    errors.Add($"Sensor {sensorId} has null measurements; skipped 0 measurements.");
+                }
                 continue;
             }
 
