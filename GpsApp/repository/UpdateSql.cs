@@ -1,6 +1,11 @@
 using Microsoft.Data.SqlClient;
 
-public class SqlUpdate
+public interface ISqlUpdate
+{
+    Task UpdateAsync(string tableName, Dictionary<string, object> setValues, Dictionary<string, object> filters);
+}
+
+public class SqlUpdate : ISqlUpdate
 {
     private readonly string _connectionString;
 

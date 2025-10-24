@@ -1,6 +1,7 @@
 // Composition/ServiceRegistration.cs
 
 using GpsApp.Controllers;
+using GpsApp.Services;
 
 namespace GpsApp.Composition
 {
@@ -25,6 +26,7 @@ namespace GpsApp.Composition
                 services.AddScoped<GetUser>();
                 services.AddScoped<HealthController>();
                 services.AddScoped<IAuthorizationService, AuthorizationService>();
+                services.AddScoped<SensorValidationService>();
             }
 
             return services;

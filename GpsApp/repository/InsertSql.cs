@@ -3,7 +3,13 @@ using System.Threading.Tasks;
 using System.Collections.Generic;  // Needed for Dictionary
 using System.Linq;                 // Needed for data.Keys.Select()
 
-public class SqlInsert
+public interface ISqlInsert
+{
+    Task InsertAsync(string tableName, Dictionary<string, object> data);
+    Task<int> InsertAndReturnIdAsync(string tableName, Dictionary<string, object> data);
+}
+
+public class SqlInsert : ISqlInsert
 {
     private readonly string _connectionString;
 
