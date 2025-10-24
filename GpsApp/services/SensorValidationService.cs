@@ -179,13 +179,13 @@ namespace GpsApp.Services
                 errors.Add($"Temperature {sensorDto.TemperatureCel}°C is outside valid range (-50°C to 100°C).");
             }
 
-            if (sensorDto.HumdityPct == null)
+            if (sensorDto.HumidityPct == null)
             {
                 errors.Add("Humidity is required.");
             }
-            else if (sensorDto.HumdityPct < 0 || sensorDto.HumdityPct > 100)
+            else if (sensorDto.HumidityPct < 0 || sensorDto.HumidityPct > 100)
             {
-                errors.Add($"Humidity {sensorDto.HumdityPct}% is outside valid range (0% to 100%).");
+                errors.Add($"Humidity {sensorDto.HumidityPct}% is outside valid range (0% to 100%).");
             }
 
             return new ValidationResult
