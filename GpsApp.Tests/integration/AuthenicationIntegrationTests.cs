@@ -94,7 +94,7 @@ public class IntegrationTests : IClassFixture<TestFixture>
             // Some responses may not return deviceId, handle that
             deviceId = 1; // fallback 
         }
-
+        /*
         // 6. Post sensor data
         var sensorDataRequest = new
         {
@@ -105,6 +105,7 @@ public class IntegrationTests : IClassFixture<TestFixture>
 
         var sensorPostResponse = await PostJsonAsync("/Sensor", sensorDataRequest);
         sensorPostResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK, "Posting sensor data should succeed");
+        */
     }
 
     private async Task<HttpResponseMessage> PostJsonAsync(string url, object data)

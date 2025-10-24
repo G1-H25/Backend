@@ -13,7 +13,7 @@ namespace GpsApp.DTO
     */
     public class GatewayInsertRequest
     {
-        public int GatewayId { get; set; }
+        public Guid UUID { get; set; }
         public string? GatewayURL { get; set; }
         public int? CurrentLocationId { get; set; }
     }
