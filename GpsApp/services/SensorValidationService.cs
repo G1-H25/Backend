@@ -8,7 +8,7 @@ namespace GpsApp.Services
     /// <summary>
     /// Domain service for validating sensor data according to business rules
     /// </summary>
-    public class SensorValidationService
+    public class SensorValidationService : ISensorValidationService
     {
         /// <summary>
         /// Validates a batched sensor request

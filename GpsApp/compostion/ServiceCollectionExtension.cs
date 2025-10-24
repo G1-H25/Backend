@@ -26,7 +26,7 @@ namespace GpsApp.Composition
                 services.AddScoped<GetUser>();
                 services.AddScoped<HealthController>();
                 services.AddScoped<IAuthorizationService, AuthorizationService>();
-                services.AddScoped<SensorValidationService>();
+                services.AddScoped<ISensorValidationService, SensorValidationService>();
             }
 
             return services;

@@ -14,10 +14,10 @@ public class SensorController : ControllerBase
     private readonly ISqlGet _sqlGet;
     private readonly IAuthorizationService _authService;
     private readonly ISqlUpdate _sqlUpdate;
-    private readonly SensorValidationService _validationService;
+    private readonly ISensorValidationService _validationService;
 
     // get the connectionstring to azure database, authorization access
-    public SensorController(ISqlInsert insertService, IAuthorizationService authService, ISqlGetAdvanced sqlGetAdvanced, ISqlGet sqlGet, ISqlUpdate sqlupdate, SensorValidationService validationService)
+    public SensorController(ISqlInsert insertService, IAuthorizationService authService, ISqlGetAdvanced sqlGetAdvanced, ISqlGet sqlGet, ISqlUpdate sqlupdate, ISensorValidationService validationService)
     {
         _insertService = insertService;
         _authService = authService;
@@ -507,12 +507,22 @@ public class SensorController : ControllerBase
         {
             var sensorId = sensorData.sensor_id;
 
-            foreach (var measurement in sensorData.measurements)
+            // Validate sensor data (including sensor ID)
+            var sensorErrors = _validationService.ValidateSensorData(sensorData);
+            if (sensorErrors.Any())
             {
+                errors.AddRange(sensorErrors);
+                skippedCount += sensorData.measurements.Count; // Skip all measurements for this invalid sensor
+                continue;
+            }
+
+            for (int measurementIndex = 0; measurementIndex < sensorData.measurements.Count; measurementIndex++)
+            {
+                var measurement = sensorData.measurements[measurementIndex];
                 try
                 {
                     // Validate individual measurement using domain validation service
-                    var measurementErrors = _validationService.ValidateMeasurement(measurement, sensorId, 0);
+                    var measurementErrors = _validationService.ValidateMeasurement(measurement, sensorId, measurementIndex);
                     if (measurementErrors.Any())
                     {
                         errors.AddRange(measurementErrors);
@@ -534,14 +544,22 @@ public class SensorController : ControllerBase
                     };
 
                     // Call the existing single sensor processing logic
-                    var result = await ProcessSingleSensorReading(sensorDto, gatewayId);
-                    if (result.IsSuccess)
+                    try
                     {
-                        processedCount++;
+                        var result = await ProcessSingleSensorReading(sensorDto, gatewayId);
+                        if (result.IsSuccess)
+                        {
+                            processedCount++;
+                        }
+                        else
+                        {
+                            errors.Add($"Failed to process sensor {sensorId}: {result.ErrorMessage}");
+                            skippedCount++;
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        errors.Add($"Failed to process sensor {sensorId}: {result.ErrorMessage}");
+                        errors.Add($"Error processing sensor {sensorId}: {ex.Message}");
                         skippedCount++;
                     }
                 }
@@ -570,7 +588,7 @@ public class SensorController : ControllerBase
         try
         {
             // Fetch the latest sensor reading for this gateway to compare previous state
-            var readings = await _sqlGetAdvanced.FetchWithJoinsAsync(
+            var readings = await _sqlGetAdvanced.FetchWithJoinsAsync<GpsApp.DTO.SensorReading>(
                 baseTable: "Measurements.Sensor sensor",
                 selectClause: @"
                 sensor.TempTimerStart,
@@ -589,7 +607,7 @@ public class SensorController : ControllerBase
                 filters: new Dictionary<string, object> {
                 { "sensor.GatewayId", gatewayId }
                 },
-                map: r => new
+                map: r => new GpsApp.DTO.SensorReading
                 {
                     TempTimerStart = r["TempTimerStart"] as DateTime?,
                     TempTimeOutside = r["TempTimeOutside"] == DBNull.Value ? 0 : Convert.ToInt32(r["TempTimeOutside"]),
