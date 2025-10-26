@@ -18,6 +18,19 @@ public class Temperature : IEquatable<Temperature>, IComparable<Temperature>, IB
         Value = value;
     }
 
+    /// <summary>
+    /// Creates a temperature from persistence storage (hydration constructor)
+    /// This constructor allows setting the value for reconstruction from storage
+    /// </summary>
+    public Temperature(decimal value, bool skipValidation = false)
+    {
+        if (!skipValidation && value < -273.15m)
+        {
+            throw new ArgumentException("Temperature cannot be less than -273.15°C");
+        }
+        Value = value;
+    }
+
     public override string ToString() => $"{Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}°C";
 
     public override bool Equals(object? obj) => obj is Temperature temperature && Value == temperature.Value;

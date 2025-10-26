@@ -28,6 +28,30 @@ public class Address : IEquatable<Address>
         Country = country.Trim();
     }
 
+    /// <summary>
+    /// Creates an address from persistence storage (hydration constructor)
+    /// This constructor allows setting all properties for reconstruction from storage
+    /// </summary>
+    public Address(string street, string city, string postalCode, string country, bool skipValidation = false)
+    {
+        if (!skipValidation)
+        {
+            if (string.IsNullOrWhiteSpace(street))
+                throw new ArgumentException("Street cannot be null or empty", nameof(street));
+            if (string.IsNullOrWhiteSpace(city))
+                throw new ArgumentException("City cannot be null or empty", nameof(city));
+            if (string.IsNullOrWhiteSpace(postalCode))
+                throw new ArgumentException("Postal code cannot be null or empty", nameof(postalCode));
+            if (string.IsNullOrWhiteSpace(country))
+                throw new ArgumentException("Country cannot be null or empty", nameof(country));
+        }
+
+        Street = street?.Trim() ?? string.Empty;
+        City = city?.Trim() ?? string.Empty;
+        PostalCode = postalCode?.Trim() ?? string.Empty;
+        Country = country?.Trim() ?? string.Empty;
+    }
+
     public override string ToString() => $"{Street}, {City}, {PostalCode}, {Country}";
 
     public override bool Equals(object? obj) => obj is Address address && Equals(address);

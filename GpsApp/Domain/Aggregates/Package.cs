@@ -41,6 +41,27 @@ public class Package
     }
 
     /// <summary>
+    /// Creates a package with all properties for hydration from persistent storage
+    /// This constructor does not raise domain events as it's used for reconstruction
+    /// </summary>
+    public Package(PackageId packageId, Address sender, Address recipient, 
+        SensorId? sensorId, ExpectedRange<Temperature>? expectedTemperatureRange, 
+        ExpectedRange<Humidity>? expectedHumidityRange, DateTime createdAt, 
+        DateTime? sensorAttachedAt)
+    {
+        PackageId = packageId ?? throw new ArgumentNullException(nameof(packageId));
+        Sender = sender ?? throw new ArgumentNullException(nameof(sender));
+        Recipient = recipient ?? throw new ArgumentNullException(nameof(recipient));
+        SensorId = sensorId;
+        ExpectedTemperatureRange = expectedTemperatureRange;
+        ExpectedHumidityRange = expectedHumidityRange;
+        CreatedAt = createdAt;
+        SensorAttachedAt = sensorAttachedAt;
+        
+        // No domain events raised - this is for hydration from storage
+    }
+
+    /// <summary>
     /// Attaches a sensor to the package during packaging
     /// </summary>
     public void AttachSensor(SensorId sensorId)

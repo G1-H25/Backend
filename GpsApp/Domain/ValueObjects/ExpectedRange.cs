@@ -19,6 +19,20 @@ public class ExpectedRange<T> where T : IComparable<T>
         Maximum = maximum;
     }
 
+    /// <summary>
+    /// Creates an expected range from persistence storage (hydration constructor)
+    /// This constructor allows setting all properties for reconstruction from storage
+    /// </summary>
+    public ExpectedRange(T minimum, T maximum, bool skipValidation = false)
+    {
+        if (!skipValidation && minimum.CompareTo(maximum) > 0)
+        {
+            throw new ArgumentException("Minimum cannot be greater than maximum");
+        }
+        Minimum = minimum;
+        Maximum = maximum;
+    }
+
     public bool IsInRange(T value) => value.CompareTo(Minimum) >= 0 && value.CompareTo(Maximum) <= 0;
 
     public override string ToString() => $"{Minimum.ToString()} - {Maximum.ToString()}";

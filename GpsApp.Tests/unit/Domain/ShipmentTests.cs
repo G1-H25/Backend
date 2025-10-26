@@ -334,7 +334,15 @@ public class ShipmentTests
         var packageId = PackageId.NewId();
         var sender = new Address("Tegelstensgatan 12", "Mura", "345 67", "Sverige");
         var recipient = new Address("Storgatan 45", "Stockholm", "111 22", "Sverige");
-        return new Package(packageId, sender, recipient);
+        var sensorId = new SensorId($"SENSOR_{Guid.NewGuid():N}");
+        var createdAt = DateTime.UtcNow;
+        var sensorAttachedAt = DateTime.UtcNow;
+        
+        // Use the hydration constructor to create a package with sensor already attached
+        return new Package(packageId, sender, recipient, sensorId,
+            new ExpectedRange<Temperature>(new Temperature(2.0m), new Temperature(8.0m)),
+            new ExpectedRange<Humidity>(new Humidity(30.0m), new Humidity(70.0m)),
+            createdAt, sensorAttachedAt);
     }
 
     private List<DeliveryLeg> CreateConnectedDeliveryLegs()
@@ -516,6 +524,53 @@ public class ShipmentTests
         // Act & Assert - Try to start second leg
         var readySecondLeg = shipment.DeliveryLegs.Last();
         Assert.Throws<InvalidOperationException>(() => shipment.StartDeliveryLeg(readySecondLeg));
+    }
+
+    [Fact]
+    public void StartDeliveryLeg_PackagesWithoutSensors_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var leg = shipment.DeliveryLegs.First();
+        var gatewayId = GatewayId.NewId();
+        shipment.ConnectGatewayToDeliveryLeg(leg, gatewayId);
+        
+        // Create a package without sensor to simulate missing sensor
+        var packageWithoutSensor = new Package(
+            PackageId.NewId(),
+            new Address("Test Street", "Test City", "12345", "Test Country"),
+            new Address("Recipient Street", "Recipient City", "54321", "Recipient Country")
+        );
+        // Note: No sensor attached, no expected ranges set
+        
+        // Create fresh delivery legs (without any gateway assignments)
+        var freshDeliveryLegs = new[]
+        {
+            new DeliveryLeg(
+                new Address("Start Street", "Start City", "11111", "Start Country"),
+                new Address("End Street", "End City", "22222", "End Country")
+            )
+        };
+        
+        // Create a new shipment with the package without sensor and fresh legs
+        var packagesWithoutSensor = new[] { packageWithoutSensor };
+        var shipmentWithoutSensors = new Shipment(
+            ShipmentId.NewId(),
+            DateTime.UtcNow,
+            packagesWithoutSensor,
+            freshDeliveryLegs
+        );
+        
+        var newGatewayId = GatewayId.NewId(); // Use a different gateway ID
+        shipmentWithoutSensors.ConnectGatewayToDeliveryLeg(shipmentWithoutSensors.DeliveryLegs.First(), newGatewayId);
+
+        // Act & Assert
+        var legToStart = shipmentWithoutSensors.DeliveryLegs.First(); // Get the leg from the shipment after gateway assignment
+        var exception = Assert.Throws<InvalidOperationException>(() => 
+            shipmentWithoutSensors.StartDeliveryLeg(legToStart));
+        
+        Assert.Contains("do not have sensors attached", exception.Message);
+        Assert.Contains(packageWithoutSensor.PackageId.ToString(), exception.Message);
     }
 
     [Fact]

@@ -53,6 +53,18 @@ public class DeliveryLeg : IEquatable<DeliveryLeg>
     }
 
     /// <summary>
+    /// Creates a delivery leg from persistence storage (hydration constructor)
+    /// This constructor allows setting all properties for reconstruction from storage
+    /// </summary>
+    public DeliveryLeg(Address startAddress, Address endAddress, GatewayId? gatewayId, DeliveryLegStatus status)
+    {
+        StartAddress = startAddress ?? throw new ArgumentNullException(nameof(startAddress));
+        EndAddress = endAddress ?? throw new ArgumentNullException(nameof(endAddress));
+        GatewayId = gatewayId;
+        Status = status;
+    }
+
+    /// <summary>
     /// Assigns a gateway to this delivery leg (typically when workers load the truck)
     /// Changes status from Planned to Ready
     /// </summary>

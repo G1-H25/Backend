@@ -18,6 +18,19 @@ public class Humidity : IEquatable<Humidity>, IComparable<Humidity>, IBusinessVa
         Value = value;
     }
 
+    /// <summary>
+    /// Creates a humidity from persistence storage (hydration constructor)
+    /// This constructor allows setting the value for reconstruction from storage
+    /// </summary>
+    public Humidity(decimal value, bool skipValidation = false)
+    {
+        if (!skipValidation && (value < 0m || value > 100m))
+        {
+            throw new ArgumentException("Humidity must be between 0% and 100%");
+        }
+        Value = value;
+    }
+
     public override string ToString() => $"{Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}%";
 
     public override bool Equals(object? obj) => obj is Humidity humidity && Value == humidity.Value;

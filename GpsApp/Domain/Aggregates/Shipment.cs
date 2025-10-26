@@ -35,6 +35,35 @@ public class Shipment
     private Shipment() { }
 
     /// <summary>
+    /// Creates a shipment from persistence storage (hydration constructor)
+    /// This constructor does not raise domain events as it's used for reconstruction
+    /// </summary>
+    public Shipment(ShipmentId shipmentId, DateTime shipmentDate, ShipmentStatus status, 
+        IReadOnlyList<Package> packages, IReadOnlyList<DeliveryLeg> deliveryLegs)
+    {
+        ShipmentId = shipmentId ?? throw new ArgumentNullException(nameof(shipmentId));
+        ShipmentDate = shipmentDate;
+        Status = status;
+
+        // Validate packages
+        if (packages == null || packages.Count == 0)
+            throw new ArgumentException("Shipment must have at least one package", nameof(packages));
+
+        // Validate delivery legs
+        if (deliveryLegs == null || deliveryLegs.Count == 0)
+            throw new ArgumentException("Shipment must have at least one delivery leg", nameof(deliveryLegs));
+
+        // Add packages and delivery legs
+        foreach (var package in packages)
+        {
+            _packages.Add(package);
+        }
+        _deliveryLegs.AddRange(deliveryLegs);
+
+        // No domain events raised - this is for hydration from storage
+    }
+
+    /// <summary>
     /// Creates a new shipment with packages and delivery legs
     /// </summary>
     public Shipment(ShipmentId shipmentId, DateTime shipmentDate, IReadOnlyList<Package> packages, IReadOnlyList<DeliveryLeg> deliveryLegs)
@@ -148,6 +177,14 @@ public class Shipment
             var previousLeg = _deliveryLegs[legIndex - 1];
             if (previousLeg.Status != DeliveryLegStatus.Completed)
                 throw new InvalidOperationException("Previous delivery leg must be completed before starting the next leg");
+        }
+
+        // Ensure all packages have sensors before starting delivery
+        var packagesWithoutSensors = _packages.Where(p => !p.HasSensor).ToList();
+        if (packagesWithoutSensors.Any())
+        {
+            var packageIds = string.Join(", ", packagesWithoutSensors.Select(p => p.PackageId));
+            throw new InvalidOperationException($"Cannot start delivery leg: packages {packageIds} do not have sensors attached");
         }
 
         // Start the leg
