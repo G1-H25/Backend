@@ -1,0 +1,70 @@
+using GpsApp.Domain.ValueObjects;
+using GpsApp.Domain.Aggregates;
+
+namespace GpsApp.Domain.Events;
+
+/// <summary>
+/// Event raised when a shipment is created
+/// </summary>
+public class ShipmentCreatedEvent : DomainEvent
+{
+    public ShipmentId ShipmentId { get; private set; }
+    public DateTime ShipmentDate { get; private set; }
+    public IReadOnlyList<PackageId> PackageIds { get; private set; }
+    public IReadOnlyList<DeliveryLeg> DeliveryLegs { get; private set; }
+
+    public ShipmentCreatedEvent(ShipmentId shipmentId, DateTime shipmentDate, IReadOnlyList<PackageId> packageIds, IReadOnlyList<DeliveryLeg> deliveryLegs)
+    {
+        ShipmentId = shipmentId;
+        ShipmentDate = shipmentDate;
+        PackageIds = packageIds;
+        DeliveryLegs = deliveryLegs;
+    }
+}
+
+/// <summary>
+/// Event raised when a package is added to a shipment
+/// </summary>
+public class PackageAddedToShipmentEvent : DomainEvent
+{
+    public ShipmentId ShipmentId { get; private set; }
+    public PackageId PackageId { get; private set; }
+
+    public PackageAddedToShipmentEvent(ShipmentId shipmentId, PackageId packageId)
+    {
+        ShipmentId = shipmentId;
+        PackageId = packageId;
+    }
+}
+
+/// <summary>
+/// Event raised when a delivery leg is added to a shipment
+/// </summary>
+public class DeliveryLegAddedToShipmentEvent : DomainEvent
+{
+    public ShipmentId ShipmentId { get; private set; }
+    public DeliveryLeg DeliveryLeg { get; private set; }
+
+    public DeliveryLegAddedToShipmentEvent(ShipmentId shipmentId, DeliveryLeg deliveryLeg)
+    {
+        ShipmentId = shipmentId;
+        DeliveryLeg = deliveryLeg;
+    }
+}
+
+/// <summary>
+/// Event raised when shipment status changes
+/// </summary>
+public class ShipmentStatusChangedEvent : DomainEvent
+{
+    public ShipmentId ShipmentId { get; private set; }
+    public Shipment.ShipmentStatus OldStatus { get; private set; }
+    public Shipment.ShipmentStatus NewStatus { get; private set; }
+
+    public ShipmentStatusChangedEvent(ShipmentId shipmentId, Shipment.ShipmentStatus oldStatus, Shipment.ShipmentStatus newStatus)
+    {
+        ShipmentId = shipmentId;
+        OldStatus = oldStatus;
+        NewStatus = newStatus;
+    }
+}
