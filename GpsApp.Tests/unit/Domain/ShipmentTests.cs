@@ -369,4 +369,223 @@ public class ShipmentTests
         var endAddress = new Address("End Street 1", endCity, "678 90", "Sverige");
         return new DeliveryLeg(startAddress, endAddress);
     }
+
+    [Fact]
+    public void ConnectGatewayToDeliveryLeg_ValidLegAndGateway_ShouldConnectGateway()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var originalLeg = shipment.DeliveryLegs.First();
+        var gatewayId = GatewayId.NewId();
+        var initialEventCount = shipment.DomainEvents.Count;
+
+        // Act
+        shipment.ConnectGatewayToDeliveryLeg(originalLeg, gatewayId);
+
+        // Assert
+        var updatedLeg = shipment.DeliveryLegs.First();
+        Assert.Equal(gatewayId, updatedLeg.GatewayId);
+        Assert.Equal(initialEventCount + 1, shipment.DomainEvents.Count);
+        Assert.Contains(shipment.DomainEvents, e => e is GatewayConnectedToDeliveryLegEvent);
+    }
+
+    [Fact]
+    public void ConnectGatewayToDeliveryLeg_NullLeg_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var gatewayId = GatewayId.NewId();
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => shipment.ConnectGatewayToDeliveryLeg(null!, gatewayId));
+    }
+
+    [Fact]
+    public void ConnectGatewayToDeliveryLeg_NullGatewayId_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var originalLeg = shipment.DeliveryLegs.First();
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => shipment.ConnectGatewayToDeliveryLeg(originalLeg, null!));
+    }
+
+    [Fact]
+    public void ConnectGatewayToDeliveryLeg_LegNotInShipment_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var externalLeg = CreateDeliveryLeg("Malmö", "Uppsala");
+        var gatewayId = GatewayId.NewId();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => shipment.ConnectGatewayToDeliveryLeg(externalLeg, gatewayId));
+    }
+
+    [Fact]
+    public void ConnectGatewayToDeliveryLeg_AlreadyAssignedGateway_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var originalLeg = shipment.DeliveryLegs.First();
+        var gatewayId1 = GatewayId.NewId();
+        var gatewayId2 = GatewayId.NewId();
+
+        // First assignment
+        shipment.ConnectGatewayToDeliveryLeg(originalLeg, gatewayId1);
+
+        // Act & Assert - Try to assign another gateway to the same leg
+        var updatedLeg = shipment.DeliveryLegs.First();
+        Assert.Throws<InvalidOperationException>(() => shipment.ConnectGatewayToDeliveryLeg(updatedLeg, gatewayId2));
+    }
+
+    [Fact]
+    public void StartDeliveryLeg_ValidLeg_ShouldStartLeg()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var leg = shipment.DeliveryLegs.First();
+        var gatewayId = GatewayId.NewId();
+        shipment.ConnectGatewayToDeliveryLeg(leg, gatewayId);
+        var readyLeg = shipment.DeliveryLegs.First();
+        var initialEventCount = shipment.DomainEvents.Count;
+
+        // Act
+        shipment.StartDeliveryLeg(readyLeg);
+
+        // Assert
+        var startedLeg = shipment.DeliveryLegs.First();
+        Assert.Equal(DeliveryLegStatus.InProgress, startedLeg.Status);
+        Assert.Equal(initialEventCount + 1, shipment.DomainEvents.Count);
+        Assert.Contains(shipment.DomainEvents, e => e is DeliveryLegStartedEvent);
+    }
+
+    [Fact]
+    public void StartDeliveryLeg_NullLeg_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => shipment.StartDeliveryLeg(null!));
+    }
+
+    [Fact]
+    public void StartDeliveryLeg_LegNotInShipment_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var externalLeg = CreateDeliveryLeg("Malmö", "Uppsala");
+        var gatewayId = GatewayId.NewId();
+        externalLeg = externalLeg.AssignGateway(gatewayId);
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => shipment.StartDeliveryLeg(externalLeg));
+    }
+
+    [Fact]
+    public void StartDeliveryLeg_PlannedLeg_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var plannedLeg = shipment.DeliveryLegs.First();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => shipment.StartDeliveryLeg(plannedLeg));
+    }
+
+    [Fact]
+    public void StartDeliveryLeg_SecondLegWithoutFirstCompleted_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var firstLeg = shipment.DeliveryLegs.First();
+        var secondLeg = shipment.DeliveryLegs.Last();
+        var gatewayId1 = GatewayId.NewId();
+        var gatewayId2 = GatewayId.NewId();
+
+        // Assign gateways to both legs
+        shipment.ConnectGatewayToDeliveryLeg(firstLeg, gatewayId1);
+        shipment.ConnectGatewayToDeliveryLeg(secondLeg, gatewayId2);
+
+        // Start first leg but don't complete it
+        var readyFirstLeg = shipment.DeliveryLegs.First();
+        shipment.StartDeliveryLeg(readyFirstLeg);
+
+        // Act & Assert - Try to start second leg
+        var readySecondLeg = shipment.DeliveryLegs.Last();
+        Assert.Throws<InvalidOperationException>(() => shipment.StartDeliveryLeg(readySecondLeg));
+    }
+
+    [Fact]
+    public void CompleteDeliveryLeg_ValidLeg_ShouldCompleteLeg()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var leg = shipment.DeliveryLegs.First();
+        var gatewayId = GatewayId.NewId();
+        shipment.ConnectGatewayToDeliveryLeg(leg, gatewayId);
+        var readyLeg = shipment.DeliveryLegs.First();
+        shipment.StartDeliveryLeg(readyLeg);
+        var inProgressLeg = shipment.DeliveryLegs.First();
+        var initialEventCount = shipment.DomainEvents.Count;
+
+        // Act
+        shipment.CompleteDeliveryLeg(inProgressLeg);
+
+        // Assert
+        var completedLeg = shipment.DeliveryLegs.First();
+        Assert.Equal(DeliveryLegStatus.Completed, completedLeg.Status);
+        Assert.Equal(initialEventCount + 1, shipment.DomainEvents.Count);
+        Assert.Contains(shipment.DomainEvents, e => e is DeliveryLegCompletedEvent);
+    }
+
+    [Fact]
+    public void CompleteDeliveryLeg_NullLeg_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => shipment.CompleteDeliveryLeg(null!));
+    }
+
+    [Fact]
+    public void CompleteDeliveryLeg_LegNotInShipment_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var externalLeg = CreateDeliveryLeg("Malmö", "Uppsala");
+        var gatewayId = GatewayId.NewId();
+        externalLeg = externalLeg.AssignGateway(gatewayId).Start();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => shipment.CompleteDeliveryLeg(externalLeg));
+    }
+
+    [Fact]
+    public void CompleteDeliveryLeg_PlannedLeg_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var plannedLeg = shipment.DeliveryLegs.First();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => shipment.CompleteDeliveryLeg(plannedLeg));
+    }
+
+    [Fact]
+    public void CompleteDeliveryLeg_ReadyLeg_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var leg = shipment.DeliveryLegs.First();
+        var gatewayId = GatewayId.NewId();
+        shipment.ConnectGatewayToDeliveryLeg(leg, gatewayId);
+        var readyLeg = shipment.DeliveryLegs.First();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => shipment.CompleteDeliveryLeg(readyLeg));
+    }
 }

@@ -106,6 +106,80 @@ public class Shipment
     }
 
     /// <summary>
+    /// Connects a gateway to a specific delivery leg (typically when workers load the truck)
+    /// </summary>
+    public void ConnectGatewayToDeliveryLeg(DeliveryLeg originalLeg, GatewayId gatewayId)
+    {
+        if (originalLeg == null)
+            throw new ArgumentNullException(nameof(originalLeg));
+
+        if (gatewayId == null)
+            throw new ArgumentNullException(nameof(gatewayId));
+
+        // Find the leg in the shipment
+        var legIndex = _deliveryLegs.FindIndex(leg => leg.Equals(originalLeg));
+        if (legIndex == -1)
+            throw new InvalidOperationException("Delivery leg not found in this shipment");
+
+        // Assign the gateway to the leg
+        var updatedLeg = originalLeg.AssignGateway(gatewayId);
+        _deliveryLegs[legIndex] = updatedLeg;
+
+        // Raise domain event
+        AddDomainEvent(new GatewayConnectedToDeliveryLegEvent(ShipmentId, updatedLeg, gatewayId));
+    }
+
+    /// <summary>
+    /// Starts a delivery leg (changes status from Ready to InProgress)
+    /// </summary>
+    public void StartDeliveryLeg(DeliveryLeg originalLeg)
+    {
+        if (originalLeg == null)
+            throw new ArgumentNullException(nameof(originalLeg));
+
+        // Find the leg in the shipment
+        var legIndex = _deliveryLegs.FindIndex(leg => leg.Equals(originalLeg));
+        if (legIndex == -1)
+            throw new InvalidOperationException("Delivery leg not found in this shipment");
+
+        // Check if previous legs are completed (except for the first leg)
+        if (legIndex > 0)
+        {
+            var previousLeg = _deliveryLegs[legIndex - 1];
+            if (previousLeg.Status != DeliveryLegStatus.Completed)
+                throw new InvalidOperationException("Previous delivery leg must be completed before starting the next leg");
+        }
+
+        // Start the leg
+        var startedLeg = originalLeg.Start();
+        _deliveryLegs[legIndex] = startedLeg;
+
+        // Raise domain event
+        AddDomainEvent(new DeliveryLegStartedEvent(ShipmentId, startedLeg));
+    }
+
+    /// <summary>
+    /// Completes a delivery leg (changes status from InProgress to Completed)
+    /// </summary>
+    public void CompleteDeliveryLeg(DeliveryLeg originalLeg)
+    {
+        if (originalLeg == null)
+            throw new ArgumentNullException(nameof(originalLeg));
+
+        // Find the leg in the shipment
+        var legIndex = _deliveryLegs.FindIndex(leg => leg.Equals(originalLeg));
+        if (legIndex == -1)
+            throw new InvalidOperationException("Delivery leg not found in this shipment");
+
+        // Complete the leg
+        var completedLeg = originalLeg.Complete();
+        _deliveryLegs[legIndex] = completedLeg;
+
+        // Raise domain event
+        AddDomainEvent(new DeliveryLegCompletedEvent(ShipmentId, completedLeg));
+    }
+
+    /// <summary>
     /// Changes the shipment status
     /// </summary>
     public void ChangeStatus(ShipmentStatus newStatus)
