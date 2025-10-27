@@ -18,6 +18,7 @@ public class GpsAppDbContext : DbContext
     // Domain aggregates
     public DbSet<Shipment> Shipments { get; set; } = null!;
     public DbSet<Package> Packages { get; set; } = null!;
+    public DbSet<PackageMeasurement> PackageMeasurements { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,6 +27,7 @@ public class GpsAppDbContext : DbContext
         // Apply entity configurations
         modelBuilder.ApplyConfiguration(new ShipmentConfiguration());
         modelBuilder.ApplyConfiguration(new PackageConfiguration());
+        modelBuilder.ApplyConfiguration(new PackageMeasurementConfiguration());
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

@@ -1,6 +1,54 @@
 namespace GpsApp.Domain.ValueObjects;
 
 /// <summary>
+/// Statistics for temperature measurements
+/// </summary>
+public class TemperatureStats
+{
+    public Temperature Min { get; private set; }
+    public Temperature Max { get; private set; }
+    public Temperature Average { get; private set; }
+    public Temperature? ExpectedMin { get; private set; }
+    public Temperature? ExpectedMax { get; private set; }
+    public int OutOfRangeCount { get; private set; }
+
+    public TemperatureStats(Temperature min, Temperature max, Temperature average, 
+        Temperature? expectedMin = null, Temperature? expectedMax = null, int outOfRangeCount = 0)
+    {
+        Min = min ?? throw new ArgumentNullException(nameof(min));
+        Max = max ?? throw new ArgumentNullException(nameof(max));
+        Average = average ?? throw new ArgumentNullException(nameof(average));
+        ExpectedMin = expectedMin;
+        ExpectedMax = expectedMax;
+        OutOfRangeCount = outOfRangeCount;
+    }
+}
+
+/// <summary>
+/// Statistics for humidity measurements
+/// </summary>
+public class HumidityStats
+{
+    public Humidity Min { get; private set; }
+    public Humidity Max { get; private set; }
+    public Humidity Average { get; private set; }
+    public Humidity? ExpectedMin { get; private set; }
+    public Humidity? ExpectedMax { get; private set; }
+    public int OutOfRangeCount { get; private set; }
+
+    public HumidityStats(Humidity min, Humidity max, Humidity average, 
+        Humidity? expectedMin = null, Humidity? expectedMax = null, int outOfRangeCount = 0)
+    {
+        Min = min ?? throw new ArgumentNullException(nameof(min));
+        Max = max ?? throw new ArgumentNullException(nameof(max));
+        Average = average ?? throw new ArgumentNullException(nameof(average));
+        ExpectedMin = expectedMin;
+        ExpectedMax = expectedMax;
+        OutOfRangeCount = outOfRangeCount;
+    }
+}
+
+/// <summary>
 /// Value object representing a summary of measurements for a specific period
 /// Contains aggregated statistics for temperature and humidity readings
 /// </summary>
@@ -17,11 +65,18 @@ public class MeasurementSummary : IEquatable<MeasurementSummary>
     public Humidity? AverageHumidity { get; private set; }
     public int OutOfRangeCount { get; private set; }
     public TimeSpan TotalOutOfRangeDuration { get; private set; }
+    
+    // Properties expected by controllers
+    public TemperatureStats? TemperatureStats { get; private set; }
+    public HumidityStats? HumidityStats { get; private set; }
+    public List<string> Violations { get; private set; } = new();
 
     public MeasurementSummary(DateTime startTime, DateTime endTime, int totalReadings,
         Temperature? minTemperature, Temperature? maxTemperature, Temperature? averageTemperature,
         Humidity? minHumidity, Humidity? maxHumidity, Humidity? averageHumidity,
-        int outOfRangeCount, TimeSpan totalOutOfRangeDuration)
+        int outOfRangeCount, TimeSpan totalOutOfRangeDuration,
+        TemperatureStats? temperatureStats = null, HumidityStats? humidityStats = null, 
+        List<string>? violations = null)
     {
         if (startTime >= endTime)
             throw new ArgumentException("Start time must be before end time");
@@ -37,6 +92,9 @@ public class MeasurementSummary : IEquatable<MeasurementSummary>
         AverageHumidity = averageHumidity;
         OutOfRangeCount = outOfRangeCount;
         TotalOutOfRangeDuration = totalOutOfRangeDuration;
+        TemperatureStats = temperatureStats;
+        HumidityStats = humidityStats;
+        Violations = violations ?? new List<string>();
     }
 
     /// <summary>
@@ -73,11 +131,38 @@ public class MeasurementSummary : IEquatable<MeasurementSummary>
         var totalOutOfRangeDuration = CalculateOutOfRangeDuration(
             orderedReadings, expectedTemperatureRange, expectedHumidityRange);
 
+        // Create temperature and humidity stats
+        var temperatureStats = new TemperatureStats(
+            minTemp, maxTemp, avgTemp,
+            expectedTemperatureRange?.Min, expectedTemperatureRange?.Max,
+            orderedReadings.Count(r => !r.IsTemperatureInRange(expectedTemperatureRange)));
+
+        var humidityStats = new HumidityStats(
+            minHumidity, maxHumidity, avgHumidity,
+            expectedHumidityRange?.Min, expectedHumidityRange?.Max,
+            orderedReadings.Count(r => !r.IsHumidityInRange(expectedHumidityRange)));
+
+        // Collect violations
+        var violations = new List<string>();
+        foreach (var reading in orderedReadings)
+        {
+            var violationType = reading.GetViolationType(expectedTemperatureRange, expectedHumidityRange);
+            if (!string.IsNullOrEmpty(violationType) && !violations.Contains(violationType))
+            {
+                violations.Add(violationType);
+            }
+        }
+
         return new MeasurementSummary(
             startTime, endTime, readings.Count,
             minTemp, maxTemp, avgTemp,
             minHumidity, maxHumidity, avgHumidity,
-            outOfRangeCount, totalOutOfRangeDuration);
+            outOfRangeCount, totalOutOfRangeDuration)
+        {
+            TemperatureStats = temperatureStats,
+            HumidityStats = humidityStats,
+            Violations = violations
+        };
     }
 
     /// <summary>

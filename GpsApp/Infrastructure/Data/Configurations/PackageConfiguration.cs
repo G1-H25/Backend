@@ -43,10 +43,9 @@ public class PackageConfiguration : IEntityTypeConfiguration<Package>
         // SensorId conversion
         builder.Property(p => p.SensorId)
             .HasConversion(
-                id => id != null ? id.Value : (string?)null,
-                value => value != null ? new SensorId(value) : null)
-            .HasColumnName("SensorId")
-            .HasMaxLength(100);
+                id => id != null ? id.Value : (Guid?)null,
+                value => value != null ? new SensorId(value.Value) : null)
+            .HasColumnName("SensorId");
 
         // ExpectedTemperatureRange as owned type
         builder.OwnsOne(p => p.ExpectedTemperatureRange, tempRange =>

@@ -28,6 +28,7 @@ namespace GpsApp.Composition
                 // Add repositories
                 services.AddScoped<IShipmentRepository, ShipmentRepository>();
                 services.AddScoped<IPackageRepository, PackageRepository>();
+                services.AddScoped<IPackageMeasurementRepository, PackageMeasurementRepository>();
                 services.AddScoped<IUnitOfWork, UnitOfWork>();
 
                 // Legacy SQL services (can be removed once fully migrated to EF Core)

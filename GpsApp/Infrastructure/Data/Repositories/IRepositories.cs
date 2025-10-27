@@ -36,6 +36,7 @@ public interface IUnitOfWork : IDisposable
 {
     IShipmentRepository Shipments { get; }
     IPackageRepository Packages { get; }
+    IPackageMeasurementRepository PackageMeasurements { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
     Task CommitTransactionAsync(CancellationToken cancellationToken = default);

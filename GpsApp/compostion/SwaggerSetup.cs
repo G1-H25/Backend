@@ -15,6 +15,19 @@ namespace GpsApp.Composition
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
                 options.IncludeXmlComments(xmlPath);
 
+                // API Information
+                options.SwaggerDoc("v2", new OpenApiInfo
+                {
+                    Title = "GPS App V2 API",
+                    Version = "v2",
+                    Description = "Complete shipment workflow management system with domain-driven design. Supports Swedish address format (e.g., Tegelgatan 12, Stockholm, 113 58, Sverige).",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "GPS App Team",
+                        Email = "jennifer.got@chasacademy.se"
+                    }
+                });
+
                 // JWT Bearer security definition
                 var jwtSecurityScheme = new OpenApiSecurityScheme
                 {
@@ -32,17 +45,39 @@ namespace GpsApp.Composition
                     }
                 };
 
-                // Register the security scheme
-                options.AddSecurityDefinition("Bearer", jwtSecurityScheme);
+                // Basic Authentication security definition
+                var basicSecurityScheme = new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "basic",
+                    Description = "Basic Authentication for gateway devices. Format: gateway-id:password",
 
-                // Require the security scheme globally (for [Authorize] endpoints)
+                    Reference = new OpenApiReference
+                    {
+                        Id = "Basic",
+                        Type = ReferenceType.SecurityScheme
+                    }
+                };
+
+                // Register the security schemes
+                options.AddSecurityDefinition("Bearer", jwtSecurityScheme);
+                options.AddSecurityDefinition("Basic", basicSecurityScheme);
+
+                // Require the security schemes globally
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
                         jwtSecurityScheme,
                         Array.Empty<string>()
+                    },
+                    {
+                        basicSecurityScheme,
+                        Array.Empty<string>()
                     }
                 });
+
+                // Enable annotations for better API documentation
+                options.EnableAnnotations();
             });
 
             return services;

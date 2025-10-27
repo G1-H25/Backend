@@ -18,7 +18,18 @@ namespace GpsApp.Middleware
             }
 
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v2/swagger.json", "GPS App V2 API");
+                c.RoutePrefix = "swagger"; // Set Swagger UI at /swagger instead of root
+                c.DocumentTitle = "GPS App V2 API Documentation";
+                c.DefaultModelsExpandDepth(-1); // Hide models section by default
+                c.DisplayRequestDuration();
+                c.EnableDeepLinking();
+                c.EnableFilter();
+                c.ShowExtensions();
+                c.EnableValidator();
+            });
 
             app.UseHttpsRedirection();
             app.UseRouting();

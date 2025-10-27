@@ -12,6 +12,7 @@ public class UnitOfWork : IUnitOfWork
     private IDbContextTransaction? _transaction;
     private IShipmentRepository? _shipments;
     private IPackageRepository? _packages;
+    private IPackageMeasurementRepository? _packageMeasurements;
 
     public UnitOfWork(GpsAppDbContext context)
     {
@@ -23,6 +24,9 @@ public class UnitOfWork : IUnitOfWork
 
     public IPackageRepository Packages => 
         _packages ??= new PackageRepository(_context);
+
+    public IPackageMeasurementRepository PackageMeasurements => 
+        _packageMeasurements ??= new PackageMeasurementRepository(_context);
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
