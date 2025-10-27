@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using GpsApp.Domain.Aggregates;
 using GpsApp.Domain.ValueObjects;
 
@@ -40,12 +41,15 @@ public class PackageConfiguration : IEntityTypeConfiguration<Package>
             recipient.Property(r => r.Country).HasMaxLength(100).IsRequired();
         });
 
-        // SensorId conversion
+        // Convert SensorId to its underlying Guid for EF Core
+        var sensorIdConverter = new ValueConverter<SensorId, Guid>(
+            id => id.Value,       
+            value => new SensorId(value)); 
+
         builder.Property(p => p.SensorId)
-            .HasConversion(
-                id => id != null ? id.Value : (Guid?)null,
-                value => value != null ? new SensorId(value.Value) : null)
+            .HasConversion(sensorIdConverter)
             .HasColumnName("SensorId");
+
 
         // ExpectedTemperatureRange as owned type
         builder.OwnsOne(p => p.ExpectedTemperatureRange, tempRange =>
