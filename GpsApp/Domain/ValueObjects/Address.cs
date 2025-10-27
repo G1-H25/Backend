@@ -28,6 +28,15 @@ public class Address : IEquatable<Address>
         Country = country.Trim();
     }
 
+    // Parameterless constructor for EF Core
+    private Address()
+    {
+        Street = string.Empty;
+        City = string.Empty;
+        PostalCode = string.Empty;
+        Country = string.Empty;
+    }
+
     /// <summary>
     /// Creates an address from persistence storage (hydration constructor)
     /// This constructor allows setting all properties for reconstruction from storage

@@ -9,6 +9,22 @@ public abstract class DomainEvent
 {
     public DateTime OccurredAt { get; private set; } = DateTime.UtcNow;
     public Guid EventId { get; private set; } = Guid.NewGuid();
+    
+    // Properties for EF Core persistence
+    public string AggregateId { get; private set; } = string.Empty;
+    public string AggregateType { get; private set; } = string.Empty;
+    public int Version { get; private set; } = 1;
+    
+    // Protected constructor for EF Core
+    protected DomainEvent() { }
+    
+    // Constructor for domain events
+    protected DomainEvent(string aggregateId, string aggregateType, int version = 1)
+    {
+        AggregateId = aggregateId;
+        AggregateType = aggregateType;
+        Version = version;
+    }
 }
 
 /// <summary>
@@ -21,6 +37,7 @@ public class PackageCreatedEvent : DomainEvent
     public Address Recipient { get; private set; }
 
     public PackageCreatedEvent(PackageId packageId, Address sender, Address recipient)
+        : base(packageId.Value.ToString(), "Package")
     {
         PackageId = packageId;
         Sender = sender;
@@ -37,6 +54,7 @@ public class SensorAttachedEvent : DomainEvent
     public SensorId SensorId { get; private set; }
 
     public SensorAttachedEvent(PackageId packageId, SensorId sensorId)
+        : base(packageId.Value.ToString(), "Package")
     {
         PackageId = packageId;
         SensorId = sensorId;
@@ -52,6 +70,7 @@ public class ExpectedTemperatureRangeSetEvent : DomainEvent
     public ExpectedRange<Temperature> ExpectedRange { get; private set; }
 
     public ExpectedTemperatureRangeSetEvent(PackageId packageId, ExpectedRange<Temperature> expectedRange)
+        : base(packageId.Value.ToString(), "Package")
     {
         PackageId = packageId;
         ExpectedRange = expectedRange;
@@ -67,6 +86,7 @@ public class ExpectedHumidityRangeSetEvent : DomainEvent
     public ExpectedRange<Humidity> ExpectedRange { get; private set; }
 
     public ExpectedHumidityRangeSetEvent(PackageId packageId, ExpectedRange<Humidity> expectedRange)
+        : base(packageId.Value.ToString(), "Package")
     {
         PackageId = packageId;
         ExpectedRange = expectedRange;

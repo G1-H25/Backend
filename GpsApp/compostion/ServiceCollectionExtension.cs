@@ -1,6 +1,9 @@
 // Composition/ServiceRegistration.cs
 
 using GpsApp.Controllers;
+using GpsApp.Infrastructure.Data;
+using GpsApp.Infrastructure.Data.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace GpsApp.Composition
 {
@@ -18,6 +21,16 @@ namespace GpsApp.Composition
         {
             if (!string.IsNullOrEmpty(connectionString))
             {
+                // Add Entity Framework Core
+                services.AddDbContext<GpsAppDbContext>(options =>
+                    options.UseSqlServer(connectionString));
+
+                // Add repositories
+                services.AddScoped<IShipmentRepository, ShipmentRepository>();
+                services.AddScoped<IPackageRepository, PackageRepository>();
+                services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+                // Legacy SQL services (can be removed once fully migrated to EF Core)
                 services.AddSingleton(_ => new SqlInsert(connectionString));
                 services.AddSingleton<ISqlGet>(_ => new SqlGet(connectionString));
                 services.AddSingleton<ISqlGetAdvanced>(_ => new SqlGetAdvanced(connectionString));

@@ -14,6 +14,7 @@ public class ShipmentCreatedEvent : DomainEvent
     public IReadOnlyList<DeliveryLeg> DeliveryLegs { get; private set; }
 
     public ShipmentCreatedEvent(ShipmentId shipmentId, DateTime shipmentDate, IReadOnlyList<PackageId> packageIds, IReadOnlyList<DeliveryLeg> deliveryLegs)
+        : base(shipmentId.Value.ToString(), "Shipment")
     {
         ShipmentId = shipmentId;
         ShipmentDate = shipmentDate;
@@ -31,6 +32,7 @@ public class PackageAddedToShipmentEvent : DomainEvent
     public PackageId PackageId { get; private set; }
 
     public PackageAddedToShipmentEvent(ShipmentId shipmentId, PackageId packageId)
+        : base(shipmentId.Value.ToString(), "Shipment")
     {
         ShipmentId = shipmentId;
         PackageId = packageId;
@@ -46,6 +48,7 @@ public class DeliveryLegAddedToShipmentEvent : DomainEvent
     public DeliveryLeg DeliveryLeg { get; private set; }
 
     public DeliveryLegAddedToShipmentEvent(ShipmentId shipmentId, DeliveryLeg deliveryLeg)
+        : base(shipmentId.Value.ToString(), "Shipment")
     {
         ShipmentId = shipmentId;
         DeliveryLeg = deliveryLeg;
@@ -62,6 +65,7 @@ public class GatewayConnectedToDeliveryLegEvent : DomainEvent
     public GatewayId GatewayId { get; private set; }
 
     public GatewayConnectedToDeliveryLegEvent(ShipmentId shipmentId, DeliveryLeg deliveryLeg, GatewayId gatewayId)
+        : base(shipmentId.Value.ToString(), "Shipment")
     {
         ShipmentId = shipmentId;
         DeliveryLeg = deliveryLeg;
@@ -79,6 +83,7 @@ public class ShipmentStatusChangedEvent : DomainEvent
     public Shipment.ShipmentStatus NewStatus { get; private set; }
 
     public ShipmentStatusChangedEvent(ShipmentId shipmentId, Shipment.ShipmentStatus oldStatus, Shipment.ShipmentStatus newStatus)
+        : base(shipmentId.Value.ToString(), "Shipment")
     {
         ShipmentId = shipmentId;
         OldStatus = oldStatus;
@@ -95,6 +100,7 @@ public class DeliveryLegStartedEvent : DomainEvent
     public DeliveryLeg DeliveryLeg { get; private set; }
 
     public DeliveryLegStartedEvent(ShipmentId shipmentId, DeliveryLeg deliveryLeg)
+        : base(shipmentId.Value.ToString(), "Shipment")
     {
         ShipmentId = shipmentId;
         DeliveryLeg = deliveryLeg;
@@ -110,6 +116,7 @@ public class DeliveryLegCompletedEvent : DomainEvent
     public DeliveryLeg DeliveryLeg { get; private set; }
 
     public DeliveryLegCompletedEvent(ShipmentId shipmentId, DeliveryLeg deliveryLeg)
+        : base(shipmentId.Value.ToString(), "Shipment")
     {
         ShipmentId = shipmentId;
         DeliveryLeg = deliveryLeg;

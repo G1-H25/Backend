@@ -52,6 +52,13 @@ public class DeliveryLeg : IEquatable<DeliveryLeg>
         Status = DeliveryLegStatus.Planned; // Initially planned
     }
 
+    // Parameterless constructor for EF Core
+    private DeliveryLeg() 
+    {
+        StartAddress = null!;
+        EndAddress = null!;
+    }
+
     /// <summary>
     /// Creates a delivery leg from persistence storage (hydration constructor)
     /// This constructor allows setting all properties for reconstruction from storage
