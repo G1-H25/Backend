@@ -1,3 +1,4 @@
+/*
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GpsApp.DTO;
@@ -185,3 +186,4 @@ public class GatewayController : ControllerBase
 
 }
 
+*/
