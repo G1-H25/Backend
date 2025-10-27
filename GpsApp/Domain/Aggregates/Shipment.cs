@@ -304,8 +304,9 @@ public class Shipment
     {
         return _packages
             .Where(p => p.HasSensor)
-            .Select(p => p.SensorId!.Value)
-            .ToList();
+            .Select(p => p.SensorId!)
+            .ToList()
+            .AsReadOnly();
     }
 
     /// <summary>
