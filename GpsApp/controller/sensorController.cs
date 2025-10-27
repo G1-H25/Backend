@@ -237,7 +237,7 @@ public class SensorController : ControllerBase
 
         int sensorId = Convert.ToInt32(insertedSensor["Id"]);
 
-        var liveDataMocker = new mockLiveData(_insertService, _sqlUpdate, _sqlGet);
+        var liveDataMocker = new MockLiveData(_insertService, _sqlUpdate, _sqlGet);
 
         
         await liveDataMocker.CreateMockDeliveryAsync(sensorId);
