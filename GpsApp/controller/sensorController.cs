@@ -225,6 +225,22 @@ public class SensorController : ControllerBase
             await _insertService.InsertAsync("Measurements.Sensor", dataDict);
         }
 
+        // Fetch the ID of the newly inserted sensor (temporary mock logic)
+        var insertedSensor = await _sqlGet.FetchAsync("Measurements.Sensor", new Dictionary<string, object>
+        {
+            { "GatewayId", gatewayId },
+            { "UUID", data.UUID }
+        });
+
+        if (insertedSensor == null || !insertedSensor.Any())
+            return StatusCode(500, "Sensor insert failed");
+
+        int sensorId = Convert.ToInt32(insertedSensor["Id"]);
+
+        var liveDataMocker = new mockLiveData(_insertService, _sqlUpdate, _sqlGet);
+
+        
+        await liveDataMocker.CreateMockDeliveryAsync(sensorId);
         //  9. Return success response
         return Ok($"Inserted, {data.UUID}");
     }
