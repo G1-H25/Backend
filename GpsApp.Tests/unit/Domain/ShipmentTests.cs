@@ -334,7 +334,7 @@ public class ShipmentTests
         var packageId = PackageId.NewId();
         var sender = new Address("Tegelstensgatan 12", "Mura", "345 67", "Sverige");
         var recipient = new Address("Storgatan 45", "Stockholm", "111 22", "Sverige");
-        var sensorId = new SensorId($"SENSOR_{Guid.NewGuid():N}");
+    var sensorId = SensorId.NewId();
         var createdAt = DateTime.UtcNow;
         var sensorAttachedAt = DateTime.UtcNow;
         
@@ -650,8 +650,11 @@ public class ShipmentTests
         // Arrange
         var shipment = CreateValidShipment();
         var deliveryLeg = shipment.DeliveryLegs.First();
-        shipment.ConnectGatewayToDeliveryLeg(deliveryLeg, GatewayId.NewId());
-        shipment.StartDeliveryLeg(deliveryLeg);
+    shipment.ConnectGatewayToDeliveryLeg(deliveryLeg, GatewayId.NewId());
+    // ConnectGatewayToDeliveryLeg replaces the stored DeliveryLeg instance,
+    // so re-fetch the updated instance from the shipment before starting it.
+    deliveryLeg = shipment.DeliveryLegs.First();
+    shipment.StartDeliveryLeg(deliveryLeg);
 
         // Act
         shipment.StartMeasurementSession(deliveryLeg);
@@ -694,9 +697,10 @@ public class ShipmentTests
         // Arrange
         var shipment = CreateValidShipment();
         var deliveryLeg = shipment.DeliveryLegs.First();
-        shipment.ConnectGatewayToDeliveryLeg(deliveryLeg, GatewayId.NewId());
-        shipment.StartDeliveryLeg(deliveryLeg);
-        shipment.CompleteDeliveryLeg(deliveryLeg);
+    shipment.ConnectGatewayToDeliveryLeg(deliveryLeg, GatewayId.NewId());
+    deliveryLeg = shipment.DeliveryLegs.First();
+    shipment.StartDeliveryLeg(deliveryLeg);
+    shipment.CompleteDeliveryLeg(deliveryLeg);
 
         // Act
         shipment.CompleteMeasurementSession(deliveryLeg);
@@ -728,16 +732,16 @@ public class ShipmentTests
         var package1 = shipment.Packages.First();
         var package2 = shipment.Packages.Last();
         
-        package1.AttachSensor(SensorId.NewId());
-        package2.AttachSensor(SensorId.NewId());
+    if (!package1.HasSensor) package1.AttachSensor(SensorId.NewId());
+    if (!package2.HasSensor) package2.AttachSensor(SensorId.NewId());
 
         // Act
         var expectedSensorIds = shipment.GetExpectedSensorIds();
 
         // Assert
         Assert.Equal(2, expectedSensorIds.Count);
-        Assert.Contains(package1.SensorId!.Value, expectedSensorIds);
-        Assert.Contains(package2.SensorId!.Value, expectedSensorIds);
+    Assert.Contains(package1.SensorId, expectedSensorIds);
+    Assert.Contains(package2.SensorId, expectedSensorIds);
     }
 
     [Fact]
@@ -759,8 +763,9 @@ public class ShipmentTests
         // Arrange
         var shipment = CreateValidShipment();
         var deliveryLeg = shipment.DeliveryLegs.First();
-        shipment.ConnectGatewayToDeliveryLeg(deliveryLeg, GatewayId.NewId());
-        shipment.StartDeliveryLeg(deliveryLeg);
+    shipment.ConnectGatewayToDeliveryLeg(deliveryLeg, GatewayId.NewId());
+    deliveryLeg = shipment.DeliveryLegs.First();
+    shipment.StartDeliveryLeg(deliveryLeg);
         
         var package1 = shipment.Packages.First();
         var package2 = shipment.Packages.Last();
@@ -779,7 +784,7 @@ public class ShipmentTests
         Assert.Equal(deliveryLeg, presenceEvent.DeliveryLeg);
         Assert.Equal(presentSensors, presenceEvent.PresentSensors);
         Assert.Single(presenceEvent.MissingSensors);
-        Assert.Equal(package2.SensorId!.Value, presenceEvent.MissingSensors.First());
+    Assert.Equal(package2.SensorId, presenceEvent.MissingSensors.First());
     }
 
     [Fact]
@@ -800,8 +805,9 @@ public class ShipmentTests
         // Arrange
         var shipment = CreateValidShipment();
         var deliveryLeg = shipment.DeliveryLegs.First();
-        shipment.ConnectGatewayToDeliveryLeg(deliveryLeg, GatewayId.NewId());
-        shipment.StartDeliveryLeg(deliveryLeg);
+    shipment.ConnectGatewayToDeliveryLeg(deliveryLeg, GatewayId.NewId());
+    deliveryLeg = shipment.DeliveryLegs.First();
+    shipment.StartDeliveryLeg(deliveryLeg);
         
         var readings = CreateValidReadings(3);
 

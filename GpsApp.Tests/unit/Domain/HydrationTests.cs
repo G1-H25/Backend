@@ -65,8 +65,8 @@ public class HydrationTests
         var gatewayId = GatewayId.NewId();
         var status = DeliveryLegStatus.InProgress;
 
-        // Act
-        var deliveryLeg = new DeliveryLeg(startAddress, endAddress, gatewayId, status);
+    // Act
+    var deliveryLeg = new DeliveryLeg(DeliveryLegId.NewId(), startAddress, endAddress, gatewayId, status);
 
         // Assert
         Assert.Equal(startAddress, deliveryLeg.StartAddress);
@@ -83,8 +83,8 @@ public class HydrationTests
         var endAddress = new Address("End Street", "End City", "67890", "End Country");
         var status = DeliveryLegStatus.Planned;
 
-        // Act
-        var deliveryLeg = new DeliveryLeg(startAddress, endAddress, null, status);
+    // Act
+    var deliveryLeg = new DeliveryLeg(DeliveryLegId.NewId(), startAddress, endAddress, null, status);
 
         // Assert
         Assert.Equal(startAddress, deliveryLeg.StartAddress);
@@ -101,7 +101,7 @@ public class HydrationTests
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => 
-            new DeliveryLeg(null!, endAddress, null, DeliveryLegStatus.Planned));
+            new DeliveryLeg(DeliveryLegId.NewId(), null!, endAddress, null, DeliveryLegStatus.Planned));
     }
 
     [Fact]
@@ -281,7 +281,7 @@ public class HydrationTests
         var packageId = PackageId.NewId();
         var sender = new Address("Sender Street", "Sender City", "12345", "Sender Country");
         var recipient = new Address("Recipient Street", "Recipient City", "67890", "Recipient Country");
-        var sensorId = new SensorId($"SENSOR_{Guid.NewGuid():N}");
+    var sensorId = SensorId.NewId();
         var temperatureRange = new ExpectedRange<Temperature>(new Temperature(2.0m), new Temperature(8.0m));
         var humidityRange = new ExpectedRange<Humidity>(new Humidity(30.0m), new Humidity(70.0m));
         var createdAt = DateTime.UtcNow;
@@ -338,7 +338,7 @@ public class HydrationTests
         var packageId = PackageId.NewId();
         var sender = new Address("Tegelstensgatan 12", "Mura", "345 67", "Sverige");
         var recipient = new Address("Storgatan 45", "Stockholm", "111 22", "Sverige");
-        var sensorId = new SensorId($"SENSOR_{Guid.NewGuid():N}");
+    var sensorId = SensorId.NewId();
         var createdAt = DateTime.UtcNow;
         var sensorAttachedAt = DateTime.UtcNow;
         

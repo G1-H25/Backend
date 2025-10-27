@@ -14,7 +14,7 @@ public class MeasurementReadingTests
         var sensorId = SensorId.NewId();
 
         // Act
-        var reading = new MeasurementReading(timestamp, temperature, humidity, sensorId);
+    var reading = new MeasurementReading(sensorId, timestamp, temperature, humidity);
 
         // Assert
         Assert.Equal(timestamp, reading.Timestamp);
@@ -33,7 +33,7 @@ public class MeasurementReadingTests
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => 
-            new MeasurementReading(timestamp, null!, humidity, sensorId));
+            new MeasurementReading(sensorId, timestamp, null!, humidity));
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class MeasurementReadingTests
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => 
-            new MeasurementReading(timestamp, temperature, null!, sensorId));
+            new MeasurementReading(sensorId, timestamp, temperature, null!));
     }
 
     [Fact]
@@ -59,14 +59,14 @@ public class MeasurementReadingTests
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => 
-            new MeasurementReading(timestamp, temperature, humidity, null!));
+            new MeasurementReading(null!, timestamp, temperature, humidity));
     }
 
     [Fact]
     public void IsTemperatureInRange_WithinRange_ShouldReturnTrue()
     {
         // Arrange
-        var reading = CreateValidReading();
+    var reading = CreateValidReading();
         var expectedRange = new ExpectedRange<Temperature>(
             new Temperature(20.0m), new Temperature(30.0m));
 
@@ -82,10 +82,10 @@ public class MeasurementReadingTests
     {
         // Arrange
         var reading = new MeasurementReading(
-            DateTime.UtcNow, 
+            SensorId.NewId(),
+            DateTime.UtcNow,
             new Temperature(35.0m), // Outside range
-            new Humidity(60.0m), 
-            SensorId.NewId());
+            new Humidity(60.0m));
         var expectedRange = new ExpectedRange<Temperature>(
             new Temperature(20.0m), new Temperature(30.0m));
 
@@ -100,7 +100,7 @@ public class MeasurementReadingTests
     public void IsTemperatureInRange_NullRange_ShouldReturnTrue()
     {
         // Arrange
-        var reading = CreateValidReading();
+    var reading = CreateValidReading();
 
         // Act
         var result = reading.IsTemperatureInRange(null);
@@ -129,10 +129,10 @@ public class MeasurementReadingTests
     {
         // Arrange
         var reading = new MeasurementReading(
-            DateTime.UtcNow, 
+            SensorId.NewId(),
+            DateTime.UtcNow,
             new Temperature(25.0m), 
-            new Humidity(80.0m), // Outside range
-            SensorId.NewId());
+            new Humidity(80.0m));
         var expectedRange = new ExpectedRange<Humidity>(
             new Humidity(50.0m), new Humidity(70.0m));
 
@@ -165,10 +165,10 @@ public class MeasurementReadingTests
     {
         // Arrange
         var reading = new MeasurementReading(
-            DateTime.UtcNow, 
-            new Temperature(35.0m), // Outside range
-            new Humidity(60.0m), 
-            SensorId.NewId());
+            SensorId.NewId(),
+            DateTime.UtcNow,
+            new Temperature(25.0m), // Outside range
+            new Humidity(80.0m));
         var tempRange = new ExpectedRange<Temperature>(
             new Temperature(20.0m), new Temperature(30.0m));
         var humidityRange = new ExpectedRange<Humidity>(
@@ -186,10 +186,10 @@ public class MeasurementReadingTests
     {
         // Arrange
         var reading = new MeasurementReading(
-            DateTime.UtcNow, 
+            SensorId.NewId(),
+            DateTime.UtcNow,
             new Temperature(25.0m), 
-            new Humidity(80.0m), // Outside range
-            SensorId.NewId());
+            new Humidity(80.0m));
         var tempRange = new ExpectedRange<Temperature>(
             new Temperature(20.0m), new Temperature(30.0m));
         var humidityRange = new ExpectedRange<Humidity>(
@@ -224,10 +224,10 @@ public class MeasurementReadingTests
     {
         // Arrange
         var reading = new MeasurementReading(
-            DateTime.UtcNow, 
+            SensorId.NewId(),
+            DateTime.UtcNow,
             new Temperature(35.0m), // Outside range
-            new Humidity(60.0m), 
-            SensorId.NewId());
+            new Humidity(60.0m));
         var tempRange = new ExpectedRange<Temperature>(
             new Temperature(20.0m), new Temperature(30.0m));
         var humidityRange = new ExpectedRange<Humidity>(
@@ -245,10 +245,10 @@ public class MeasurementReadingTests
     {
         // Arrange
         var reading = new MeasurementReading(
-            DateTime.UtcNow, 
+            SensorId.NewId(),
+            DateTime.UtcNow,
             new Temperature(35.0m), // Outside range
-            new Humidity(80.0m), // Outside range
-            SensorId.NewId());
+            new Humidity(80.0m));
         var tempRange = new ExpectedRange<Temperature>(
             new Temperature(20.0m), new Temperature(30.0m));
         var humidityRange = new ExpectedRange<Humidity>(
@@ -270,8 +270,8 @@ public class MeasurementReadingTests
         var humidity = new Humidity(60.0m);
         var sensorId = SensorId.NewId();
         
-        var reading1 = new MeasurementReading(timestamp, temperature, humidity, sensorId);
-        var reading2 = new MeasurementReading(timestamp, temperature, humidity, sensorId);
+    var reading1 = new MeasurementReading(sensorId, timestamp, temperature, humidity);
+    var reading2 = new MeasurementReading(sensorId, timestamp, temperature, humidity);
 
         // Act & Assert
         Assert.True(reading1.Equals(reading2));
@@ -301,7 +301,7 @@ public class MeasurementReadingTests
         var temperature = new Temperature(25.5m);
         var humidity = new Humidity(60.0m);
         var sensorId = SensorId.NewId();
-        var reading = new MeasurementReading(timestamp, temperature, humidity, sensorId);
+    var reading = new MeasurementReading(sensorId, timestamp, temperature, humidity);
 
         // Act
         var result = reading.ToString();
@@ -316,9 +316,9 @@ public class MeasurementReadingTests
     private static MeasurementReading CreateValidReading()
     {
         return new MeasurementReading(
+            SensorId.NewId(),
             DateTime.UtcNow, 
             new Temperature(25.0m), 
-            new Humidity(60.0m), 
-            SensorId.NewId());
+            new Humidity(60.0m));
     }
 }

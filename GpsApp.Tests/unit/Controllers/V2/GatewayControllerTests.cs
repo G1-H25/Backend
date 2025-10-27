@@ -38,8 +38,9 @@ public class GatewayControllerTests
     {
         // Arrange
         var gatewayId = Guid.NewGuid();
-        var deliveryLegId = Guid.NewGuid();
-        var shipment = CreateTestShipmentWithSensors();
+    var deliveryLegId = Guid.NewGuid();
+    var sensorId = Guid.NewGuid();
+    var shipment = CreateTestShipmentWithSensors(gatewayId, deliveryLegId, sensorId);
         
         SetupControllerUser(gatewayId.ToString());
         _mockShipmentRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
@@ -61,8 +62,9 @@ public class GatewayControllerTests
     {
         // Arrange
         var gatewayId = Guid.NewGuid();
-        var deliveryLegId = Guid.NewGuid();
-        var shipment = CreateTestShipmentWithSensors();
+    var deliveryLegId = Guid.NewGuid();
+    var sensorId = Guid.NewGuid();
+    var shipment = CreateTestShipmentWithSensors(gatewayId, deliveryLegId, sensorId);
         
         SetupControllerUser("different-gateway-id");
         _mockShipmentRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
@@ -82,8 +84,8 @@ public class GatewayControllerTests
         // Arrange
         var gatewayId = Guid.NewGuid();
         var deliveryLegId = Guid.NewGuid();
-        var sensorId = Guid.NewGuid();
-        var shipment = CreateTestShipmentWithSensors();
+    var sensorId = Guid.NewGuid();
+    var shipment = CreateTestShipmentWithSensors(gatewayId, deliveryLegId, sensorId);
         
         SetupControllerUser(gatewayId.ToString());
         _mockShipmentRepository
@@ -97,17 +99,17 @@ public class GatewayControllerTests
             PresentSensorIds = new List<Guid> { sensorId }
         };
 
-        // Act
-        var result = await _controller.VerifySensorPresence(deliveryLegId, request);
+    // Act
+    var result = await _controller.VerifySensorPresence(deliveryLegId, request);
 
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+    // Assert
+    var okResult = Assert.IsType<OkObjectResult>(result);
         var response = Assert.IsType<GatewaySensorListV2Response>(okResult.Value);
         Assert.Equal(gatewayId, response.GatewayId);
         Assert.Equal(deliveryLegId, response.DeliveryLegId);
         Assert.Single(response.PresentSensorIds);
         
-        _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+    _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -117,16 +119,16 @@ public class GatewayControllerTests
         var gatewayId = Guid.NewGuid();
         var deliveryLegId = Guid.NewGuid();
         var sensorId = Guid.NewGuid();
-        var shipment = CreateTestShipmentWithSensors();
+    var shipment = CreateTestShipmentWithSensors(gatewayId, deliveryLegId, sensorId);
         var packageMeasurement = CreateTestPackageMeasurement();
         
         SetupControllerUser(gatewayId.ToString());
-        _mockShipmentRepository.Setup(r => r.GetAllAsync())
+        _mockShipmentRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Shipment> { shipment });
         _mockPackageMeasurementRepository.Setup(r => r.GetActiveByPackageAndDeliveryLegAsync(
             It.IsAny<PackageId>(), It.IsAny<DeliveryLegId>()))
             .ReturnsAsync(packageMeasurement);
-        _mockUnitOfWork.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+    _mockUnitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var request = new MeasurementBatchV2Request
         {
@@ -145,16 +147,16 @@ public class GatewayControllerTests
             }
         };
 
-        // Act
-        var result = await _controller.RecordMeasurements(deliveryLegId, request);
+    // Act
+    var result = await _controller.RecordMeasurements(deliveryLegId, request);
 
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+    // Assert
+    var okResult = Assert.IsType<OkObjectResult>(result);
         var response = okResult.Value as dynamic;
         Assert.Equal("Measurements recorded successfully", response.Message);
         Assert.Equal(1, response.ReadingCount);
         
-        _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+    _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -163,7 +165,8 @@ public class GatewayControllerTests
         // Arrange
         var gatewayId = Guid.NewGuid();
         var deliveryLegId = Guid.NewGuid();
-        var shipment = CreateTestShipmentWithSensors();
+    var sensorId = Guid.NewGuid();
+    var shipment = CreateTestShipmentWithSensors(gatewayId, deliveryLegId, sensorId);
         
         SetupControllerUser("different-gateway-id");
         _mockShipmentRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
@@ -189,7 +192,8 @@ public class GatewayControllerTests
         var gatewayId = Guid.NewGuid();
         var deliveryLegId = Guid.NewGuid();
         var packageId = Guid.NewGuid();
-        var shipment = CreateTestShipmentWithSensors();
+    var sensorId = Guid.NewGuid();
+    var shipment = CreateTestShipmentWithSensors(gatewayId, deliveryLegId, sensorId);
         var packageMeasurement = CreateTestPackageMeasurement();
         
         SetupControllerUser(gatewayId.ToString());
@@ -217,7 +221,8 @@ public class GatewayControllerTests
         var gatewayId = Guid.NewGuid();
         var deliveryLegId = Guid.NewGuid();
         var packageId = Guid.NewGuid();
-        var shipment = CreateTestShipmentWithSensors();
+    var sensorId = Guid.NewGuid();
+    var shipment = CreateTestShipmentWithSensors(gatewayId, deliveryLegId, sensorId);
         
         SetupControllerUser(gatewayId.ToString());
         _mockShipmentRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
@@ -308,6 +313,30 @@ public class GatewayControllerTests
         return shipment;
     }
 
+    private static Shipment CreateTestShipmentWithSensors(Guid gatewayId, Guid deliveryLegId, Guid sensorId)
+    {
+        var shipmentId = Guid.NewGuid();
+        var packageId = Guid.NewGuid();
+
+        var sender = new Address("123 Main St", "New York", "10001", "USA");
+        var recipient = new Address("456 Oak Ave", "Los Angeles", "90210", "USA");
+        var package = new Package(PackageId.NewId(), sender, recipient);
+        package.AttachSensor(new SensorId(sensorId));
+
+        var startAddress = new Address("123 Main St", "New York", "10001", "USA");
+        var endAddress = new Address("456 Oak Ave", "Los Angeles", "90210", "USA");
+
+        var deliveryLeg = new DeliveryLeg(new DeliveryLegId(deliveryLegId), startAddress, endAddress, new GatewayId(gatewayId), DeliveryLegStatus.Ready);
+
+        var shipment = new Shipment(
+            new ShipmentId(shipmentId),
+            DateTime.UtcNow,
+            new List<Package> { package },
+            new List<DeliveryLeg> { deliveryLeg });
+
+        return shipment;
+    }
+
     private static PackageMeasurement CreateTestPackageMeasurement()
     {
         var packageId = Guid.NewGuid();
@@ -318,10 +347,20 @@ public class GatewayControllerTests
         var endAddress = new Address("456 Oak Ave", "Los Angeles", "90210", "USA");
         var deliveryLeg = new DeliveryLeg(startAddress, endAddress);
 
+        // Ensure the delivery leg has a gateway assigned since PackageMeasurement ctor
+        // raises MeasurementSessionStartedEvent which expects a non-null GatewayId
+        var gatewayId = GatewayId.NewId();
+        deliveryLeg = deliveryLeg.AssignGateway(gatewayId);
+
+        var expectedTempRange = new ExpectedRange<Temperature>(new Temperature(2.0m), new Temperature(8.0m));
+        var expectedHumRange = new ExpectedRange<Humidity>(new Humidity(30.0m), new Humidity(70.0m));
+
         return new PackageMeasurement(
             PackageMeasurementId.NewId(),
             new PackageId(packageId),
             deliveryLeg,
-            new ShipmentId(shipmentId));
+            new ShipmentId(shipmentId),
+            expectedTempRange,
+            expectedHumRange);
     }
 }

@@ -155,10 +155,10 @@ public class PackageMeasurementTests
         // Arrange
         var measurement = CreateValidPackageMeasurement();
         var outOfRangeReading = new MeasurementReading(
-            DateTime.UtcNow, 
+            SensorId.NewId(),
+            DateTime.UtcNow,
             new Temperature(35.0m), // Outside expected range (20-30)
-            new Humidity(60.0m), 
-            SensorId.NewId());
+            new Humidity(60.0m));
 
         // Act
         measurement.RecordMeasurement(outOfRangeReading);
@@ -205,10 +205,10 @@ public class PackageMeasurementTests
         var baseTime = DateTime.UtcNow.AddHours(-1);
         var readings = new List<MeasurementReading>
         {
-            new MeasurementReading(baseTime, new Temperature(20.0m), new Humidity(50.0m), SensorId.NewId()),
-            new MeasurementReading(baseTime.AddMinutes(15), new Temperature(25.0m), new Humidity(60.0m), SensorId.NewId()),
-            new MeasurementReading(baseTime.AddMinutes(30), new Temperature(30.0m), new Humidity(70.0m), SensorId.NewId()),
-            new MeasurementReading(baseTime.AddMinutes(45), new Temperature(22.0m), new Humidity(55.0m), SensorId.NewId())
+            new MeasurementReading(SensorId.NewId(), baseTime, new Temperature(20.0m), new Humidity(50.0m)),
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(15), new Temperature(25.0m), new Humidity(60.0m)),
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(30), new Temperature(30.0m), new Humidity(70.0m)),
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(45), new Temperature(22.0m), new Humidity(55.0m))
         };
         measurement.RecordMeasurementBatch(readings);
 
@@ -231,10 +231,10 @@ public class PackageMeasurementTests
         var baseTime = DateTime.UtcNow.AddHours(-1);
         var readings = new List<MeasurementReading>
         {
-            new MeasurementReading(baseTime, new Temperature(20.0m), new Humidity(50.0m), SensorId.NewId()),
-            new MeasurementReading(baseTime.AddMinutes(10), new Temperature(25.0m), new Humidity(60.0m), SensorId.NewId()),
-            new MeasurementReading(baseTime.AddMinutes(20), new Temperature(30.0m), new Humidity(70.0m), SensorId.NewId()),
-            new MeasurementReading(baseTime.AddMinutes(30), new Temperature(22.0m), new Humidity(55.0m), SensorId.NewId())
+            new MeasurementReading(SensorId.NewId(), baseTime, new Temperature(20.0m), new Humidity(50.0m)),
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(10), new Temperature(25.0m), new Humidity(60.0m)),
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(20), new Temperature(30.0m), new Humidity(70.0m)),
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(30), new Temperature(22.0m), new Humidity(55.0m))
         };
         measurement.RecordMeasurementBatch(readings);
 
@@ -277,9 +277,9 @@ public class PackageMeasurementTests
         var baseTime = DateTime.UtcNow.AddHours(-1);
         var readings = new List<MeasurementReading>
         {
-            new MeasurementReading(baseTime, new Temperature(20.0m), new Humidity(50.0m), SensorId.NewId()),
-            new MeasurementReading(baseTime.AddMinutes(15), new Temperature(25.0m), new Humidity(60.0m), SensorId.NewId()),
-            new MeasurementReading(baseTime.AddMinutes(30), new Temperature(30.0m), new Humidity(70.0m), SensorId.NewId())
+            new MeasurementReading(SensorId.NewId(), baseTime, new Temperature(20.0m), new Humidity(50.0m)),
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(15), new Temperature(25.0m), new Humidity(60.0m)),
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(30), new Temperature(30.0m), new Humidity(70.0m))
         };
         measurement.RecordMeasurementBatch(readings);
 
@@ -351,10 +351,10 @@ public class PackageMeasurementTests
     private static MeasurementReading CreateValidReading()
     {
         return new MeasurementReading(
+            SensorId.NewId(),
             DateTime.UtcNow, 
             new Temperature(25.0m), 
-            new Humidity(60.0m), 
-            SensorId.NewId());
+            new Humidity(60.0m));
     }
 
     private static IReadOnlyList<MeasurementReading> CreateValidReadings(int count)
@@ -365,10 +365,10 @@ public class PackageMeasurementTests
         for (int i = 0; i < count; i++)
         {
             readings.Add(new MeasurementReading(
+                SensorId.NewId(),
                 baseTime.AddMinutes(i * 10), 
                 new Temperature(20.0m + i * 2), 
-                new Humidity(50.0m + i * 5), 
-                SensorId.NewId()));
+                new Humidity(50.0m + i * 5)));
         }
         
         return readings;

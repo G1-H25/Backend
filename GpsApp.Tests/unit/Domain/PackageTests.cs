@@ -68,7 +68,7 @@ public class PackageTests
     {
         // Arrange
         var package = CreateValidPackage();
-        var sensorId = new SensorId("SENSOR-001");
+    var sensorId = SensorId.NewId();
 
         // Act
         package.AttachSensor(sensorId);
@@ -95,8 +95,8 @@ public class PackageTests
     {
         // Arrange
         var package = CreateValidPackage();
-        var sensorId1 = new SensorId("SENSOR-001");
-        var sensorId2 = new SensorId("SENSOR-002");
+    var sensorId1 = SensorId.NewId();
+    var sensorId2 = SensorId.NewId();
 
         // Act
         package.AttachSensor(sensorId1);
@@ -166,7 +166,7 @@ public class PackageTests
     {
         // Arrange
         var package = CreateValidPackage();
-        package.AttachSensor(new SensorId("SENSOR-001"));
+    package.AttachSensor(SensorId.NewId());
         package.SetExpectedTemperatureRange(new ExpectedRange<Temperature>(
             new Temperature(2.0m), 
             new Temperature(8.0m)
@@ -203,7 +203,7 @@ public class PackageTests
     {
         // Arrange
         var package = CreateValidPackage();
-        package.AttachSensor(new SensorId("SENSOR-001"));
+    package.AttachSensor(SensorId.NewId());
         package.SetExpectedHumidityRange(new ExpectedRange<Humidity>(
             new Humidity(30.0m), 
             new Humidity(70.0m)
@@ -218,7 +218,7 @@ public class PackageTests
     {
         // Arrange
         var package = CreateValidPackage();
-        package.AttachSensor(new SensorId("SENSOR-001"));
+    package.AttachSensor(SensorId.NewId());
         package.SetExpectedTemperatureRange(new ExpectedRange<Temperature>(
             new Temperature(2.0m), 
             new Temperature(8.0m)
@@ -337,7 +337,7 @@ public class PackageTests
     {
         // Arrange
         var package = CreateValidPackage();
-        package.AttachSensor(new SensorId("SENSOR-001"));
+    package.AttachSensor(SensorId.NewId());
         package.SetExpectedTemperatureRange(new ExpectedRange<Temperature>(
             new Temperature(2.0m), 
             new Temperature(8.0m)

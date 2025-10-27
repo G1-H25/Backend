@@ -58,8 +58,10 @@ public class ShipmentControllerTests
             }
         };
 
-        _mockUnitOfWork.Setup(u => u.Shipments.AddAsync(It.IsAny<Shipment>()));
-        _mockUnitOfWork.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+    // Ensure UnitOfWork exposes the shipment repository mock and set up repository AddAsync
+    _mockUnitOfWork.SetupGet(u => u.Shipments).Returns(_mockShipmentRepository.Object);
+    _mockShipmentRepository.Setup(r => r.AddAsync(It.IsAny<Shipment>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+    _mockUnitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
         var result = await _controller.CreateShipment(request);
@@ -73,8 +75,8 @@ public class ShipmentControllerTests
         Assert.Single(response.Packages);
         Assert.Single(response.DeliveryLegs);
         
-        _mockUnitOfWork.Verify(u => u.Shipments.AddAsync(It.IsAny<Shipment>()), Times.Once);
-        _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+    _mockShipmentRepository.Verify(r => r.AddAsync(It.IsAny<Shipment>(), It.IsAny<CancellationToken>()), Times.Once);
+    _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -104,7 +106,7 @@ public class ShipmentControllerTests
         var shipmentId = Guid.NewGuid();
         var shipment = CreateTestShipment(shipmentId);
         
-        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>()))
+        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(shipment);
 
         // Act
@@ -123,7 +125,7 @@ public class ShipmentControllerTests
         // Arrange
         var shipmentId = Guid.NewGuid();
         
-        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>()))
+        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Shipment?)null);
 
         // Act
@@ -144,9 +146,9 @@ public class ShipmentControllerTests
         var sensorId = Guid.NewGuid();
         var shipment = CreateTestShipment(shipmentId);
         
-        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>()))
+        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(shipment);
-        _mockUnitOfWork.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+    _mockUnitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var request = new AttachSensorV2Request
         {
@@ -162,7 +164,7 @@ public class ShipmentControllerTests
         var response = okResult.Value as dynamic;
         Assert.Equal("Sensor attached successfully", response.Message);
         
-        _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+    _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -173,7 +175,7 @@ public class ShipmentControllerTests
         var packageId = Guid.NewGuid();
         var shipment = CreateTestShipment(shipmentId);
         
-        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>()))
+        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(shipment);
 
         var request = new AttachSensorV2Request
@@ -200,9 +202,9 @@ public class ShipmentControllerTests
         var gatewayId = Guid.NewGuid();
         var shipment = CreateTestShipment(shipmentId);
         
-        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>()))
+        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(shipment);
-        _mockUnitOfWork.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+    _mockUnitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var request = new ConnectGatewayV2Request
         {
@@ -218,7 +220,7 @@ public class ShipmentControllerTests
         var response = okResult.Value as dynamic;
         Assert.Equal("Gateway connected successfully", response.Message);
         
-        _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+    _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -229,9 +231,9 @@ public class ShipmentControllerTests
         var deliveryLegId = Guid.NewGuid();
         var shipment = CreateTestShipment(shipmentId);
         
-        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>()))
+        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(shipment);
-        _mockUnitOfWork.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+    _mockUnitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
         var result = await _controller.StartDeliveryLeg(shipmentId, deliveryLegId);
@@ -241,7 +243,7 @@ public class ShipmentControllerTests
         var response = okResult.Value as dynamic;
         Assert.Equal("Delivery leg started successfully", response.Message);
         
-        _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+    _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -252,9 +254,9 @@ public class ShipmentControllerTests
         var deliveryLegId = Guid.NewGuid();
         var shipment = CreateTestShipment(shipmentId);
         
-        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>()))
+        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(shipment);
-        _mockUnitOfWork.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+    _mockUnitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
         var result = await _controller.CompleteDeliveryLeg(shipmentId, deliveryLegId);
@@ -264,7 +266,7 @@ public class ShipmentControllerTests
         var response = okResult.Value as dynamic;
         Assert.Equal("Delivery leg completed successfully", response.Message);
         
-        _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+    _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -275,7 +277,7 @@ public class ShipmentControllerTests
         var deliveryLegId = Guid.NewGuid();
         var shipment = CreateTestShipment(shipmentId);
         
-        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>()))
+        _mockShipmentRepository.Setup(r => r.GetByIdAsync(It.IsAny<ShipmentId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(shipment);
 
         // Act
