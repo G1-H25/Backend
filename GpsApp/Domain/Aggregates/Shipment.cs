@@ -191,6 +191,9 @@ public class Shipment
         var startedLeg = originalLeg.Start();
         _deliveryLegs[legIndex] = startedLeg;
 
+        // Start measurement session for this leg
+        StartMeasurementSession(startedLeg);
+
         // Raise domain event
         AddDomainEvent(new DeliveryLegStartedEvent(ShipmentId, startedLeg));
     }
@@ -211,6 +214,9 @@ public class Shipment
         // Complete the leg
         var completedLeg = originalLeg.Complete();
         _deliveryLegs[legIndex] = completedLeg;
+
+        // Complete measurement session for this leg
+        CompleteMeasurementSession(completedLeg);
 
         // Raise domain event
         AddDomainEvent(new DeliveryLegCompletedEvent(ShipmentId, completedLeg));
@@ -255,6 +261,82 @@ public class Shipment
     /// Gets the ending address of the shipment (last delivery leg's end address)
     /// </summary>
     public Address? EndingAddress => _deliveryLegs.LastOrDefault()?.EndAddress;
+
+    /// <summary>
+    /// Starts measurement session for a delivery leg
+    /// Called when DeliveryLegStartedEvent is raised
+    /// </summary>
+    public void StartMeasurementSession(DeliveryLeg deliveryLeg)
+    {
+        if (deliveryLeg.Status != DeliveryLegStatus.InProgress)
+            throw new InvalidOperationException("Can only start measurements for legs in progress");
+            
+        if (deliveryLeg.GatewayId == null)
+            throw new InvalidOperationException("Delivery leg must have a gateway assigned");
+            
+        var packageIds = _packages.Select(p => p.PackageId).ToList();
+        
+        AddDomainEvent(new MeasurementSessionStartedEvent(
+            ShipmentId, deliveryLeg, packageIds, deliveryLeg.GatewayId.Value));
+    }
+    
+    /// <summary>
+    /// Completes measurement session for a delivery leg
+    /// Called when DeliveryLegCompletedEvent is raised
+    /// </summary>
+    public void CompleteMeasurementSession(DeliveryLeg deliveryLeg)
+    {
+        if (deliveryLeg.Status != DeliveryLegStatus.Completed)
+            throw new InvalidOperationException("Can only complete measurements for completed legs");
+            
+        // This would typically coordinate with PackageMeasurement aggregates
+        // For now, we raise a domain event that can be handled by the application layer
+        AddDomainEvent(new MeasurementSessionCompletedEvent(
+            ShipmentId, deliveryLeg, 
+            MeasurementSummary.FromReadings(new List<MeasurementReading>())));
+    }
+    
+    /// <summary>
+    /// Gets all sensor IDs for packages in this shipment
+    /// Used by gateway to know which sensors to expect
+    /// </summary>
+    public IReadOnlyList<SensorId> GetExpectedSensorIds()
+    {
+        return _packages
+            .Where(p => p.HasSensor)
+            .Select(p => p.SensorId!.Value)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Verifies sensor presence against expected sensors
+    /// Called when gateway checks which sensors are present
+    /// </summary>
+    public void VerifySensorPresence(DeliveryLeg deliveryLeg, IReadOnlyList<SensorId> presentSensors)
+    {
+        if (deliveryLeg.Status != DeliveryLegStatus.InProgress)
+            throw new InvalidOperationException("Can only verify sensors for legs in progress");
+
+        var expectedSensors = GetExpectedSensorIds();
+        var missingSensors = expectedSensors.Except(presentSensors).ToList();
+        
+        AddDomainEvent(new SensorPresenceVerifiedEvent(
+            ShipmentId, deliveryLeg, presentSensors, missingSensors));
+    }
+
+    /// <summary>
+    /// Records a batch of measurements from the gateway
+    /// </summary>
+    public void RecordMeasurementBatch(DeliveryLeg deliveryLeg, IReadOnlyList<MeasurementReading> readings)
+    {
+        if (deliveryLeg.Status != DeliveryLegStatus.InProgress)
+            throw new InvalidOperationException("Can only record measurements for legs in progress");
+
+        if (readings == null || readings.Count == 0)
+            throw new ArgumentException("Cannot record empty measurement batch", nameof(readings));
+
+        AddDomainEvent(new MeasurementBatchReceivedEvent(ShipmentId, deliveryLeg, readings));
+    }
 
     /// <summary>
     /// Validates that all delivery legs are properly connected

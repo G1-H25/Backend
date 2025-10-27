@@ -643,4 +643,232 @@ public class ShipmentTests
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => shipment.CompleteDeliveryLeg(readyLeg));
     }
-}
+
+    [Fact]
+    public void StartMeasurementSession_ValidDeliveryLeg_ShouldRaiseMeasurementSessionStartedEvent()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var deliveryLeg = shipment.DeliveryLegs.First();
+        shipment.ConnectGatewayToDeliveryLeg(deliveryLeg, GatewayId.NewId());
+        shipment.StartDeliveryLeg(deliveryLeg);
+
+        // Act
+        shipment.StartMeasurementSession(deliveryLeg);
+
+        // Assert
+        var measurementEvent = shipment.DomainEvents.OfType<MeasurementSessionStartedEvent>().FirstOrDefault();
+        Assert.NotNull(measurementEvent);
+        Assert.Equal(shipment.ShipmentId, measurementEvent.ShipmentId);
+        Assert.Equal(deliveryLeg, measurementEvent.DeliveryLeg);
+        Assert.Equal(shipment.Packages.Select(p => p.PackageId).ToList(), measurementEvent.PackageIds);
+        Assert.Equal(deliveryLeg.GatewayId, measurementEvent.GatewayId);
+    }
+
+    [Fact]
+    public void StartMeasurementSession_DeliveryLegNotInProgress_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var deliveryLeg = shipment.DeliveryLegs.First();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => shipment.StartMeasurementSession(deliveryLeg));
+    }
+
+    [Fact]
+    public void StartMeasurementSession_DeliveryLegWithoutGateway_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var deliveryLeg = shipment.DeliveryLegs.First();
+        shipment.StartDeliveryLeg(deliveryLeg);
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => shipment.StartMeasurementSession(deliveryLeg));
+    }
+
+    [Fact]
+    public void CompleteMeasurementSession_ValidDeliveryLeg_ShouldRaiseMeasurementSessionCompletedEvent()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var deliveryLeg = shipment.DeliveryLegs.First();
+        shipment.ConnectGatewayToDeliveryLeg(deliveryLeg, GatewayId.NewId());
+        shipment.StartDeliveryLeg(deliveryLeg);
+        shipment.CompleteDeliveryLeg(deliveryLeg);
+
+        // Act
+        shipment.CompleteMeasurementSession(deliveryLeg);
+
+        // Assert
+        var measurementEvent = shipment.DomainEvents.OfType<MeasurementSessionCompletedEvent>().FirstOrDefault();
+        Assert.NotNull(measurementEvent);
+        Assert.Equal(shipment.ShipmentId, measurementEvent.ShipmentId);
+        Assert.Equal(deliveryLeg, measurementEvent.DeliveryLeg);
+        Assert.NotNull(measurementEvent.Summary);
+    }
+
+    [Fact]
+    public void CompleteMeasurementSession_DeliveryLegNotCompleted_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var deliveryLeg = shipment.DeliveryLegs.First();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => shipment.CompleteMeasurementSession(deliveryLeg));
+    }
+
+    [Fact]
+    public void GetExpectedSensorIds_ShouldReturnSensorIdsFromPackagesWithSensors()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var package1 = shipment.Packages.First();
+        var package2 = shipment.Packages.Last();
+        
+        package1.AttachSensor(SensorId.NewId());
+        package2.AttachSensor(SensorId.NewId());
+
+        // Act
+        var expectedSensorIds = shipment.GetExpectedSensorIds();
+
+        // Assert
+        Assert.Equal(2, expectedSensorIds.Count);
+        Assert.Contains(package1.SensorId!.Value, expectedSensorIds);
+        Assert.Contains(package2.SensorId!.Value, expectedSensorIds);
+    }
+
+    [Fact]
+    public void GetExpectedSensorIds_PackagesWithoutSensors_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+
+        // Act
+        var expectedSensorIds = shipment.GetExpectedSensorIds();
+
+        // Assert
+        Assert.Empty(expectedSensorIds);
+    }
+
+    [Fact]
+    public void VerifySensorPresence_ValidDeliveryLeg_ShouldRaiseSensorPresenceVerifiedEvent()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var deliveryLeg = shipment.DeliveryLegs.First();
+        shipment.ConnectGatewayToDeliveryLeg(deliveryLeg, GatewayId.NewId());
+        shipment.StartDeliveryLeg(deliveryLeg);
+        
+        var package1 = shipment.Packages.First();
+        var package2 = shipment.Packages.Last();
+        package1.AttachSensor(SensorId.NewId());
+        package2.AttachSensor(SensorId.NewId());
+        
+        var presentSensors = new List<SensorId> { package1.SensorId!.Value };
+
+        // Act
+        shipment.VerifySensorPresence(deliveryLeg, presentSensors);
+
+        // Assert
+        var presenceEvent = shipment.DomainEvents.OfType<SensorPresenceVerifiedEvent>().FirstOrDefault();
+        Assert.NotNull(presenceEvent);
+        Assert.Equal(shipment.ShipmentId, presenceEvent.ShipmentId);
+        Assert.Equal(deliveryLeg, presenceEvent.DeliveryLeg);
+        Assert.Equal(presentSensors, presenceEvent.PresentSensors);
+        Assert.Single(presenceEvent.MissingSensors);
+        Assert.Equal(package2.SensorId!.Value, presenceEvent.MissingSensors.First());
+    }
+
+    [Fact]
+    public void VerifySensorPresence_DeliveryLegNotInProgress_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var deliveryLeg = shipment.DeliveryLegs.First();
+        var presentSensors = new List<SensorId>();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => shipment.VerifySensorPresence(deliveryLeg, presentSensors));
+    }
+
+    [Fact]
+    public void RecordMeasurementBatch_ValidDeliveryLeg_ShouldRaiseMeasurementBatchReceivedEvent()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var deliveryLeg = shipment.DeliveryLegs.First();
+        shipment.ConnectGatewayToDeliveryLeg(deliveryLeg, GatewayId.NewId());
+        shipment.StartDeliveryLeg(deliveryLeg);
+        
+        var readings = CreateValidReadings(3);
+
+        // Act
+        shipment.RecordMeasurementBatch(deliveryLeg, readings);
+
+        // Assert
+        var batchEvent = shipment.DomainEvents.OfType<MeasurementBatchReceivedEvent>().FirstOrDefault();
+        Assert.NotNull(batchEvent);
+        Assert.Equal(shipment.ShipmentId, batchEvent.ShipmentId);
+        Assert.Equal(deliveryLeg, batchEvent.DeliveryLeg);
+        Assert.Equal(readings, batchEvent.Readings);
+    }
+
+    [Fact]
+    public void RecordMeasurementBatch_DeliveryLegNotInProgress_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var deliveryLeg = shipment.DeliveryLegs.First();
+        var readings = CreateValidReadings(1);
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => shipment.RecordMeasurementBatch(deliveryLeg, readings));
+    }
+
+    [Fact]
+    public void RecordMeasurementBatch_EmptyReadings_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var deliveryLeg = shipment.DeliveryLegs.First();
+        shipment.ConnectGatewayToDeliveryLeg(deliveryLeg, GatewayId.NewId());
+        shipment.StartDeliveryLeg(deliveryLeg);
+        
+        var emptyReadings = new List<MeasurementReading>();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => shipment.RecordMeasurementBatch(deliveryLeg, emptyReadings));
+    }
+
+    [Fact]
+    public void RecordMeasurementBatch_NullReadings_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var shipment = CreateValidShipment();
+        var deliveryLeg = shipment.DeliveryLegs.First();
+        shipment.ConnectGatewayToDeliveryLeg(deliveryLeg, GatewayId.NewId());
+        shipment.StartDeliveryLeg(deliveryLeg);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => shipment.RecordMeasurementBatch(deliveryLeg, null!));
+    }
+
+    private static IReadOnlyList<MeasurementReading> CreateValidReadings(int count)
+    {
+        var readings = new List<MeasurementReading>();
+        var baseTime = DateTime.UtcNow.AddHours(-1);
+        
+        for (int i = 0; i < count; i++)
+        {
+            readings.Add(new MeasurementReading(
+                baseTime.AddMinutes(i * 10), 
+                new Temperature(20.0m + i * 2), 
+                new Humidity(50.0m + i * 5), 
+                SensorId.NewId()));
+        }
+        
+        return readings;
+    }

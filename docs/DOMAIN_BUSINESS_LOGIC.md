@@ -1,0 +1,27 @@
+- Intent for shipment established
+   - Shipping label printed
+   - Sensor package ordered
+- Package sealed
+    - Sensor registered on package
+    - Sensor placed in package
+    - Shipping label affixed
+- Package sent to dispatch
+    - Package registered in Shipment
+    - Complete shipment journey calculated
+- Packages loaded in vehicle
+    - Packages connected to Gateway ECU Id
+    - Gateway retrieves list of SensorId
+    - Gateway broadcasts wake-up signal addressed to SensorIds
+    - SensorIds respond
+    - Missing SensorIds logged
+    - Gateway starts transmitting measurements
+    - Shipment can be set to In Progress
+- Shipment In Progress
+    - Measurements out of range raise event
+    - Live and historical sensor data can be tracked in dashboard
+- Change from one vehicle to another
+    - DeliveryLeg finishes
+    - Repeat Packages loaded in vehicle
+- Last leg completed
+    - Shipment marked as completed
+    - Measurement report generated for each Package
