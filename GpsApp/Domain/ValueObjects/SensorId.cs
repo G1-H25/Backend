@@ -6,17 +6,19 @@ namespace GpsApp.Domain.ValueObjects;
 /// </summary>
 public class SensorId : IEquatable<SensorId>
 {
-    public string Value { get; private set; }
+    public Guid Value { get; private set; }
 
-    public SensorId(string value)
+    public SensorId(Guid value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("Sensor ID cannot be null or empty", nameof(value));
+        if (value == Guid.Empty)
+            throw new ArgumentException("Sensor ID cannot be empty", nameof(value));
 
-        Value = value.Trim();
+        Value = value;
     }
 
-    public override string ToString() => Value;
+    public static SensorId NewId() => new(Guid.NewGuid());
+
+    public override string ToString() => Value.ToString();
 
     public override bool Equals(object? obj) => obj is SensorId sensorId && Equals(sensorId);
 
@@ -28,7 +30,7 @@ public class SensorId : IEquatable<SensorId>
 
     public static bool operator !=(SensorId? left, SensorId? right) => !(left == right);
 
-    public static implicit operator string(SensorId sensorId) => sensorId.Value;
+    public static implicit operator Guid(SensorId sensorId) => sensorId.Value;
 
-    public static implicit operator SensorId(string value) => new(value);
+    public static implicit operator SensorId(Guid value) => new(value);
 }
