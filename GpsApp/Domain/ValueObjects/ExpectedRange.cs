@@ -8,6 +8,10 @@ public class ExpectedRange<T> where T : IComparable<T>
 {
     public T Minimum { get; private set; }
     public T Maximum { get; private set; }
+    
+    // Alias properties for backward compatibility
+    public T Min => Minimum;
+    public T Max => Maximum;
 
     public ExpectedRange(T minimum, T maximum)
     {
