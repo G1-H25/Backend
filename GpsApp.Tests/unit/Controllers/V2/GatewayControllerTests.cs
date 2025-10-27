@@ -19,7 +19,7 @@ public class GatewayControllerTests
     private readonly Mock<IShipmentRepository> _mockShipmentRepository;
     private readonly Mock<IPackageMeasurementRepository> _mockPackageMeasurementRepository;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
-    private readonly GatewayController _controller;
+    private readonly GpsApp.Controllers.V2.GatewayController _controller;
 
     public GatewayControllerTests()
     {
@@ -27,7 +27,7 @@ public class GatewayControllerTests
         _mockPackageMeasurementRepository = new Mock<IPackageMeasurementRepository>();
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         
-        _controller = new GatewayController(
+        _controller = new GpsApp.Controllers.V2.GatewayController(
             _mockShipmentRepository.Object,
             _mockPackageMeasurementRepository.Object,
             _mockUnitOfWork.Object);

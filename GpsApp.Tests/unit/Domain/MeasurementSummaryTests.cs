@@ -83,7 +83,7 @@ public class MeasurementSummaryTests
         var temperature = new Temperature(25.0m);
         var humidity = new Humidity(60.0m);
         var sensorId = SensorId.NewId();
-        var reading = new MeasurementReading(timestamp, temperature, humidity, sensorId);
+        var reading = new MeasurementReading(sensorId, timestamp, temperature, humidity);
         var readings = new List<MeasurementReading> { reading };
 
         // Act
@@ -110,11 +110,11 @@ public class MeasurementSummaryTests
         var baseTime = DateTime.UtcNow.AddHours(-1);
         var readings = new List<MeasurementReading>
         {
-            new MeasurementReading(baseTime, new Temperature(20.0m), new Humidity(50.0m), SensorId.NewId()),
-            new MeasurementReading(baseTime.AddMinutes(15), new Temperature(25.0m), new Humidity(60.0m), SensorId.NewId()),
-            new MeasurementReading(baseTime.AddMinutes(30), new Temperature(30.0m), new Humidity(70.0m), SensorId.NewId()),
-            new MeasurementReading(baseTime.AddMinutes(45), new Temperature(22.0m), new Humidity(55.0m), SensorId.NewId()),
-            new MeasurementReading(baseTime.AddMinutes(60), new Temperature(28.0m), new Humidity(65.0m), SensorId.NewId())
+            new MeasurementReading(SensorId.NewId(), baseTime, new Temperature(20.0m), new Humidity(50.0m)),
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(15), new Temperature(25.0m), new Humidity(60.0m)),
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(30), new Temperature(30.0m), new Humidity(70.0m)),
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(45), new Temperature(22.0m), new Humidity(55.0m)),
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(60), new Temperature(28.0m), new Humidity(65.0m))
         };
 
         // Act
@@ -142,10 +142,10 @@ public class MeasurementSummaryTests
         
         var readings = new List<MeasurementReading>
         {
-            new MeasurementReading(baseTime, new Temperature(25.0m), new Humidity(60.0m), SensorId.NewId()), // In range
-            new MeasurementReading(baseTime.AddMinutes(15), new Temperature(35.0m), new Humidity(60.0m), SensorId.NewId()), // Temp out of range
-            new MeasurementReading(baseTime.AddMinutes(30), new Temperature(25.0m), new Humidity(80.0m), SensorId.NewId()), // Humidity out of range
-            new MeasurementReading(baseTime.AddMinutes(45), new Temperature(25.0m), new Humidity(60.0m), SensorId.NewId()) // In range
+            new MeasurementReading(SensorId.NewId(), baseTime, new Temperature(25.0m), new Humidity(60.0m)), // In range
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(15), new Temperature(35.0m), new Humidity(60.0m)), // Temp out of range
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(30), new Temperature(25.0m), new Humidity(80.0m)), // Humidity out of range
+            new MeasurementReading(SensorId.NewId(), baseTime.AddMinutes(45), new Temperature(25.0m), new Humidity(60.0m)) // In range
         };
 
         // Act

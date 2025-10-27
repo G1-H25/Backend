@@ -334,7 +334,7 @@ public class ShipmentTests
         var packageId = PackageId.NewId();
         var sender = new Address("Tegelstensgatan 12", "Mura", "345 67", "Sverige");
         var recipient = new Address("Storgatan 45", "Stockholm", "111 22", "Sverige");
-        var sensorId = new SensorId($"SENSOR_{Guid.NewGuid():N}");
+        var sensorId = SensorId.NewId();
         var createdAt = DateTime.UtcNow;
         var sensorAttachedAt = DateTime.UtcNow;
         
@@ -736,8 +736,8 @@ public class ShipmentTests
 
         // Assert
         Assert.Equal(2, expectedSensorIds.Count);
-        Assert.Contains(package1.SensorId!.Value, expectedSensorIds);
-        Assert.Contains(package2.SensorId!.Value, expectedSensorIds);
+        Assert.Contains(package1.SensorId!, expectedSensorIds);
+        Assert.Contains(package2.SensorId!, expectedSensorIds);
     }
 
     [Fact]
@@ -779,7 +779,7 @@ public class ShipmentTests
         Assert.Equal(deliveryLeg, presenceEvent.DeliveryLeg);
         Assert.Equal(presentSensors, presenceEvent.PresentSensors);
         Assert.Single(presenceEvent.MissingSensors);
-        Assert.Equal(package2.SensorId!.Value, presenceEvent.MissingSensors.First());
+        Assert.Equal(package2.SensorId!, presenceEvent.MissingSensors.First());
     }
 
     [Fact]

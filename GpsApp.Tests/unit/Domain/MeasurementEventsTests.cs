@@ -174,10 +174,10 @@ public class MeasurementEventsTests
     private static MeasurementReading CreateValidReading()
     {
         return new MeasurementReading(
+            SensorId.NewId(),
             DateTime.UtcNow, 
             new Temperature(25.0m), 
-            new Humidity(60.0m), 
-            SensorId.NewId());
+            new Humidity(60.0m));
     }
 
     private static IReadOnlyList<MeasurementReading> CreateValidReadings(int count)
@@ -188,10 +188,10 @@ public class MeasurementEventsTests
         for (int i = 0; i < count; i++)
         {
             readings.Add(new MeasurementReading(
+                SensorId.NewId(),
                 baseTime.AddMinutes(i * 10), 
                 new Temperature(20.0m + i * 2), 
-                new Humidity(50.0m + i * 5), 
-                SensorId.NewId()));
+                new Humidity(50.0m + i * 5)));
         }
         
         return readings;
