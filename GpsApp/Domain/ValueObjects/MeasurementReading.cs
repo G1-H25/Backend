@@ -10,25 +10,28 @@ public class MeasurementReading : IEquatable<MeasurementReading>
     public Temperature Temperature { get; private set; }
     public Humidity Humidity { get; private set; }
     public SensorId SensorId { get; private set; }
+    public GpsCoordinate? GpsCoordinate { get; private set; }
 
-    public MeasurementReading(DateTime timestamp, Temperature temperature, Humidity humidity, SensorId sensorId)
+    public MeasurementReading(SensorId sensorId, DateTime timestamp, Temperature temperature, Humidity humidity, GpsCoordinate? gpsCoordinate = null)
     {
+        SensorId = sensorId ?? throw new ArgumentNullException(nameof(sensorId));
         Timestamp = timestamp;
         Temperature = temperature ?? throw new ArgumentNullException(nameof(temperature));
         Humidity = humidity ?? throw new ArgumentNullException(nameof(humidity));
-        SensorId = sensorId ?? throw new ArgumentNullException(nameof(sensorId));
+        GpsCoordinate = gpsCoordinate;
     }
 
     /// <summary>
     /// Creates a measurement reading from persistence storage (hydration constructor)
     /// This constructor allows setting all properties for reconstruction from storage
     /// </summary>
-    public MeasurementReading(DateTime timestamp, Temperature temperature, Humidity humidity, SensorId sensorId, bool skipValidation = false)
+    public MeasurementReading(SensorId sensorId, DateTime timestamp, Temperature temperature, Humidity humidity, GpsCoordinate? gpsCoordinate, bool skipValidation = false)
     {
+        SensorId = sensorId ?? throw new ArgumentNullException(nameof(sensorId));
         Timestamp = timestamp;
         Temperature = temperature ?? throw new ArgumentNullException(nameof(temperature));
         Humidity = humidity ?? throw new ArgumentNullException(nameof(humidity));
-        SensorId = sensorId ?? throw new ArgumentNullException(nameof(sensorId));
+        GpsCoordinate = gpsCoordinate;
     }
 
     /// <summary>
