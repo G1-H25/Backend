@@ -37,7 +37,9 @@ public static class AuthenticationSetup
 
                     RoleClaimType = ClaimTypes.Role,
                 };
-            });
+            })
+            .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, GpsApp.Services.BasicAuthenticationHandler>(
+                "Basic", options => { });
 
         services.AddAuthorization(options =>
         {
