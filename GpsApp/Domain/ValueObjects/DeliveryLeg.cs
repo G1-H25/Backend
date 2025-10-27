@@ -39,13 +39,17 @@ public enum DeliveryLegStatus
 /// </summary>
 public class DeliveryLeg : IEquatable<DeliveryLeg>
 {
+    public DeliveryLegId DeliveryLegId { get; private set; } = null!;
     public Address StartAddress { get; private set; } = null!;
     public Address EndAddress { get; private set; } = null!;
     public GatewayId? GatewayId { get; private set; }
     public DeliveryLegStatus Status { get; private set; }
+    public DateTime? StartedAt { get; private set; }
+    public DateTime? CompletedAt { get; private set; }
 
     public DeliveryLeg(Address startAddress, Address endAddress)
     {
+        DeliveryLegId = DeliveryLegId.NewId();
         StartAddress = startAddress ?? throw new ArgumentNullException(nameof(startAddress));
         EndAddress = endAddress ?? throw new ArgumentNullException(nameof(endAddress));
         GatewayId = null; // Initially no gateway assigned
@@ -63,12 +67,15 @@ public class DeliveryLeg : IEquatable<DeliveryLeg>
     /// Creates a delivery leg from persistence storage (hydration constructor)
     /// This constructor allows setting all properties for reconstruction from storage
     /// </summary>
-    public DeliveryLeg(Address startAddress, Address endAddress, GatewayId? gatewayId, DeliveryLegStatus status)
+    public DeliveryLeg(DeliveryLegId deliveryLegId, Address startAddress, Address endAddress, GatewayId? gatewayId, DeliveryLegStatus status, DateTime? startedAt = null, DateTime? completedAt = null)
     {
+        DeliveryLegId = deliveryLegId ?? throw new ArgumentNullException(nameof(deliveryLegId));
         StartAddress = startAddress ?? throw new ArgumentNullException(nameof(startAddress));
         EndAddress = endAddress ?? throw new ArgumentNullException(nameof(endAddress));
         GatewayId = gatewayId;
         Status = status;
+        StartedAt = startedAt;
+        CompletedAt = completedAt;
     }
 
     /// <summary>
@@ -86,11 +93,7 @@ public class DeliveryLeg : IEquatable<DeliveryLeg>
         if (Status != DeliveryLegStatus.Planned)
             throw new InvalidOperationException("Gateway can only be assigned to planned legs");
 
-        return new DeliveryLeg(StartAddress, EndAddress) 
-        { 
-            GatewayId = gatewayId,
-            Status = DeliveryLegStatus.Ready
-        };
+        return new DeliveryLeg(DeliveryLegId, StartAddress, EndAddress, gatewayId, DeliveryLegStatus.Ready);
     }
 
     /// <summary>
@@ -104,11 +107,7 @@ public class DeliveryLeg : IEquatable<DeliveryLeg>
         if (GatewayId == null)
             throw new InvalidOperationException("Leg must have a gateway assigned before starting");
 
-        return new DeliveryLeg(StartAddress, EndAddress)
-        {
-            GatewayId = GatewayId!.Value,
-            Status = DeliveryLegStatus.InProgress
-        };
+        return new DeliveryLeg(DeliveryLegId, StartAddress, EndAddress, GatewayId!.Value, DeliveryLegStatus.InProgress, DateTime.UtcNow);
     }
 
     /// <summary>
@@ -119,11 +118,7 @@ public class DeliveryLeg : IEquatable<DeliveryLeg>
         if (Status != DeliveryLegStatus.InProgress)
             throw new InvalidOperationException("Only legs in progress can be completed");
 
-        return new DeliveryLeg(StartAddress, EndAddress)
-        {
-            GatewayId = GatewayId!.Value,
-            Status = DeliveryLegStatus.Completed
-        };
+        return new DeliveryLeg(DeliveryLegId, StartAddress, EndAddress, GatewayId!.Value, DeliveryLegStatus.Completed, StartedAt, DateTime.UtcNow);
     }
 
     /// <summary>
@@ -150,9 +145,10 @@ public class DeliveryLeg : IEquatable<DeliveryLeg>
 
     public override bool Equals(object? obj) => obj is DeliveryLeg leg && Equals(leg);
 
-    public override int GetHashCode() => HashCode.Combine(StartAddress, EndAddress, GatewayId?.Value ?? Guid.Empty, Status);
+    public override int GetHashCode() => HashCode.Combine(DeliveryLegId.Value, StartAddress, EndAddress, GatewayId?.Value ?? Guid.Empty, Status);
 
     public bool Equals(DeliveryLeg? other) => other is not null && 
+        DeliveryLegId.Value == other.DeliveryLegId.Value &&
         StartAddress.Equals(other.StartAddress) && 
         EndAddress.Equals(other.EndAddress) &&
         GatewayId?.Value == other.GatewayId?.Value &&
