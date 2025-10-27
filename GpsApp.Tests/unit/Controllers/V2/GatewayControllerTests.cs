@@ -42,7 +42,7 @@ public class GatewayControllerTests
         var shipment = CreateTestShipmentWithSensors();
         
         SetupControllerUser(gatewayId.ToString());
-        _mockShipmentRepository.Setup(r => r.GetAllAsync())
+        _mockShipmentRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Shipment> { shipment });
 
         // Act
@@ -65,8 +65,9 @@ public class GatewayControllerTests
         var shipment = CreateTestShipmentWithSensors();
         
         SetupControllerUser("different-gateway-id");
-        _mockShipmentRepository.Setup(r => r.GetAllAsync())
+        _mockShipmentRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Shipment> { shipment });
+
 
         // Act
         var result = await _controller.GetExpectedSensors(deliveryLegId);
@@ -85,9 +86,10 @@ public class GatewayControllerTests
         var shipment = CreateTestShipmentWithSensors();
         
         SetupControllerUser(gatewayId.ToString());
-        _mockShipmentRepository.Setup(r => r.GetAllAsync())
+        _mockShipmentRepository
+            .Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Shipment> { shipment });
-        _mockUnitOfWork.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+        _mockUnitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var request = new SensorPresenceV2Request
         {
@@ -164,7 +166,7 @@ public class GatewayControllerTests
         var shipment = CreateTestShipmentWithSensors();
         
         SetupControllerUser("different-gateway-id");
-        _mockShipmentRepository.Setup(r => r.GetAllAsync())
+        _mockShipmentRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Shipment> { shipment });
 
         var request = new MeasurementBatchV2Request
@@ -191,7 +193,7 @@ public class GatewayControllerTests
         var packageMeasurement = CreateTestPackageMeasurement();
         
         SetupControllerUser(gatewayId.ToString());
-        _mockShipmentRepository.Setup(r => r.GetAllAsync())
+        _mockShipmentRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Shipment> { shipment });
         _mockPackageMeasurementRepository.Setup(r => r.GetActiveByPackageAndDeliveryLegAsync(
             It.IsAny<PackageId>(), It.IsAny<DeliveryLegId>()))
@@ -218,7 +220,7 @@ public class GatewayControllerTests
         var shipment = CreateTestShipmentWithSensors();
         
         SetupControllerUser(gatewayId.ToString());
-        _mockShipmentRepository.Setup(r => r.GetAllAsync())
+        _mockShipmentRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Shipment> { shipment });
         _mockPackageMeasurementRepository.Setup(r => r.GetActiveByPackageAndDeliveryLegAsync(
             It.IsAny<PackageId>(), It.IsAny<DeliveryLegId>()))
@@ -244,7 +246,7 @@ public class GatewayControllerTests
         var packageMeasurement = CreateTestPackageMeasurement();
         
         SetupControllerUser(gatewayId.ToString());
-        _mockShipmentRepository.Setup(r => r.GetAllAsync())
+        _mockShipmentRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Shipment> { shipment });
         _mockPackageMeasurementRepository.Setup(r => r.GetActiveByPackageAndDeliveryLegAsync(
             It.IsAny<PackageId>(), It.IsAny<DeliveryLegId>()))
