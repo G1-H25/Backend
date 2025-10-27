@@ -113,14 +113,14 @@ public class MeasurementSummary : IEquatable<MeasurementSummary>
 
         // Calculate temperature statistics
         var temperatures = orderedReadings.Select(r => r.Temperature).ToList();
-        var minTemp = temperatures.Min();
-        var maxTemp = temperatures.Max();
+        var minTemp = temperatures.Min() ?? throw new InvalidOperationException("Min temperature calculation failed");
+        var maxTemp = temperatures.Max() ?? throw new InvalidOperationException("Max temperature calculation failed");
         var avgTemp = new Temperature(temperatures.Average(t => t.Value));
 
         // Calculate humidity statistics
         var humidities = orderedReadings.Select(r => r.Humidity).ToList();
-        var minHumidity = humidities.Min();
-        var maxHumidity = humidities.Max();
+        var minHumidity = humidities.Min() ?? throw new InvalidOperationException("Min humidity calculation failed");
+        var maxHumidity = humidities.Max() ?? throw new InvalidOperationException("Max humidity calculation failed");
         var avgHumidity = new Humidity(humidities.Average(h => h.Value));
 
         // Count out-of-range readings
@@ -132,14 +132,16 @@ public class MeasurementSummary : IEquatable<MeasurementSummary>
             orderedReadings, expectedTemperatureRange, expectedHumidityRange);
 
         // Create temperature and humidity stats
+        // Min and max values are guaranteed to be non-null since we validated readings are not empty
+        // and Temperature/Humidity properties in MeasurementReading are non-nullable
         var temperatureStats = new TemperatureStats(
             minTemp, maxTemp, avgTemp,
-            expectedTemperatureRange?.Min, expectedTemperatureRange?.Max,
+            expectedTemperatureRange?.Minimum, expectedTemperatureRange?.Maximum,
             orderedReadings.Count(r => !r.IsTemperatureInRange(expectedTemperatureRange)));
 
         var humidityStats = new HumidityStats(
             minHumidity, maxHumidity, avgHumidity,
-            expectedHumidityRange?.Min, expectedHumidityRange?.Max,
+            expectedHumidityRange?.Minimum, expectedHumidityRange?.Maximum,
             orderedReadings.Count(r => !r.IsHumidityInRange(expectedHumidityRange)));
 
         // Collect violations
