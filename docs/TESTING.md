@@ -22,7 +22,8 @@ We are using the [Xunit](https://xunit.net/?tabs=cs) framework for both integrat
 
 ### Command for running integration test
 
-> **CAUTION:** *When run locally, test will complaing if Docker is not up first.**
+> **CAUTION:** *When run locally, test will complain if Docker is not up first.**
+
 To set up Docker environment visit README in root folder. [Link to README](../README.md#testing)  
 
 ```bash
