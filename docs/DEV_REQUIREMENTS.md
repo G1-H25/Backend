@@ -4,7 +4,7 @@
 
 Small description of what you might need to either contribute or test the application yourself.  
 > [!NOTE]
-> (The server will probably be down whenever our school project is over)
+> The server will probably be down whenever our school project is over
 
 ## Software
 
