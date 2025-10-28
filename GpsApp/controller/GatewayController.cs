@@ -151,6 +151,7 @@ public class GatewayController : ControllerBase
     [HttpGet("id")]
     public async Task<IActionResult> GetGatewayIdByFilters(
         [FromQuery] int? gatewayId,
+        [FromQuery] Guid? gatewayUUID,
         [FromQuery] string? gatewayUrl,
         [FromQuery] int? currentLocationId)
     {
@@ -158,6 +159,9 @@ public class GatewayController : ControllerBase
 
         if (gatewayId.HasValue && gatewayId.Value > 0)
             filters.Add("Id", gatewayId.Value);
+
+        if (gatewayUUID.HasValue)
+            filters.Add("UUID", gatewayUUID.Value);
 
         if (!string.IsNullOrWhiteSpace(gatewayUrl))
             filters.Add("GatewayURL", gatewayUrl);
@@ -179,6 +183,39 @@ public class GatewayController : ControllerBase
 
         return Ok(new { Id = Convert.ToInt32(result["Id"]) });
     }
+
+    [HttpGet("uuid")]
+    public async Task<IActionResult> GetGatewayUuidByFilters(
+        [FromQuery] int? gatewayId,
+        [FromQuery] string? gatewayUrl,
+        [FromQuery] int? currentLocationId)
+    {
+        var filters = new Dictionary<string, object>();
+
+        if (gatewayId.HasValue && gatewayId.Value > 0)
+            filters.Add("Id", gatewayId.Value);
+
+        if (!string.IsNullOrWhiteSpace(gatewayUrl))
+            filters.Add("GatewayURL", gatewayUrl);
+
+        if (currentLocationId.HasValue && currentLocationId.Value > 0)
+            filters.Add("CurrentLocationId", currentLocationId.Value);
+
+        if (filters.Count == 0)
+            return BadRequest("At least one filter parameter is required.");
+
+        var result = await _getService.FetchAsync(
+            tableName: "Secrets.Gateway",
+            filters: filters,
+            columns: new[] { "UUID" }
+        );
+
+        if (result == null || !result.Any())
+            return NotFound("Gateway not found.");
+
+        return Ok(new { UUID = Guid.Parse(result["UUID"].ToString()!) });
+    }
+
 
 
 

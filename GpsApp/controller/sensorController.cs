@@ -1,7 +1,7 @@
 using GpsApp.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-
+using GpsApp.Services;
 
 
 [ApiController]
@@ -242,7 +242,7 @@ public class SensorController : ControllerBase
         
         await liveDataMocker.CreateMockDeliveryAsync(sensorId);
         //  9. Return success response
-        return Ok($"Inserted, {data.UUID}");
+        return Ok(new { Message = "Inserted", UUID = data.UUID });
     }
 
 
