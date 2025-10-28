@@ -9,7 +9,6 @@
 - [Getting started](#getting-started)
 - [Testing](#testing)
 - [API Documentation](#api-documentation)
-- [License](#license)
 
 ## Assignment
 
@@ -55,6 +54,10 @@ This is to summarize our last course (DevOps) using technologies like GitHub Act
 
 ### 1. Clone repository
 
+> [!IMPORTANT]
+> Make sure that you have the requirements before starting
+> [Link here](docs/DEV_REQUIREMENTS.md)
+
 ```bash
 git clone https://github.com/G1-H25/Backend.git
 cd Backend
@@ -67,7 +70,10 @@ From source run `docker compose up --watch` or `docker-compose up --build`
 --watch is to automatically have changes made in the source repo update the docker image.  
 --build creates the image from existing files when run.
 
-**WARNING:** --watch does currently not work.
+> [!WARNING]
+> --watch does currently not work.
+> [!TIP]
+> If ports are blocked, check for other running containers that might block port usage.
 
 ### 3. **Additional tips**
 
@@ -79,45 +85,26 @@ For entering the database shell
 
 `docker run -it --rm --network container:dev-sqlserver mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Passw0rd`
 
-### 4. **Start developing**
-
-Reassuring that you have the right set of tools required to further devlop this project. Have at it!  
-[Link to requirements](docs/DEV_REQUIREMENTS.md)
-
-### 5. **Stopping containers & clearing cache**
+### 4. **Stopping containers & clearing cache**
 
 Run `docker-compose down -v` remove the "volume" from the docker.
 If you do not run `-v`, metadata will be saved in your container and keep on existing until removed.  
 This might cause collisions when you build new images.
 
-#### Notes & tips
+#### Notes
 
 - `http://localhost:5000/swagger/index.html` is used for testing endpoints.
 
 - Make sure Docker Desktop is running in the background.
 
-- If using --watch, ensure you're on a compatible Docker version.
-
-- If ports are blocked, check for other running containers that might block port usage.
-
 ## Testing
 
-Here you will find a link/description on what library will be used for testing and how the process is made
+Tests are crucial for any application to ensure the security and robustness that a system requires.  
+Here is a link to how our tests are built and how we test the application.  
+[TESTING.md](docs/TESTING.md)
 
 ## API Documentation
 
 Swagger provides the ability to test different methods for retreiving or fetching different data packages. Try it out!  
 [Swagger Docs](https://g1api-bgeuc6hydmg9etgt.swedencentral-01.azurewebsites.net/swagger/index.html)
 [ERP Diagram | Lucidchart](https://lucid.app/lucidchart/3512ac64-3834-4b7e-b511-6808a2e46dc5/edit?page=0_0#)
-
-## License
-
-***MIT License***
-
-Copyright 2025 G1-H25 Organisation
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
