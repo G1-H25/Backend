@@ -55,40 +55,40 @@ This is to summarize our last course (DevOps) using technologies like GitHub Act
 
 ### 1. Clone repository
 
-    ```bash
-    git clone https://github.com/G1-H25/Backend.git
-    cd Backend
-    ```
+```bash
+git clone https://github.com/G1-H25/Backend.git
+cd Backend
+```
 
-### 1. **Run Docker**
+### 2. **Run Docker**
 
-    From source run `docker compose up --watch` or `docker-compose up --build`
+From source run `docker compose up --watch` or `docker-compose up --build`
 
-    --watch is to automatically have changes made in the source repo update the docker image.  
-    --build creates the image from existing files when run.
+--watch is to automatically have changes made in the source repo update the docker image.  
+--build creates the image from existing files when run.
 
-    **WARNING:** --watch does currently not work.
+**WARNING:** --watch does currently not work.
 
-### 1. **Additional tips**
+### 3. **Additional tips**
 
-    For entering the backend container shell:
+For entering the backend container shell:
 
-    `docker exec -it backend-app-1 /bin/sh`
+`docker exec -it backend-app-1 /bin/sh`
 
-    For entering the database shell
+For entering the database shell
 
-    `docker run -it --rm --network container:dev-sqlserver mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Passw0rd`
+`docker run -it --rm --network container:dev-sqlserver mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Passw0rd`
 
-### 1. **Start developing**
+### 4. **Start developing**
 
-    Reassuring that you have the right set of tools required to further devlop this project. Have at it!  
-    [Link to requirements](docs/DEV_REQUIREMENTS.md)
+Reassuring that you have the right set of tools required to further devlop this project. Have at it!  
+[Link to requirements](docs/DEV_REQUIREMENTS.md)
 
-### 1. **Stopping containers & clearing cache**
+### 5. **Stopping containers & clearing cache**
 
-    Run `docker-compose down -v` remove the "volume" from the docker.
-    If you do not run `-v`, metadata will be saved in your container and keep on existing until removed.  
-    This might cause collisions when you build new images.
+Run `docker-compose down -v` remove the "volume" from the docker.
+If you do not run `-v`, metadata will be saved in your container and keep on existing until removed.  
+This might cause collisions when you build new images.
 
 #### Notes & tips
 
