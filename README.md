@@ -13,7 +13,9 @@
 
 ## Assignment
 
-A school project where three classes from Chas Academy year 2 including SUVx24(Embedded), FJSx24(Fullstack) and FSWx24(Frontend). Chas Academy has given us the task to develop a prototype of a system for climatecontrolled transportation to different potentional industries like, food, medicin, chemical and other industries where climate control is needed.
+A school project where three classes from Chas Academy year 2 including SUVx24(Embedded), FJSx24(Fullstack) and FSWx24(Frontend).  
+Chas Academy has given us the task to develop a prototype of for climatecontrolled logistics system where we can easily manage and monitor the climate during delivery.  
+This product will reassure the end customer of deviations during delivery while making sure that users of the system can collect data for further improvements.  
 
 ## Related repos
 
@@ -26,9 +28,9 @@ Link to our list of [Requirements](https://github.com/G1-H25/Requirements)
 
 ## Project description
 
-This repo will represent our backend part of our project where we will create a bridge between the sensors and our UI.  
-We are going to develop a structured API using C# and the ASP.NET core.
-The server is going to be hosted on Azure Data Portal where we also handle logging for our API requests.  
+This repo will represent the backend part of our project where we will create a communactions bridge between the sensors and UI.  
+We are developing an API using C# and the ASP.NET core.
+The server is hosted on Azure Data Portal where we also handle logging for the API requests.  
 This is to summarize our last course (DevOps) using technologies like GitHub Actions to create a robust, secure and automatic workflow.
 
 ## Folder structure
@@ -36,29 +38,29 @@ This is to summarize our last course (DevOps) using technologies like GitHub Act
 ```bash
     .
     ├── docs                    # Documents gathered under one folder
-    ├── GpsApp                  # Main C# program (includes logic needed for requests to the backend server)
-    ├── GpsApp.Tests            # Tests for C# GpsApp (integration and unit tests)
+    ├── GpsApp                  # Application
+    ├── GpsApp.Tests            # Tests for application (integration and unit tests)
     ├── scripts                 # Scripts for database creation
     ├── .gitattributes          # NO CLUE Wilmer?? Does something with Shell files???
     ├── .gitignore              # Configuration for what files to exclude on GitHub
     ├── .sqlfluff               # Linter for .sql files
-    ├── Backend.sln             # Solution for C# application
+    ├── Backend.sln             # Solution for application
     ├── docker-compose.yml      # Docker-compose to set up a local testing environment 
-    └── README.md               # <---YOU ARE HERE--->
+    └── README.md               # <---WELCOME--->
 ```
 
 ## Getting started
 
 ### Creating and running Docker container
 
-1. **Clone repository**
+### 1. Clone repository
 
-```bash
-git clone https://github.com/G1-H25/Backend.git
-cd Backend
-```
+    ```bash
+    git clone https://github.com/G1-H25/Backend.git
+    cd Backend
+    ```
 
-1. **Run Docker**
+### 1. **Run Docker**
 
     From source run `docker compose up --watch` or `docker-compose up --build`
 
@@ -67,22 +69,22 @@ cd Backend
 
     **WARNING:** --watch does currently not work.
 
-1. **Additional tips**
+### 1. **Additional tips**
 
     For entering the backend container shell:
 
-- `docker exec -it backend-app-1 /bin/sh`
+    `docker exec -it backend-app-1 /bin/sh`
 
     For entering the database shell
 
-`docker run -it --rm --network container:dev-sqlserver mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Passw0rd`
+    `docker run -it --rm --network container:dev-sqlserver mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Passw0rd`
 
-1. **Start developing**
+### 1. **Start developing**
 
     Reassuring that you have the right set of tools required to further devlop this project. Have at it!  
     [Link to requirements](docs/DEV_REQUIREMENTS.md)
 
-1. **Stopping containers & clearing cache**
+### 1. **Stopping containers & clearing cache**
 
     Run `docker-compose down -v` remove the "volume" from the docker.
     If you do not run `-v`, metadata will be saved in your container and keep on existing until removed.  
