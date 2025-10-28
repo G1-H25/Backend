@@ -9,11 +9,13 @@ public class GatewayController : ControllerBase
 {
     private readonly SqlInsert _insertService;
     private readonly ISqlGet _getService; // Added for checking ownership
+    private readonly ISqlGetAdvanced _sqlGetAdvanced;
 
-    public GatewayController(SqlInsert insertService, ISqlGet getService)
+    public GatewayController(SqlInsert insertService, ISqlGet getService, ISqlGetAdvanced sqlGetAdvanced)
     {
         _insertService = insertService;
         _getService = getService;
+        _sqlGetAdvanced = sqlGetAdvanced;
     }
 
     [HttpPost("register")]
@@ -184,37 +186,38 @@ public class GatewayController : ControllerBase
         return Ok(new { Id = Convert.ToInt32(result["Id"]) });
     }
 
-    [HttpGet("uuid")]
-    public async Task<IActionResult> GetGatewayUuidByFilters(
-        [FromQuery] int? gatewayId,
-        [FromQuery] string? gatewayUrl,
-        [FromQuery] int? currentLocationId)
+    [HttpGet("gateway-sensors")]
+    public async Task<IActionResult> GetSensorsByGatewayUuid([FromQuery] Guid? gatewayUUID)
     {
-        var filters = new Dictionary<string, object>();
+        if (!gatewayUUID.HasValue)
+            return BadRequest("gatewayUUID is required.");
 
-        if (gatewayId.HasValue && gatewayId.Value > 0)
-            filters.Add("Id", gatewayId.Value);
-
-        if (!string.IsNullOrWhiteSpace(gatewayUrl))
-            filters.Add("GatewayURL", gatewayUrl);
-
-        if (currentLocationId.HasValue && currentLocationId.Value > 0)
-            filters.Add("CurrentLocationId", currentLocationId.Value);
-
-        if (filters.Count == 0)
-            return BadRequest("At least one filter parameter is required.");
-
-        var result = await _getService.FetchAsync(
-            tableName: "Secrets.Gateway",
-            filters: filters,
-            columns: new[] { "UUID" }
+        // Fetch all sensors linked to this gateway UUID
+        var sensors = await _sqlGetAdvanced.FetchWithJoinsAsync<Dictionary<string, object>>(
+            baseTable: "Measurements.Sensor s",
+            selectClause: "s.Id, s.UUID, s.PolledAt, s.TemperatureCel, s.HumdityPct",
+            joins: new List<string>
+            {
+                "JOIN Secrets.Gateway g ON g.Id = s.GatewayId"
+            },
+            filters: new Dictionary<string, object>
+            {
+                { "g.UUID", gatewayUUID.Value }
+            }
         );
 
-        if (result == null || !result.Any())
-            return NotFound("Gateway not found.");
+        if (sensors == null || !sensors.Any())
+            return NotFound("No sensors found for this gateway UUID.");
 
-        return Ok(new { UUID = Guid.Parse(result["UUID"].ToString()!) });
+        return Ok(new
+        {
+            GatewayUUID = gatewayUUID.Value,
+            Sensors = sensors
+        });
     }
+
+
+
 
 
 
