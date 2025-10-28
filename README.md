@@ -72,6 +72,7 @@ From source run `docker compose up --watch` or `docker-compose up --build`
 
 > [!WARNING]
 > --watch does currently not work.
+
 > [!TIP]
 > If ports are blocked, check for other running containers that might block port usage.
 
