@@ -11,33 +11,27 @@
 - [API Documentation](#api-documentation)
 - [License](#license)
 
-### Assignment
+## Assignment
 
 A school project where three classes from Chas Academy year 2 including SUVx24(Embedded), FJSx24(Fullstack) and FSWx24(Frontend). Chas Academy has given us the task to develop a prototype of a system for climatecontrolled transportation to different potentional industries like, food, medicin, chemical and other industries where climate control is needed.
 
-____
-
-### Related repos
+## Related repos
 
 Link to [Frontend-Web](https://github.com/G1-H25/Frontend-web)  
 Link to [Frontend-Mobile/UX](https://github.com/G1-H25/Frontend-mobile)  
 Link to [Device-Broker](https://github.com/G1-H25/Device-Broker)  
 Link to [Device-Sensor](https://github.com/G1-H25/Device-Sensor)  
 Link to [jenlib](https://github.com/G1-H25/jenlib)  
-Link to our list of [Requirements](https://github.com/G1-H25/Requirements)   
+Link to our list of [Requirements](https://github.com/G1-H25/Requirements)
 
-____
-
-### Project description
+## Project description
 
 This repo will represent our backend part of our project where we will create a bridge between the sensors and our UI.  
 We are going to develop a structured API using C# and the ASP.NET core.
 The server is going to be hosted on Azure Data Portal where we also handle logging for our API requests.  
 This is to summarize our last course (DevOps) using technologies like GitHub Actions to create a robust, secure and automatic workflow.
 
-____
-
-### Folder structure
+## Folder structure
 
 ```bash
     .
@@ -53,11 +47,9 @@ ____
     └── README.md               # <---YOU ARE HERE--->
 ```
 
-____
+## Getting started
 
-### Getting started
-
-#### Creating and running Docker container
+### Creating and running Docker container
 
 1. **Clone repository**
 
@@ -66,7 +58,7 @@ git clone https://github.com/G1-H25/Backend.git
 cd Backend
 ```
 
-2. **Run Docker**
+1. **Run Docker**
 
     From source run `docker compose up --watch` or `docker-compose up --build`
 
@@ -75,7 +67,7 @@ cd Backend
 
     **WARNING:** --watch does currently not work.
 
-3. **Additional tips**
+1. **Additional tips**
 
     For entering the backend container shell:
 
@@ -85,11 +77,12 @@ cd Backend
 
 `docker run -it --rm --network container:dev-sqlserver mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Passw0rd`
 
-4. **Start coding**
+1. **Start developing**
 
-    Reassuring that you have the right set of tools required ([link](docs/REQUIREMENTS.md)) to further devlop this project. Have at it!
+    Reassuring that you have the right set of tools required to further devlop this project. Have at it!  
+    [Link to requirements](docs/DEV_REQUIREMENTS.md)
 
-5. **Stopping containers & clearing cache**
+1. **Stopping containers & clearing cache**
 
     Run `docker-compose down -v` remove the "volume" from the docker.
     If you do not run `-v`, metadata will be saved in your container and keep on existing until removed.  
@@ -97,26 +90,25 @@ cd Backend
 
 #### Notes & tips
 
+- `http://localhost:5000/swagger/index.html` is used for testing endpoints.
+
 - Make sure Docker Desktop is running in the background.
 
 - If using --watch, ensure you're on a compatible Docker version.
 
 - If ports are blocked, check for other running containers that might block port usage.
 
-____
-
-### Testing
+## Testing
 
 Here you will find a link/description on what library will be used for testing and how the process is made
 
-### API Documentation
+## API Documentation
 
 Swagger provides the ability to test different methods for retreiving or fetching different data packages. Try it out!  
-[Link to API Documentation](link)
+[Swagger Docs](https://g1api-bgeuc6hydmg9etgt.swedencentral-01.azurewebsites.net/swagger/index.html)
+[ERP Diagram | Lucidchart](https://lucid.app/lucidchart/3512ac64-3834-4b7e-b511-6808a2e46dc5/edit?page=0_0#)
 
-____
-
-### License
+## License
 
 ***MIT License***
 
