@@ -305,12 +305,8 @@ namespace GpsApp.Tests.Unit
                             sensor_id = 1,
                             measurements = new List<Measurement>
                             {
-                                new Measurement
-                                {
-                                    timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                                    temperature_c = 22.5f,
-                                    humidity_pct = 55.2f
-                                }
+                                new Measurement { timestamp = 1698780000, temperature_c = 22.5f, humidity_pct = 40f },
+                                new Measurement { timestamp = 1698780300, temperature_c = 22.7f, humidity_pct = 42f }
                             }
                         },
                         new SensorData
@@ -349,7 +345,7 @@ namespace GpsApp.Tests.Unit
                             {
                                 new Measurement
                                 {
-                                    timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                                    timestamp = 1698780000,
                                     temperature_c = 22.5f,
                                     humidity_pct = 55.2f
                                 }
@@ -362,7 +358,7 @@ namespace GpsApp.Tests.Unit
                             {
                                 new Measurement
                                 {
-                                    timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                                    timestamp = 1698780300,
                                     temperature_c = 23.1f,
                                     humidity_pct = 56.8f
                                 }
