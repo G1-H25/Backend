@@ -580,24 +580,20 @@ public class SensorController : ControllerBase
                     try
                     {
                         var result = await ProcessSingleSensorReading(sensorDto, gatewayId);
-                        Console.WriteLine($"[Debug] ProcessSingleSensorReading result - Success: {result.IsSuccess}, Error: {result.ErrorMessage}, UUID: {sensorDto.UUID}");
                         if (result.IsSuccess)
                         {
                             processedCount++;
-                            Console.WriteLine($"[Debug] Incremented processedCount to {processedCount} for UUID: {sensorDto.UUID}");
                         }
                         else
                         {
                             errors.Add($"Failed to process sensor {sensorId}: {result.ErrorMessage}");
                             skippedCount++;
-                            Console.WriteLine($"[Debug] Incremented skippedCount to {skippedCount} for UUID: {sensorDto.UUID}");
                         }
                     }
                     catch (Exception ex)
                     {
                         errors.Add($"Error processing sensor {sensorId}: {ex.Message}");
                         skippedCount++;
-                        Console.WriteLine($"[Debug] Exception handling sensor {sensorId}: {ex.Message}");
                     }
                 }
                 catch (Exception ex)
@@ -730,11 +726,9 @@ public class SensorController : ControllerBase
             else
             {
                 // Insert new record
-                Console.WriteLine($"[Debug] Inserting new sensor record - UUID: {data.UUID}");
                 await _insertService.InsertAsync("Measurements.Sensor", dataDict);
             }
             // Fetch the ID of the newly inserted sensor (temporary mock logic)
-            Console.WriteLine($"[Debug] Fetching inserted sensor record - UUID: {data.UUID}");
             var insertedSensor = await _sqlGet.FetchAsync("Measurements.Sensor", new Dictionary<string, object>
             {
                 { "GatewayId", gatewayId },
@@ -742,10 +736,8 @@ public class SensorController : ControllerBase
             });
             if (insertedSensor == null || !insertedSensor.Any())
             {
-                Console.WriteLine($"[Debug] Failed to fetch inserted sensor - UUID: {data.UUID}");
                 return (false, "Sensor insert failed");
             }
-            Console.WriteLine($"[Debug] Found inserted sensor Id: {insertedSensor["Id"]} - UUID: {data.UUID}");
 
             int sensorId = Convert.ToInt32(insertedSensor["Id"]);
 
