@@ -305,8 +305,12 @@ namespace GpsApp.Tests.Unit
                             sensor_id = 1,
                             measurements = new List<Measurement>
                             {
-                                new Measurement { timestamp = 1698780000, temperature_c = 22.5f, humidity_pct = 40f },
-                                new Measurement { timestamp = 1698780300, temperature_c = 22.7f, humidity_pct = 42f }
+                                new Measurement 
+                                { 
+                                    timestamp = 1698780000, 
+                                    temperature_c = 22.5f, 
+                                    humidity_pct = 40f 
+                                }
                             }
                         },
                         new SensorData
@@ -391,23 +395,75 @@ namespace GpsApp.Tests.Unit
             }
         }
 
-        private void SetupDatabaseMocks()
-        {
-            // Mock InsertAsync to return a successful result (Task)
-            _mockSqlInsert.Setup(x => x.InsertAsync(
-                It.IsAny<string>(),
-                It.IsAny<Dictionary<string, object>>()))
-                .Returns(Task.CompletedTask);
+    private void SetupDatabaseMocks()
+    {
+        var nextSensorId = 1000;
 
-            // Mock UpdateAsync to return a successful result (Task)
-            _mockSqlUpdate.Setup(x => x.UpdateAsync(
-                It.IsAny<string>(),
+        // Set up InsertAsync with callback for MockLiveData service chain
+        _mockSqlInsert.Setup(x => x.InsertAsync(
+            It.IsAny<string>(),
+            It.IsAny<Dictionary<string, object>>()))
+            .Callback<string, Dictionary<string, object>>((table, dict) =>
+            {
+                if (dict != null && dict.ContainsKey("UUID") && dict.ContainsKey("GatewayId"))
+                {
+                    var insertedUuid = dict["UUID"];
+                    var sensorId = nextSensorId++;
+
+                    // Set up sensor fetch by UUID
+                    _mockSqlGet.Setup(x => x.FetchAsync(
+                        "Measurements.Sensor",
+                        It.Is<Dictionary<string, object>>(d => 
+                            d.ContainsKey("GatewayId") && 
+                            d.ContainsKey("UUID") && 
+                            d["UUID"].Equals(insertedUuid)),
+                        null))
+                        .ReturnsAsync(new Dictionary<string, object> 
+                        { 
+                            { "Id", sensorId }, 
+                            { "GatewayId", 1 }, 
+                            { "UUID", insertedUuid } 
+                        });
+
+                    // Set up sensor fetch by Id for MockLiveData
+                    _mockSqlGet.Setup(x => x.FetchAsync(
+                        "Measurements.Sensor",
+                        It.Is<Dictionary<string, object>>(d => 
+                            d.ContainsKey("Id") && 
+                            Convert.ToInt32(d["Id"]) == sensorId),
+                        null))
+                        .ReturnsAsync(new Dictionary<string, object> 
+                        { 
+                            { "Id", sensorId }, 
+                            { "GatewayId", 1 },
+                            { "UUID", insertedUuid }
+                        });
+                }
+            })
+            .Returns(Task.CompletedTask);
+
+        // Setup InsertAndReturnIdAsync for all the MockLiveData insert operations
+        var nextId = 1;
+        _mockSqlInsert.Setup(x => x.InsertAndReturnIdAsync(
+            It.IsAny<string>(),
+            It.IsAny<Dictionary<string, object>>()))
+            .ReturnsAsync(() => nextId++);
+
+        // Mock UpdateAsync for both sensor updates and MockLiveData updates
+        _mockSqlUpdate.Setup(x => x.UpdateAsync(
+            It.IsAny<string>(),
+            It.IsAny<Dictionary<string, object>>(),
+            It.IsAny<Dictionary<string, object>>()))
+            .Returns(Task.CompletedTask);
+
+        // Mock gateway fetch
+        _mockSqlGet
+            .Setup(x => x.FetchAsync(
+                "Secrets.Gateway",
                 It.IsAny<Dictionary<string, object>>(),
-                It.IsAny<Dictionary<string, object>>()))
-                .Returns(Task.CompletedTask);
-        }
-
-        private void SetupGatewayLookupMock(Guid gatewayUuid, int gatewayId)
+                null))
+            .ReturnsAsync(new Dictionary<string, object> { { "Id", 1 } });
+    }        private void SetupGatewayLookupMock(Guid gatewayUuid, int gatewayId)
         {
             _mockSqlGet.Setup(x => x.FetchAsync(
                 "Secrets.Gateway",
@@ -431,11 +487,8 @@ namespace GpsApp.Tests.Unit
 
         private void SetupNoExistingSensorRecordsMock()
         {
-            _mockSqlGet.Setup(x => x.FetchAsync(
-                "Measurements.Sensor",
-                It.Is<Dictionary<string, object>>(d => d.ContainsKey("GatewayId") && d.ContainsKey("UUID")),
-                null))
-                .ReturnsAsync((Dictionary<string, object>?)null);
+            // No-op: Database fetch sequence for Measurements.Sensor is configured in SetupDatabaseMocks()
+            // to simulate "no existing record" on first fetch and a returned Id after InsertAsync.
         }
 
         private void AssertResponseStructure(object response)
@@ -451,7 +504,9 @@ namespace GpsApp.Tests.Unit
         {
             var property = response.GetType().GetProperty(propertyName);
             Assert.NotNull(property);
-            return (T)property.GetValue(response);
+            var value = property.GetValue(response);
+            Assert.NotNull(value);
+            return (T)value;
         }
 
         #endregion

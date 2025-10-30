@@ -244,28 +244,6 @@ public class SensorController : ControllerBase
             await _insertService.InsertAsync("Measurements.Sensor", dataDict);
         }
 
-        if (existingRecord != null)
-        {
-            // Update live data fields only
-            var updateDict = new Dictionary<string, object>
-        {
-            { "TemperatureCel", data.TemperatureCel },
-            { "HumdityPct", data.HumdityPct },
-            { "PolledAt", data.PolledAt }
-            // Add more fields here if you want to update summarized data on update
-        };
-
-            await _sqlUpdate.UpdateAsync("Measurements.Sensor", updateDict, new Dictionary<string, object>
-        {
-            { "Id", existingRecord["Id"] }
-        });
-        }
-        else
-        {
-            //  8. Insert new sensor record into the database
-            await _insertService.InsertAsync("Measurements.Sensor", dataDict);
-        }
-
         // Fetch the ID of the newly inserted sensor (temporary mock logic)
         var insertedSensor = await _sqlGet.FetchAsync("Measurements.Sensor", new Dictionary<string, object>
         {
@@ -602,20 +580,24 @@ public class SensorController : ControllerBase
                     try
                     {
                         var result = await ProcessSingleSensorReading(sensorDto, gatewayId);
+                        Console.WriteLine($"[Debug] ProcessSingleSensorReading result - Success: {result.IsSuccess}, Error: {result.ErrorMessage}, UUID: {sensorDto.UUID}");
                         if (result.IsSuccess)
                         {
                             processedCount++;
+                            Console.WriteLine($"[Debug] Incremented processedCount to {processedCount} for UUID: {sensorDto.UUID}");
                         }
                         else
                         {
                             errors.Add($"Failed to process sensor {sensorId}: {result.ErrorMessage}");
                             skippedCount++;
+                            Console.WriteLine($"[Debug] Incremented skippedCount to {skippedCount} for UUID: {sensorDto.UUID}");
                         }
                     }
                     catch (Exception ex)
                     {
                         errors.Add($"Error processing sensor {sensorId}: {ex.Message}");
                         skippedCount++;
+                        Console.WriteLine($"[Debug] Exception handling sensor {sensorId}: {ex.Message}");
                     }
                 }
                 catch (Exception ex)
@@ -642,6 +624,7 @@ public class SensorController : ControllerBase
     {
         try
         {
+            Console.WriteLine($"[Debug] ProcessSingleSensorReading start - UUID: {data.UUID}");
             // Fetch the latest sensor reading for this gateway to compare previous state
             var readings = await _sqlGetAdvanced.FetchWithJoinsAsync<GpsApp.DTO.SensorReading>(
                 baseTable: "Measurements.Sensor sensor",
@@ -747,16 +730,22 @@ public class SensorController : ControllerBase
             else
             {
                 // Insert new record
+                Console.WriteLine($"[Debug] Inserting new sensor record - UUID: {data.UUID}");
                 await _insertService.InsertAsync("Measurements.Sensor", dataDict);
             }
             // Fetch the ID of the newly inserted sensor (temporary mock logic)
+            Console.WriteLine($"[Debug] Fetching inserted sensor record - UUID: {data.UUID}");
             var insertedSensor = await _sqlGet.FetchAsync("Measurements.Sensor", new Dictionary<string, object>
             {
                 { "GatewayId", gatewayId },
                 { "UUID", data.UUID }
             });
             if (insertedSensor == null || !insertedSensor.Any())
+            {
+                Console.WriteLine($"[Debug] Failed to fetch inserted sensor - UUID: {data.UUID}");
                 return (false, "Sensor insert failed");
+            }
+            Console.WriteLine($"[Debug] Found inserted sensor Id: {insertedSensor["Id"]} - UUID: {data.UUID}");
 
             int sensorId = Convert.ToInt32(insertedSensor["Id"]);
 
