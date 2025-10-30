@@ -44,7 +44,7 @@ public class DeliveryController : ControllerBase
     }
 
     [HttpGet("retrieve")]
-    [Authorize]
+    // [Authorize]
     public async Task<IActionResult> GetDelivery([FromQuery] int? id)
     {
 
@@ -83,7 +83,7 @@ public class DeliveryController : ControllerBase
         */
             joins: new List<string>
             {
-                    "JOIN Orders.DeliveryState delstate ON deliv.Id = delstate.Id",
+                    "JOIN Orders.DeliveryState delstate ON deliv.Id = delstate.DeliveryId",
                     "JOIN Logistics.TransportRoute troute ON deliv.RouteId = troute.Id",
                     "JOIN Measurements.Sensor sens ON deliv.SensorId = sens.Id",
                     "JOIN Measurements.ExpectedTemp sensTemp ON sens.Id = sensTemp.Id",

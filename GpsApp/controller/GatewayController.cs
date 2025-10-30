@@ -19,6 +19,7 @@ public class GatewayController : ControllerBase
 {
     private readonly ISqlInsert _insertService;
     private readonly ISqlGet _getService; // Added for checking ownership
+    private readonly ISqlGetAdvanced _sqlGetAdvanced;
 
     /// <summary>
     /// Initializes gateway controller with injected dependencies.
@@ -26,10 +27,11 @@ public class GatewayController : ControllerBase
     /// <param name="insertService">Database insertion service with ConnectionString access (ISqlInsert).</param>
     /// <param name="getService">Database query service (ISqlGet).</param>
     /// <remarks>Constructor injection - dependencies provided by DI container for testability. Uses ConnectionString for direct SQL operations.</remarks>
-    public GatewayController(ISqlInsert insertService, ISqlGet getService)
+    public GatewayController(ISqlInsert insertService, ISqlGet getService, ISqlGetAdvanced sqlGetAdvanced)
     {
         _insertService = insertService;
         _getService = getService;
+        _sqlGetAdvanced = sqlGetAdvanced;
     }
 
     [HttpPost("register")]
@@ -167,6 +169,7 @@ public class GatewayController : ControllerBase
     [HttpGet("id")]
     public async Task<IActionResult> GetGatewayIdByFilters(
         [FromQuery] int? gatewayId,
+        [FromQuery] Guid? gatewayUUID,
         [FromQuery] string? gatewayUrl,
         [FromQuery] int? currentLocationId)
     {
@@ -174,6 +177,9 @@ public class GatewayController : ControllerBase
 
         if (gatewayId.HasValue && gatewayId.Value > 0)
             filters.Add("Id", gatewayId.Value);
+
+        if (gatewayUUID.HasValue)
+            filters.Add("UUID", gatewayUUID.Value);
 
         if (!string.IsNullOrWhiteSpace(gatewayUrl))
             filters.Add("GatewayURL", gatewayUrl);
@@ -195,6 +201,40 @@ public class GatewayController : ControllerBase
 
         return Ok(new { Id = Convert.ToInt32(result["Id"]) });
     }
+
+    [HttpGet("gateway-sensors")]
+    public async Task<IActionResult> GetSensorsByGatewayUuid([FromQuery] Guid? gatewayUUID)
+    {
+        if (!gatewayUUID.HasValue)
+            return BadRequest("gatewayUUID is required.");
+
+        // Fetch all sensors linked to this gateway UUID
+        var sensors = await _sqlGetAdvanced.FetchWithJoinsAsync<Dictionary<string, object>>(
+            baseTable: "Measurements.Sensor s",
+            selectClause: "s.Id, s.UUID, s.PolledAt, s.TemperatureCel, s.HumdityPct",
+            joins: new List<string>
+            {
+                "JOIN Secrets.Gateway g ON g.Id = s.GatewayId"
+            },
+            filters: new Dictionary<string, object>
+            {
+                { "g.UUID", gatewayUUID.Value }
+            }
+        );
+
+        if (sensors == null || !sensors.Any())
+            return NotFound("No sensors found for this gateway UUID.");
+
+        return Ok(new
+        {
+            GatewayUUID = gatewayUUID.Value,
+            Sensors = sensors
+        });
+    }
+
+
+
+
 
 
 

@@ -4,7 +4,7 @@ IF OBJECT_ID('Secrets.Vehicle', 'U') IS NULL
     (
         Id INT IDENTITY (1, 1) PRIMARY KEY,
         GatewayId INT NOT NULL CONSTRAINT FK_Vehicle_GatewayId
-                FOREIGN KEY (GatewayId) REFERENCES Secrets.Account(Id),
+                FOREIGN KEY (GatewayId) REFERENCES Secrets.Gateway(Id),
         RegistrationId INT NOT NULL CONSTRAINT FK_Vehicle_RegistrationId
                 FOREIGN KEY (RegistrationId) REFERENCES Secrets.Registration(Id)
     )

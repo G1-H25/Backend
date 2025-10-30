@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using GpsApp.Services;
 
 
-
 /// <summary>
 /// Sensor data management controller using dependency inversion principle.
 /// </summary>
@@ -245,8 +244,24 @@ public class SensorController : ControllerBase
             await _insertService.InsertAsync("Measurements.Sensor", dataDict);
         }
 
+        // Fetch the ID of the newly inserted sensor (temporary mock logic)
+        var insertedSensor = await _sqlGet.FetchAsync("Measurements.Sensor", new Dictionary<string, object>
+        {
+            { "GatewayId", gatewayId },
+            { "UUID", data.UUID }
+        });
+
+        if (insertedSensor == null || !insertedSensor.Any())
+            return StatusCode(500, "Sensor insert failed");
+
+        int sensorId = Convert.ToInt32(insertedSensor["Id"]);
+
+        var liveDataMocker = new MockLiveData(_insertService, _sqlUpdate, _sqlGet);
+
+
+        await liveDataMocker.CreateMockDeliveryAsync(sensorId);
         //  9. Return success response
-        return Ok($"Inserted, {data.UUID}");
+        return Ok(new { Message = "Inserted", UUID = data.UUID });
     }
 
 
@@ -605,6 +620,7 @@ public class SensorController : ControllerBase
     {
         try
         {
+            Console.WriteLine($"[Debug] ProcessSingleSensorReading start - UUID: {data.UUID}");
             // Fetch the latest sensor reading for this gateway to compare previous state
             var readings = await _sqlGetAdvanced.FetchWithJoinsAsync<GpsApp.DTO.SensorReading>(
                 baseTable: "Measurements.Sensor sensor",
@@ -712,6 +728,23 @@ public class SensorController : ControllerBase
                 // Insert new record
                 await _insertService.InsertAsync("Measurements.Sensor", dataDict);
             }
+            // Fetch the ID of the newly inserted sensor (temporary mock logic)
+            var insertedSensor = await _sqlGet.FetchAsync("Measurements.Sensor", new Dictionary<string, object>
+            {
+                { "GatewayId", gatewayId },
+                { "UUID", data.UUID }
+            });
+            if (insertedSensor == null || !insertedSensor.Any())
+            {
+                return (false, "Sensor insert failed");
+            }
+
+            int sensorId = Convert.ToInt32(insertedSensor["Id"]);
+
+            var liveDataMocker = new MockLiveData(_insertService, _sqlUpdate, _sqlGet);
+
+
+            await liveDataMocker.CreateMockDeliveryAsync(sensorId);
 
             return (true, string.Empty);
         }
