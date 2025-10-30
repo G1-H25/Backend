@@ -258,7 +258,7 @@ public class SensorController : ControllerBase
 
         var liveDataMocker = new MockLiveData(_insertService, _sqlUpdate, _sqlGet);
 
-        
+
         await liveDataMocker.CreateMockDeliveryAsync(sensorId);
         //  9. Return success response
         return Ok(new { Message = "Inserted", UUID = data.UUID });
@@ -751,7 +751,7 @@ public class SensorController : ControllerBase
 
             var liveDataMocker = new MockLiveData(_insertService, _sqlUpdate, _sqlGet);
 
-            
+
             await liveDataMocker.CreateMockDeliveryAsync(sensorId);
 
             return (true, string.Empty);

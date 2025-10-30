@@ -98,7 +98,7 @@ namespace GpsApp.Services
         {
             { "Code", $"R{random.Next(1000, 9999)}" },
             { "Area", "MockArea" }
-        }; 
+        };
             return await _insertService.InsertAndReturnIdAsync("Logistics.TransportRoute", data);
         }
 
