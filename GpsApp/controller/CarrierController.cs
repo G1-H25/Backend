@@ -1,13 +1,28 @@
 using Microsoft.AspNetCore.Mvc;
 using GpsApp.DTO;
 
+/// <summary>
+/// Carrier and vehicle management controller using dependency inversion principle.
+/// </summary>
+/// <remarks>
+/// Manages complete carrier registration with multi-step entity creation.
+/// Demonstrates SOLID: SRP (carrier management), OCP (interface-based), LSP (substitutable),
+/// ISP (focused interfaces), DIP (abstraction over concretions).
+/// Creates Registration → Vehicle → Carrier relationship chain.
+/// Constructor injection enables testing and loose coupling.
+/// </remarks>
 [ApiController]
 [Route("[controller]")]
 public class CarrierController : ControllerBase
 {
-    private readonly SqlInsert _insertService;
+    private readonly ISqlInsert _insertService;
 
-    public CarrierController(SqlInsert insertService)
+    /// <summary>
+    /// Initializes carrier controller with injected dependencies.
+    /// </summary>
+    /// <param name="insertService">Database insertion service (ISqlInsert).</param>
+    /// <remarks>Constructor injection - dependencies provided by DI container for testability. Handles multi-step entity creation.</remarks>
+    public CarrierController(ISqlInsert insertService)
     {
         _insertService = insertService;
     }

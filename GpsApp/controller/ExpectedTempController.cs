@@ -1,14 +1,29 @@
 using Microsoft.AspNetCore.Mvc;
 using GpsApp.DTO;
 
+/// <summary>
+/// Expected temperature management controller using dependency inversion principle.
+/// </summary>
+/// <remarks>
+/// Configures acceptable temperature ranges for sensor monitoring.
+/// Demonstrates SOLID: SRP (temperature expectations), OCP (interface-based), LSP (substitutable),
+/// ISP (focused interfaces), DIP (abstraction over concretions).
+/// Constructor injection enables testing and loose coupling.
+/// </remarks>
 [ApiController]
 [Route("[controller]")]
 public class ExpectedTempController : ControllerBase
 {
-    private readonly SqlInsert _insertService;
-    private readonly SqlUpdate _sqlUpdate;
+    private readonly ISqlInsert _insertService;
+    private readonly ISqlUpdate _sqlUpdate;
 
-    public ExpectedTempController(SqlInsert insertService, SqlUpdate sqlUpdate)
+    /// <summary>
+    /// Initializes expected temperature controller with injected dependencies.
+    /// </summary>
+    /// <param name="insertService">Database insertion service (ISqlInsert).</param>
+    /// <param name="sqlUpdate">Database update service (ISqlUpdate).</param>
+    /// <remarks>Constructor injection - dependencies provided by DI container for testability. Creates temperature expectations and links to sensors.</remarks>
+    public ExpectedTempController(ISqlInsert insertService, ISqlUpdate sqlUpdate)
     {
         _insertService = insertService;
         _sqlUpdate = sqlUpdate;

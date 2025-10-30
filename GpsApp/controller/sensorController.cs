@@ -1,27 +1,48 @@
 using GpsApp.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using GpsApp.Services;
 
 
 
+/// <summary>
+/// Sensor data management controller using dependency inversion principle.
+/// </summary>
+/// <remarks>
+/// Core GPS tracking system controller handling real-time sensor data (temperature, humidity).
+/// Demonstrates SOLID principles: SRP (data management), OCP (interface-based), LSP (substitutable),
+/// ISP (focused interfaces), DIP (abstraction over concretions).
+/// Dependencies injected via constructor - testable and decoupled design.
+/// </remarks>
 [ApiController]
 [Route("[controller]")]
 public class SensorController : ControllerBase
 {
-    private readonly SqlInsert _insertService;
+    private readonly ISqlInsert _insertService;
     private readonly ISqlGetAdvanced _sqlGetAdvanced;
     private readonly ISqlGet _sqlGet;
     private readonly IAuthorizationService _authService;
-    private readonly SqlUpdate _sqlUpdate;
+    private readonly ISqlUpdate _sqlUpdate;
+    private readonly ISensorValidationService _validationService;
 
-    // get the connectionstring to azure database, authorization access
-    public SensorController(SqlInsert insertService, IAuthorizationService authService, ISqlGetAdvanced sqlGetAdvanced, ISqlGet sqlGet, SqlUpdate sqlupdate)
+    /// <summary>
+    /// Initializes sensor controller with injected dependencies.
+    /// </summary>
+    /// <param name="insertService">Database insertion service (ISqlInsert).</param>
+    /// <param name="authService">Authorization service for access validation.</param>
+    /// <param name="sqlGetAdvanced">Advanced query service with JOINs (ISqlGetAdvanced).</param>
+    /// <param name="sqlGet">Basic query service (ISqlGet).</param>
+    /// <param name="sqlUpdate">Database update service (ISqlUpdate).</param>
+    /// <param name="validationService">Sensor data validation service (ISensorValidationService).</param>
+    /// <remarks>Constructor injection - dependencies provided by DI container for testability.</remarks>
+    public SensorController(ISqlInsert insertService, IAuthorizationService authService, ISqlGetAdvanced sqlGetAdvanced, ISqlGet sqlGet, ISqlUpdate sqlupdate, ISensorValidationService validationService)
     {
         _insertService = insertService;
         _authService = authService;
         _sqlGetAdvanced = sqlGetAdvanced;
         _sqlGet = sqlGet;
         _sqlUpdate = sqlupdate;
+        _validationService = validationService;
     }
 
     /// <summary>
@@ -55,15 +76,21 @@ public class SensorController : ControllerBase
     /// <para>7. If no previous sensor record exists, a new record is <b>INSERTED</b> into <c>Measurements.Sensor</c> with all calculated values.</para>
     /// <para>8. Returns 200 OK with confirmation on success.</para>
     /// <para>
-    /// <b>Important:</b> The sensor <c>UUID</c> is used to identify individual sensor devices attached to gateways. 
+    /// <b>Important:</b> The sensor <c>UUID</c> is used to identify individual sensor devices attached to gateways.
     /// Multiple sensors can belong to a single gateway. Updates and inserts are based on <c>GatewayId</c> + <c>UUID</c>.
     /// </para>
     /// <para>
-    /// 
+    ///
     /// This route maintains live sensor values and aggregates summary data in one record per sensor while tracking historical min/max and out-of-range durations.
     /// </para>
     /// </remarks>
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [Consumes("application/json")]
+    [Produces("application/json")]
     // [Authorize] // Require JWT
     public async Task<IActionResult> PostSensorData([FromBody] SensorDto data)
     {
@@ -79,22 +106,15 @@ public class SensorController : ControllerBase
         //    return Forbid("You do not have access to this gateway.");
 
 
-        //  2. Validate input fields
-        if (data.GatewayUUID == Guid.Empty)
-            return BadRequest("GatewayUUID must be a valid non-empty GUID.");
+        //  2. Validate input fields using domain validation service
+        var validationResult = _validationService.ValidateSensorDto(data);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(string.Join("; ", validationResult.Errors));
+        }
 
         if (data.PolledAt == default)
             data.PolledAt = DateTime.UtcNow; // Default to current UTC time if none provided
-
-        if (data.TemperatureCel == null)
-            return BadRequest("TemperatureCel must be provided.");
-
-        if (data.HumdityPct == null)
-            return BadRequest("HumdityPct must be provided.");
-
-        // validate that UUID is passed in
-        if (data.UUID == Guid.Empty)
-            return BadRequest("UUID must be a valid non-empty GUID.");
 
         // Fetch GatewayId from DB using GatewayUUID in order to insert gatewayID as an integer later
         var gatewayRecord = await _sqlGet.FetchAsync("Secrets.Gateway", new Dictionary<string, object>
@@ -442,6 +462,263 @@ public class SensorController : ControllerBase
             return NotFound("Sensor data not found.");
 
         return Ok(new { Id = Convert.ToInt32(result["Id"]) });
+    }
+
+    /// <summary>
+    /// Processes multiple sensor readings in a single batch operation.
+    /// </summary>
+    /// <param name="request">Batched sensor data containing gateway UUID and multiple sensor readings.</param>
+    /// <returns>
+    /// Returns:
+    /// <list type="bullet">
+    /// <item><description>200 OK with success message if all valid readings were processed successfully.</description></item>
+    /// <item><description>400 Bad Request if validation fails (invalid GatewayUUID, empty readings, or invalid sensor data).</description></item>
+    /// </list>
+    /// </returns>
+    /// <remarks>
+    /// This endpoint processes multiple sensor readings in a single request for improved efficiency.
+    /// Each reading is validated individually, and only valid readings are processed.
+    /// Invalid readings are skipped and reported in the response.
+    ///
+    /// The request should contain:
+    /// - GatewayUUID: Valid GUID identifying the gateway
+    /// - Readings: Collection of sensor data with measurements
+    ///
+    /// Response includes processing summary with counts of successful and failed operations.
+    /// </remarks>
+    [HttpPost("batch")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [Consumes("application/json")]
+    [Produces("application/json")]
+    // [Authorize] // Require JWT
+    public async Task<IActionResult> PostBatchedSensorData([FromBody] ConnectedToGateway request)
+    {
+        // Validate request using domain validation service
+        var validationResult = _validationService.ValidateBatchedSensorRequest(request);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(string.Join("; ", validationResult.Errors));
+        }
+
+        // Fetch GatewayId from DB using GatewayUUID
+        var gatewayRecord = await _sqlGet.FetchAsync("Secrets.Gateway", new Dictionary<string, object>
+        {
+            { "UUID", request.GatewayUUID }
+        });
+
+        if (gatewayRecord == null || !gatewayRecord.Any())
+        {
+            return BadRequest($"Gateway with UUID {request.GatewayUUID} does not exist.");
+        }
+
+        int gatewayId = Convert.ToInt32(gatewayRecord["Id"]);
+
+        var processedCount = 0;
+        var skippedCount = 0;
+        var errors = new List<string>();
+
+        // Process each sensor and its measurements
+        foreach (var sensorData in request.Readings.sensors)
+        {
+            var sensorId = sensorData.sensor_id;
+
+            // Validate sensor data (including sensor ID)
+            var sensorErrors = _validationService.ValidateSensorData(sensorData);
+            if (sensorErrors.Any())
+            {
+                errors.AddRange(sensorErrors);
+                skippedCount += sensorData.measurements.Count; // Skip all measurements for this invalid sensor
+                continue;
+            }
+
+            for (int measurementIndex = 0; measurementIndex < sensorData.measurements.Count; measurementIndex++)
+            {
+                var measurement = sensorData.measurements[measurementIndex];
+                try
+                {
+                    // Validate individual measurement using domain validation service
+                    var measurementErrors = _validationService.ValidateMeasurement(measurement, sensorId, measurementIndex);
+                    if (measurementErrors.Any())
+                    {
+                        errors.AddRange(measurementErrors);
+                        skippedCount++;
+                        continue;
+                    }
+
+                    // Convert timestamp to DateTime
+                    var polledAt = DateTimeOffset.FromUnixTimeSeconds(measurement.timestamp).DateTime;
+
+                    // Process the individual sensor reading (reuse existing logic)
+                    var sensorDto = new SensorDto
+                    {
+                        GatewayUUID = request.GatewayUUID,
+                        UUID = Guid.NewGuid(), // Generate a UUID for this reading
+                        PolledAt = polledAt,
+                        TemperatureCel = measurement.temperature_c,
+                        HumdityPct = measurement.humidity_pct
+                    };
+
+                    // Call the existing single sensor processing logic
+                    try
+                    {
+                        var result = await ProcessSingleSensorReading(sensorDto, gatewayId);
+                        if (result.IsSuccess)
+                        {
+                            processedCount++;
+                        }
+                        else
+                        {
+                            errors.Add($"Failed to process sensor {sensorId}: {result.ErrorMessage}");
+                            skippedCount++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"Error processing sensor {sensorId}: {ex.Message}");
+                        skippedCount++;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Error processing sensor {sensorId}: {ex.Message}");
+                    skippedCount++;
+                }
+            }
+        }
+
+        // Return response with processing summary
+        var response = new
+        {
+            Message = $"Successfully processed {processedCount} sensor readings",
+            ProcessedCount = processedCount,
+            SkippedCount = skippedCount,
+            Errors = errors
+        };
+
+        return Ok(response);
+    }
+
+    private async Task<(bool IsSuccess, string ErrorMessage)> ProcessSingleSensorReading(SensorDto data, int gatewayId)
+    {
+        try
+        {
+            // Fetch the latest sensor reading for this gateway to compare previous state
+            var readings = await _sqlGetAdvanced.FetchWithJoinsAsync<GpsApp.DTO.SensorReading>(
+                baseTable: "Measurements.Sensor sensor",
+                selectClause: @"
+                sensor.TempTimerStart,
+                sensor.TempTimeOutside,
+                sensor.HumidTimerStart,
+                sensor.HumidTimeOutside,
+                sensor.TemperatureCel,
+                sensor.HumdityPct,
+                sensor.PolledAt,
+                sensor.TempMinMeasured,
+                sensor.TempMaxMeasured,
+                sensor.HumidMinMeasured,
+                sensor.HumidMaxMeasured
+            ",
+                joins: new List<string>(),
+                filters: new Dictionary<string, object> {
+                { "sensor.GatewayId", gatewayId }
+                },
+                map: r => new GpsApp.DTO.SensorReading
+                {
+                    TempTimerStart = r["TempTimerStart"] as DateTime?,
+                    TempTimeOutside = r["TempTimeOutside"] == DBNull.Value ? 0 : Convert.ToInt32(r["TempTimeOutside"]),
+                    HumidTimerStart = r["HumidTimerStart"] as DateTime?,
+                    HumidTimeOutside = r["HumidTimeOutside"] == DBNull.Value ? 0 : Convert.ToInt32(r["HumidTimeOutside"]),
+                    PolledAt = Convert.ToDateTime(r["PolledAt"]),
+                    TempMinMeasured = r["TempMinMeasured"] == DBNull.Value ? data.TemperatureCel.Value : Convert.ToSingle(r["TempMinMeasured"]),
+                    TempMaxMeasured = r["TempMaxMeasured"] == DBNull.Value ? data.TemperatureCel.Value : Convert.ToSingle(r["TempMaxMeasured"]),
+                    HumidMinMeasured = r["HumidMinMeasured"] == DBNull.Value ? data.HumdityPct.Value : Convert.ToSingle(r["HumidMinMeasured"]),
+                    HumidMaxMeasured = r["HumidMaxMeasured"] == DBNull.Value ? data.HumdityPct.Value : Convert.ToSingle(r["HumidMaxMeasured"]),
+                }
+            );
+
+            // Get the most recent reading
+            var lastReading = readings
+                .OrderByDescending(r => r.PolledAt)
+                .FirstOrDefault();
+
+            // Calculate min/max values
+            float tempMinMeasured = Math.Min(data.TemperatureCel.Value, lastReading?.TempMinMeasured ?? data.TemperatureCel.Value);
+            float tempMaxMeasured = Math.Max(data.TemperatureCel.Value, lastReading?.TempMaxMeasured ?? data.TemperatureCel.Value);
+            float humidMinMeasured = Math.Min(data.HumdityPct.Value, lastReading?.HumidMinMeasured ?? data.HumdityPct.Value);
+            float humidMaxMeasured = Math.Max(data.HumdityPct.Value, lastReading?.HumidMaxMeasured ?? data.HumdityPct.Value);
+
+            // Calculate time outside range
+            var (tempTimeOutside, tempTimerStart) = TrackingTimeOutsideRange.TrackTimeOutsideRange(
+                currentValue: data.TemperatureCel.Value,
+                expectedMin: 10,
+                expectedMax: 30,
+                currentTimestamp: data.PolledAt,
+                lastTimerStart: lastReading?.TempTimerStart
+            );
+
+            var (humidTimeOutside, humidTimerStart) = TrackingTimeOutsideRange.TrackTimeOutsideRange(
+                currentValue: data.HumdityPct.Value,
+                expectedMin: 20,
+                expectedMax: 80,
+                currentTimestamp: data.PolledAt,
+                lastTimerStart: lastReading?.HumidTimerStart
+            );
+
+            // Prepare data for insertion
+            var dataDict = new Dictionary<string, object>
+            {
+                { "GatewayId", gatewayId },
+                { "UUID", data.UUID },
+                { "PolledAt", data.PolledAt },
+                { "TemperatureCel", data.TemperatureCel },
+                { "HumdityPct", data.HumdityPct },
+                { "TempTimeOutside", tempTimeOutside },
+                { "HumidTimeOutside", humidTimeOutside },
+                { "TempTimerStart", tempTimerStart },
+                { "HumidTimerStart", humidTimerStart },
+                { "TempMinMeasured", tempMinMeasured },
+                { "TempMaxMeasured", tempMaxMeasured },
+                { "HumidMinMeasured", humidMinMeasured },
+                { "HumidMaxMeasured", humidMaxMeasured }
+            };
+
+            // Check if record exists
+            var existingRecord = await _sqlGet.FetchAsync("Measurements.Sensor", new Dictionary<string, object>
+            {
+                { "GatewayId", gatewayId },
+                { "UUID", data.UUID }
+            });
+
+            if (existingRecord != null)
+            {
+                // Update existing record
+                var updateDict = new Dictionary<string, object>
+                {
+                    { "TemperatureCel", data.TemperatureCel },
+                    { "HumdityPct", data.HumdityPct },
+                    { "PolledAt", data.PolledAt }
+                };
+
+                await _sqlUpdate.UpdateAsync("Measurements.Sensor", updateDict, new Dictionary<string, object>
+                {
+                    { "Id", existingRecord["Id"] }
+                });
+            }
+            else
+            {
+                // Insert new record
+                await _insertService.InsertAsync("Measurements.Sensor", dataDict);
+            }
+
+            return (true, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            return (false, ex.Message);
+        }
     }
 
 

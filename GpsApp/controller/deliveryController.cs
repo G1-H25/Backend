@@ -6,19 +6,35 @@ using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
 using System.ComponentModel.Design;
 
+/// <summary>
+/// Delivery management controller using dependency inversion principle.
+/// </summary>
+/// <remarks>
+/// Manages delivery operations with comprehensive sensor monitoring.
+/// Demonstrates SOLID: SRP (delivery management), OCP (interface-based), LSP (substitutable),
+/// ISP (focused interfaces), DIP (abstraction over concretions).
+/// Constructor injection enables testing and loose coupling.
+/// </remarks>
 [ApiController]
 [Route("[controller]")]
 public class DeliveryController : ControllerBase
 {
-    private readonly SqlInsert _insertService;
+    private readonly ISqlInsert _insertService;
     private readonly ISqlGetAdvanced _sqlAdvanced;
     private readonly ISqlGet _sqlGet;
     private readonly IAuthorizationService _authService;
+    private readonly ISqlUpdate _sqlUpdate;
 
-    private readonly SqlUpdate _sqlUpdate;
-
-    // get the connectionstring to azure database, authorization access
-    public DeliveryController(SqlInsert insertService, IAuthorizationService authService, ISqlGetAdvanced sqlGetAdvanced, ISqlGet sqlGet, SqlUpdate sqlUpdate)
+    /// <summary>
+    /// Initializes delivery controller with injected dependencies.
+    /// </summary>
+    /// <param name="insertService">Database insertion service (ISqlInsert).</param>
+    /// <param name="authService">Authorization service for access validation.</param>
+    /// <param name="sqlGetAdvanced">Advanced query service with JOINs (ISqlGetAdvanced).</param>
+    /// <param name="sqlGet">Basic query service (ISqlGet).</param>
+    /// <param name="sqlUpdate">Database update service (ISqlUpdate).</param>
+    /// <remarks>Constructor injection - dependencies provided by DI container for testability.</remarks>
+    public DeliveryController(ISqlInsert insertService, IAuthorizationService authService, ISqlGetAdvanced sqlGetAdvanced, ISqlGet sqlGet, ISqlUpdate sqlUpdate)
     {
         _insertService = insertService;
         _authService = authService;

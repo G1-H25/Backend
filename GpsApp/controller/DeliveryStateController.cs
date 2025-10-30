@@ -1,13 +1,27 @@
 using Microsoft.AspNetCore.Mvc;
 using GpsApp.DTO;
 
+/// <summary>
+/// Delivery state management controller using dependency inversion principle.
+/// </summary>
+/// <remarks>
+/// Tracks delivery lifecycle states and status transitions.
+/// Demonstrates SOLID: SRP (state management), OCP (interface-based), LSP (substitutable),
+/// ISP (focused interfaces), DIP (abstraction over concretions).
+/// Constructor injection enables testing and loose coupling.
+/// </remarks>
 [ApiController]
 [Route("[controller]")]
 public class DeliveryStateController : ControllerBase
 {
-    private readonly SqlInsert _insertService;
+    private readonly ISqlInsert _insertService;
 
-    public DeliveryStateController(SqlInsert insertService)
+    /// <summary>
+    /// Initializes delivery state controller with injected dependencies.
+    /// </summary>
+    /// <param name="insertService">Database insertion service (ISqlInsert).</param>
+    /// <remarks>Constructor injection - dependencies provided by DI container for testability.</remarks>
+    public DeliveryStateController(ISqlInsert insertService)
     {
         _insertService = insertService;
     }
