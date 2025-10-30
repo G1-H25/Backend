@@ -1,6 +1,19 @@
 using Microsoft.Data.SqlClient;
 
-public class SqlUpdate
+public interface ISqlUpdate
+{
+    /// <summary>
+    /// Updates records based on filter conditions.
+    /// </summary>
+    /// <param name="tableName">Target table name.</param>
+    /// <param name="setValues">Column-value pairs to update.</param>
+    /// <param name="filters">Filter conditions for record selection.</param>
+    /// <returns>Async task.</returns>
+    /// <remarks>Uses parameterized queries with AND logic for multiple filters. Prevents SQL injection.</remarks>
+    Task UpdateAsync(string tableName, Dictionary<string, object> setValues, Dictionary<string, object> filters);
+}
+
+public class SqlUpdate : ISqlUpdate
 {
     private readonly string _connectionString;
 

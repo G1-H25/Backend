@@ -26,11 +26,11 @@ namespace GpsApp.Services
 
     class MockLiveData
     {
-        private readonly SqlInsert _insertService;
-        private readonly SqlUpdate _sqlUpdate;
+        private readonly ISqlInsert _insertService;
+        private readonly ISqlUpdate _sqlUpdate;
         private readonly ISqlGet _sqlGet;
 
-        public MockLiveData(SqlInsert insertService, SqlUpdate sqlUpdate, ISqlGet sqlGet)
+        public MockLiveData(ISqlInsert insertService, ISqlUpdate sqlUpdate, ISqlGet sqlGet)
         {
             _insertService = insertService;
             _sqlUpdate = sqlUpdate;

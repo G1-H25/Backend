@@ -2,13 +2,27 @@ using Microsoft.AspNetCore.Mvc;
 using GpsApp.DTO;
 
 
+/// <summary>
+/// Transport route management controller using dependency inversion principle.
+/// </summary>
+/// <remarks>
+/// Manages logistics transport routes and delivery paths.
+/// Demonstrates SOLID: SRP (route management), OCP (interface-based), LSP (substitutable),
+/// ISP (focused interfaces), DIP (abstraction over concretions).
+/// Constructor injection enables testing and loose coupling.
+/// </remarks>
 [ApiController]
 [Route("[controller]")]
 public class TransportRouteController : ControllerBase
 {
-    private readonly SqlInsert _insertService;
+    private readonly ISqlInsert _insertService;
 
-    public TransportRouteController(SqlInsert insertService)
+    /// <summary>
+    /// Initializes transport route controller with injected dependencies.
+    /// </summary>
+    /// <param name="insertService">Database insertion service (ISqlInsert).</param>
+    /// <remarks>Constructor injection - dependencies provided by DI container for testability.</remarks>
+    public TransportRouteController(ISqlInsert insertService)
     {
         _insertService = insertService;
     }
