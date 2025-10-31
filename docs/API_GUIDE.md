@@ -21,7 +21,7 @@ Automation is a key part of our curriculum as it also removes alot of the possib
 ![LOCAL DB UP](images/docker/ready_server.jpg)  
 1.2 Wait until SQL Server is ready and open `http://localhost:5000/swagger/index.html` to access Swagger and our endpoints.  
 
-> [!NOTE]
+> [!IMPORTANT]
 > If you want to try a route click the button **Try it out** in the top right corner of every route.  
 
 ### 2. Create a company
