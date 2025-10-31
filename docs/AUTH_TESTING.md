@@ -4,9 +4,9 @@
 
 Here you can find the authentication testing routes to test our API's access-control
 
-### Enter test shell
+## Enter test shell
 
-docker exec -it backend-app-1 /bin/sh
+`docker exec -it backend-app-1 /bin/sh`
 
 ### Signup an account
 
@@ -20,7 +20,7 @@ curl -i -X POST http://localhost:8080/signup/signup -H "Content-Type: applicatio
 curl -i -X POST http://localhost:8080/login -H "Content-Type: application/json" -d '{"username":"testuser5", "password":"testpass123"}'
 ```
 
-## After successful login
+### After successful login
 
 If authenication worked, replace the <token> with the response that was provided from the previous command.
 
@@ -39,16 +39,16 @@ curl -X POST http://localhost:8080/Gateway \
 }'
 ```
 
-### Fetch GPS data using filters
+## Fetch GPS data using filters
 
-#### Example querying by DeviceId
+### Example querying by DeviceId
 
 ```bash
 curl -X GET "http://localhost:8080/GpsGet?DeviceId=device123" \
 -H "Authorization: Bearer <token>"
 ```
 
-#### Post a value in
+### Post a value in
 
 ```bash
 curl -X POST http://localhost:8080/Gps \

@@ -2,7 +2,7 @@
 
 ## Description
 
-This thread will summarize and briefly describe what each workflow does. 
+This thread briefly describes what each workflows instructions are.
 
 ### Database deployment
 
@@ -26,7 +26,6 @@ Link: [deploy.yaml](../.github/workflows/deploy.yaml)
     * Sets up a .NET Core project.
     * Builds pre defiened configuration
     * Deploys to Azure Web App using repo secrets.
-
 
 ### Integration test
 

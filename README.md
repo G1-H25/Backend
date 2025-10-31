@@ -8,122 +8,128 @@
 - [Folder structure](#folder-structure)
 - [Getting started](#getting-started)
 - [Testing](#testing)
+- [Contributing](#contributing)
 - [API Documentation](#api-documentation)
-- [License](#license)
+- [Extensions](#extensions)
 
-### Assignment
+## Assignment
 
-A school project where three classes from Chas Academy year 2 including SUVx24(Embedded), FJSx24(Fullstack) and FSWx24(Frontend). Chas Academy has given us the task to develop a prototype of a system for climatecontrolled transportation to different potentional industries like, food, medicin, chemical and other industries where climate control is needed.
+A school project where three classes from Chas Academy year 2 including SUVx24(Embedded), FJSx24(Fullstack) and FSWx24(Frontend).  
+Chas Academy has given us the task to develop a prototype of for climatecontrolled logistics system where we can easily manage and monitor the climate during delivery.  
+This product will reassure the end customer of deviations during delivery while making sure that users of the system can collect data for further improvements.  
 
-____
-
-### Related repos
+## Related repos
 
 Link to [Frontend-Web](https://github.com/G1-H25/Frontend-web)  
 Link to [Frontend-Mobile/UX](https://github.com/G1-H25/Frontend-mobile)  
 Link to [Device-Broker](https://github.com/G1-H25/Device-Broker)  
 Link to [Device-Sensor](https://github.com/G1-H25/Device-Sensor)  
 Link to [jenlib](https://github.com/G1-H25/jenlib)  
-Link to our list of [Requirements](https://github.com/G1-H25/Requirements)   
+Link to our list of [Requirements](https://github.com/G1-H25/Requirements)
 
-____
+## Project description
 
-### Project description
-
-This repo will represent our backend part of our project where we will create a bridge between the sensors and our UI.  
-We are going to develop a structured API using C# and the ASP.NET core.
-The server is going to be hosted on Azure Data Portal where we also handle logging for our API requests.  
+This project will represent the backend part where we handle the communication between the sensors and UI.  
+We are developing an API using C# and the ASP.NET core.
+The server is hosted on Azure Data Portal where we also handle logging for the API requests.  
 This is to summarize our last course (DevOps) using technologies like GitHub Actions to create a robust, secure and automatic workflow.
 
-____
-
-### Folder structure
+## Folder structure
 
 ```bash
     .
     ├── docs                    # Documents gathered under one folder
-    ├── GpsApp                  # Main C# program (includes logic needed for requests to the backend server)
-    ├── GpsApp.Tests            # Tests for C# GpsApp (integration and unit tests)
-    ├── scripts                 # Scripts for database creation
-    ├── .gitattributes          # NO CLUE Wilmer?? Does something with Shell files???
-    ├── .gitignore              # Configuration for what files to exclude on GitHub
+    ├── GpsApp                  # Application
+    ├── GpsApp.Tests            # Tests for application (integration and unit tests)
+    ├── scripts                 # Scripts for sql queries
+    ├── .gitattributes          # Config for how certain files are encoded
+    ├── .gitignore              # Config for what files to exclude on GitHub
     ├── .sqlfluff               # Linter for .sql files
-    ├── Backend.sln             # Solution for C# application
+    ├── Backend.sln             # Solution for application
     ├── docker-compose.yml      # Docker-compose to set up a local testing environment 
-    └── README.md               # <---YOU ARE HERE--->
+    └── README.md               # <---WELCOME--->
 ```
 
-____
+## Getting started
 
-### Getting started
+### Creating and running Docker container
 
-#### Creating and running Docker container
+### 1. Clone repository
 
-1. **Clone repository**
+> [!IMPORTANT]
+> Make sure that you have the requirements before starting
+> [Link here](docs/DEV_REQUIREMENTS.md)
 
 ```bash
 git clone https://github.com/G1-H25/Backend.git
 cd Backend
 ```
 
-2. **Run Docker**
+### 2. **Run Docker**
 
-    From source run `docker compose up --watch` or `docker-compose up --build`
+#### From source run `docker compose up --watch` or `docker-compose up --build`
 
-    --watch is to automatically have changes made in the source repo update the docker image.  
-    --build creates the image from existing files when run.
+>[!NOTE]
+> Make sure Docker Desktop is running in the background.
 
-    **WARNING:** --watch does currently not work.
+--watch is to automatically have changes made in the source repo update the docker image.  
+--build creates the image from existing files when run.
 
-3. **Additional tips**
+> [!WARNING]
+> --watch does currently not work.
 
-    For entering the backend container shell:
+> [!TIP]
+> If ports are blocked, check for other running containers that might block port usage.
+
+### 3. **Additional tips**
+
+#### For entering the backend container shell
 
 - `docker exec -it backend-app-1 /bin/sh`
 
-    For entering the database shell
+#### For entering the database shell
 
-`docker run -it --rm --network container:dev-sqlserver mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Passw0rd`
+- `docker run -it --rm --network container:dev-sqlserver mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Passw0rd`
 
-4. **Start coding**
+### 4. **Stopping containers & clearing cache**
 
-    Reassuring that you have the right set of tools required ([link](docs/REQUIREMENTS.md)) to further devlop this project. Have at it!
+Run `docker-compose down -v` remove the "volume" from the docker.
+If you do not run `-v`, metadata will be saved in your container and keep on existing until removed.  
+This might cause data collisions when you build new images.
 
-5. **Stopping containers & clearing cache**
+#### Notes
 
-    Run `docker-compose down -v` remove the "volume" from the docker.
-    If you do not run `-v`, metadata will be saved in your container and keep on existing until removed.  
-    This might cause collisions when you build new images.
-
-#### Notes & tips
-
+- `http://localhost:5000/swagger/index.html` is used for testing endpoints.
 - Make sure Docker Desktop is running in the background.
 
-- If using --watch, ensure you're on a compatible Docker version.
+## Testing
 
-- If ports are blocked, check for other running containers that might block port usage.
+Tests are crucial for any application to match the requirements of performance and security.
 
-____
+- [APP_TESTS.md](docs/APP_TESTS.md) | Here is a link to how our tests are built and how we test the application.
 
-### Testing
+## Contributing
 
-Here you will find a link/description on what library will be used for testing and how the process is made
+This project is closed inside our organization.
 
-### API Documentation
+## API Documentation
 
-Swagger provides the ability to test different methods for retreiving or fetching different data packages. Try it out!  
-[Link to API Documentation](link)
+Swagger provides the ability to test the API servers available endpoints for fetching or pushing data. Try it out!
 
-____
+- Link to production [Swagger API](https://g1api-bgeuc6hydmg9etgt.swedencentral-01.azurewebsites.net/swagger/index.html)
+- Link to local[Swagger API](http://localhost:5000/swagger/index.html)
+- [How to](docs/API_GUIDE.md) guide for Swagger.
 
-### License
+Lucidchart is a tool used to create a visualized image of an enterprise workflow.  
+In our case we have used it to create a blueprint of the SQL Server database and how the data is linked together.
 
-***MIT License***
+- [Lucidchart](https://lucid.app/lucidchart/3512ac64-3834-4b7e-b511-6808a2e46dc5/edit?page=0_0#)
 
-Copyright 2025 G1-H25 Organisation
+## Extensions
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Here you can find plausible extension for our application that have not yet been produced yet.
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
+- [] WHAT
+- [] CAN
+- [] WE
+- [] DO

@@ -1,8 +1,10 @@
 # Requirements
 
-## Explanation
+## Description
 
-Here you will find the requirements needed to either run or maintain our application, everything from hardware to software.
+Small description of what you might need to either contribute or test the application yourself.  
+> [!NOTE]
+> The server will probably be down whenever our school project is over
 
 ## Software
 
@@ -13,14 +15,10 @@ Here you will find the requirements needed to either run or maintain our applica
 
 ## Hardware
 
-No hardware is need for our part of the project.  
-The backend depends solely on software and there the communication with IoT.  
+Check the IoT repositories for further info  
+
 **Links to hardware repositories:**
 
 * [jenlib](https://github.com/G1-H25/jenlib): Library for the hardware abstraction testing.
 * [Broker](https://github.com/G1-H25/Device-Broker): Library for the broker part of IoT.
 * [Sensor](https://github.com/G1-H25/Device-Sensor): Library for the sensor part of IoT.
-
-## Developing
-
-**Enter description**
