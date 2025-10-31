@@ -1,5 +1,9 @@
 # Testing
 
+## Descr
+
+[Swagger](https://g1api-bgeuc6hydmg9etgt.swedencentral-01.azurewebsites.net/swagger/index.html)
+
 ## Test folder structure
 
 ```bash
@@ -14,8 +18,9 @@ GpsApp.Tests                                        # Test root folder
     └── HelloControllerTests.cs                     # Hello test for controllers
 ```
 
-## Purpose
+## Description
 
+This is a simpler guide of testing the program itself and ensure its compatibility.
 We are using the [Xunit](https://xunit.net/?tabs=cs) framework for both integration and unit tests while developing.
 
 ## Intergration Tests

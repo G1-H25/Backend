@@ -8,7 +8,9 @@
 - [Folder structure](#folder-structure)
 - [Getting started](#getting-started)
 - [Testing](#testing)
+- [Contributing](#contributing)
 - [API Documentation](#api-documentation)
+- [Extensions](#extensions)
 
 ## Assignment
 
@@ -27,7 +29,7 @@ Link to our list of [Requirements](https://github.com/G1-H25/Requirements)
 
 ## Project description
 
-This repo will represent the backend part of our project where we will create a communactions bridge between the sensors and UI.  
+This project will represent the backend part where we handle the communication between the sensors and UI.  
 We are developing an API using C# and the ASP.NET core.
 The server is hosted on Azure Data Portal where we also handle logging for the API requests.  
 This is to summarize our last course (DevOps) using technologies like GitHub Actions to create a robust, secure and automatic workflow.
@@ -39,9 +41,9 @@ This is to summarize our last course (DevOps) using technologies like GitHub Act
     ├── docs                    # Documents gathered under one folder
     ├── GpsApp                  # Application
     ├── GpsApp.Tests            # Tests for application (integration and unit tests)
-    ├── scripts                 # Scripts for database creation
-    ├── .gitattributes          # NO CLUE Wilmer?? Does something with Shell files???
-    ├── .gitignore              # Configuration for what files to exclude on GitHub
+    ├── scripts                 # Scripts for sql queries
+    ├── .gitattributes          # Config for how certain files are encoded
+    ├── .gitignore              # Config for what files to exclude on GitHub
     ├── .sqlfluff               # Linter for .sql files
     ├── Backend.sln             # Solution for application
     ├── docker-compose.yml      # Docker-compose to set up a local testing environment 
@@ -65,7 +67,10 @@ cd Backend
 
 ### 2. **Run Docker**
 
-From source run `docker compose up --watch` or `docker-compose up --build`
+#### From source run `docker compose up --watch` or `docker-compose up --build`
+
+>[!NOTE]
+> Make sure Docker Desktop is running in the background.
 
 --watch is to automatically have changes made in the source repo update the docker image.  
 --build creates the image from existing files when run.
@@ -78,34 +83,53 @@ From source run `docker compose up --watch` or `docker-compose up --build`
 
 ### 3. **Additional tips**
 
-For entering the backend container shell:
+#### For entering the backend container shell
 
-`docker exec -it backend-app-1 /bin/sh`
+- `docker exec -it backend-app-1 /bin/sh`
 
-For entering the database shell
+#### For entering the database shell
 
-`docker run -it --rm --network container:dev-sqlserver mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Passw0rd`
+- `docker run -it --rm --network container:dev-sqlserver mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Passw0rd`
 
 ### 4. **Stopping containers & clearing cache**
 
 Run `docker-compose down -v` remove the "volume" from the docker.
 If you do not run `-v`, metadata will be saved in your container and keep on existing until removed.  
-This might cause collisions when you build new images.
+This might cause data collisions when you build new images.
 
 #### Notes
 
 - `http://localhost:5000/swagger/index.html` is used for testing endpoints.
-
 - Make sure Docker Desktop is running in the background.
 
 ## Testing
 
-Tests are crucial for any application to ensure the security and robustness that a system requires.  
-Here is a link to how our tests are built and how we test the application.  
-[TESTING.md](docs/TESTING.md)
+Tests are crucial for any application to match the requirements of performance and security.
+
+- [APP_TESTS.md](docs/APP_TESTS.md) | Here is a link to how our tests are built and how we test the application.
+
+## Contributing
+
+This project is closed inside our organization.
 
 ## API Documentation
 
-Swagger provides the ability to test different methods for retreiving or fetching different data packages. Try it out!  
-[Swagger Docs](https://g1api-bgeuc6hydmg9etgt.swedencentral-01.azurewebsites.net/swagger/index.html)
-[ERP Diagram | Lucidchart](https://lucid.app/lucidchart/3512ac64-3834-4b7e-b511-6808a2e46dc5/edit?page=0_0#)
+Swagger provides the ability to test the API servers available endpoints for fetching or pushing data. Try it out!
+
+- Link to production [Swagger API](https://g1api-bgeuc6hydmg9etgt.swedencentral-01.azurewebsites.net/swagger/index.html)
+- Link to local[Swagger API](http://localhost:5000/swagger/index.html)
+- [How to](docs/API_GUIDE.md) guide for Swagger.
+
+Lucidchart is a tool used to create a visualized image of an enterprise workflow.  
+In our case we have used it to create a blueprint of the SQL Server database and how the data is linked together.
+
+- [Lucidchart](https://lucid.app/lucidchart/3512ac64-3834-4b7e-b511-6808a2e46dc5/edit?page=0_0#)
+
+## Extensions
+
+Here you can find plausible extension for our application that have not yet been produced yet.
+
+- [] WHAT
+- [] CAN
+- [] WE
+- [] DO

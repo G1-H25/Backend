@@ -9,7 +9,7 @@
 - Frontend App          Displays real-time and historical sensor data
 - CI/CD Pipeline        Builds and deploys backend container, and redeploys on updates
 
-- ![Architecture Flow](images/system-overview.png)
+- ![Architecture Flow](images/application/system-overview.png)
 
 ## Reprensation
 
