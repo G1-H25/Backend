@@ -17,7 +17,7 @@ Automation is a key part of our curriculum as it also removes alot of the possib
 
 ### 1. Get started
 
-1.1 Run `docker-compose.yml` in root repository.
+1.1 Run `docker-compose.yml` in root repository.  
 ![LOCAL DB UP](images/docker/ready_server.jpg)  
 1.2 Wait until SQL Server is ready and open `http://localhost:5000/swagger/index.html` to access Swagger and our endpoints.  
 
