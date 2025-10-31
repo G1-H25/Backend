@@ -44,10 +44,10 @@ public class DeliveryController : ControllerBase
     }
 
     [HttpGet("retrieve")]
-    // [Authorize]
+    [Authorize]
     public async Task<IActionResult> GetDelivery([FromQuery] int? id)
     {
-
+        
         var filters = new Dictionary<string, object>();
         if (id.HasValue)
             filters.Add("deliv.Id", id.Value);
