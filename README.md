@@ -56,13 +56,9 @@ This is to summarize our last course (DevOps) using technologies like GitHub Act
 
 ### 1. Clone repository
 
-> [!IMPORTANT]
-> Make sure that you have the requirements before starting
-> [Link here](docs/DEV_REQUIREMENTS.md)
-
 ```bash
-git clone https://github.com/G1-H25/Backend.git
-cd Backend
+git clone https://github.com/G1-H25/Backend.git     # G1-H25 is the Project Oraganization name.
+cd Backend                                          # Enter root repository
 ```
 
 ### 2. **Run Docker**
@@ -106,7 +102,7 @@ This might cause data collisions when you build new images.
 
 Tests are crucial for any application to match the requirements of performance and security.
 
-- [APP_TESTS.md](docs/APP_TESTS.md) | Here is a link to how our tests are built and how we test the application.
+- [Application tests](docs/APP_TESTS.md)
 
 ## Contributing
 
@@ -117,7 +113,7 @@ This project is closed inside our organization.
 Swagger provides the ability to test the API servers available endpoints for fetching or pushing data. Try it out!
 
 - Link to production [Swagger API](https://g1api-bgeuc6hydmg9etgt.swedencentral-01.azurewebsites.net/swagger/index.html)
-- Link to local[Swagger API](http://localhost:5000/swagger/index.html)
+- Link to local [http://localhost:5000/swagger](http://localhost:5000/swagger/index.html) (if container is up and running)
 - [How to](docs/API_GUIDE.md) guide for Swagger.
 
 Lucidchart is a tool used to create a visualized image of an enterprise workflow.  
