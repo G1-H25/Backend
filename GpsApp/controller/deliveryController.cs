@@ -138,7 +138,7 @@ public class DeliveryController : ControllerBase
 
         return result.Any() ? Ok(result) : NotFound("No delivery records found.");
     }
-    
+
     /// <summary>
     /// Retrieves a single delivery by its unique ID, with optional filters for route, sender, recipient, carrier, or sensor.
     /// </summary>
