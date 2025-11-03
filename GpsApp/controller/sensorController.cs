@@ -538,7 +538,7 @@ public class SensorController : ControllerBase
         // Process each sensor and its measurements
         foreach (var sensorData in request.Readings.sensors)
         {
-            var sensorId = sensorData.sensor_id;
+            var sensorUUID = sensorData.sensor_UUID;
 
             // Validate sensor data (including sensor ID)
             var sensorErrors = _validationService.ValidateSensorData(sensorData);
@@ -555,7 +555,7 @@ public class SensorController : ControllerBase
                 try
                 {
                     // Validate individual measurement using domain validation service
-                    var measurementErrors = _validationService.ValidateMeasurement(measurement, sensorId, measurementIndex);
+                    var measurementErrors = _validationService.ValidateMeasurement(measurement, sensorUUID, measurementIndex);
                     if (measurementErrors.Any())
                     {
                         errors.AddRange(measurementErrors);
@@ -570,7 +570,7 @@ public class SensorController : ControllerBase
                     var sensorDto = new SensorDto
                     {
                         GatewayUUID = request.GatewayUUID,
-                        UUID = Guid.NewGuid(), // Generate a UUID for this reading
+                        UUID = sensorUUID, // Generate a UUID for this reading
                         PolledAt = polledAt,
                         TemperatureCel = measurement.temperature_c,
                         HumdityPct = measurement.humidity_pct
@@ -586,19 +586,19 @@ public class SensorController : ControllerBase
                         }
                         else
                         {
-                            errors.Add($"Failed to process sensor {sensorId}: {result.ErrorMessage}");
+                            errors.Add($"Failed to process sensor {sensorUUID}: {result.ErrorMessage}");
                             skippedCount++;
                         }
                     }
                     catch (Exception ex)
                     {
-                        errors.Add($"Error processing sensor {sensorId}: {ex.Message}");
+                        errors.Add($"Error processing sensor {sensorUUID}: {ex.Message}");
                         skippedCount++;
                     }
                 }
                 catch (Exception ex)
                 {
-                    errors.Add($"Error processing sensor {sensorId}: {ex.Message}");
+                    errors.Add($"Error processing sensor {sensorUUID}: {ex.Message}");
                     skippedCount++;
                 }
             }
@@ -743,8 +743,13 @@ public class SensorController : ControllerBase
 
             var liveDataMocker = new MockLiveData(_insertService, _sqlUpdate, _sqlGet);
 
+            // Check if delivery already exists
+            bool deliveryExists = await liveDataMocker.DoesDeliveryExistForSensorAsync(sensorId);
 
-            await liveDataMocker.CreateMockDeliveryAsync(sensorId);
+            if (!deliveryExists)
+            {
+                await liveDataMocker.CreateMockDeliveryAsync(sensorId);
+            }
 
             return (true, string.Empty);
         }

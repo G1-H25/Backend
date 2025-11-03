@@ -206,5 +206,14 @@ namespace GpsApp.Services
 
             Console.WriteLine($"Inserted expected values for Sensor {sensorId} (TempId={expectedTempId}, HumidId={expectedHumidId})");
         }
+        public async Task<bool> DoesDeliveryExistForSensorAsync(int sensorId)
+        {
+            var deliveryRecord = await _sqlGet.FetchAsync("Orders.Delivery", new Dictionary<string, object>
+            {
+                { "SensorId", sensorId }
+            });
+
+            return deliveryRecord != null && deliveryRecord.Any();
+        }
     }
 }
