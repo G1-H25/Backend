@@ -13,7 +13,7 @@ namespace GpsApp.DTO
     //! @brief A sensor with its measurements
     public class SensorData
     {
-        public int sensor_id { get; set; }
+        public Guid sensor_UUID { get; set; }
         public List<Measurement> measurements { get; set; } = new();
     }
 

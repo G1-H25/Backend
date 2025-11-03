@@ -33,9 +33,9 @@ namespace GpsApp.Services
         /// Validates a measurement
         /// </summary>
         /// <param name="measurement">The measurement to validate</param>
-        /// <param name="sensorId">The sensor ID</param>
+        /// <param name="sensorUUID">The sensor ID</param>
         /// <param name="measurementIndex">The measurement index for error context</param>
         /// <returns>List of validation errors</returns>
-        List<string> ValidateMeasurement(Measurement measurement, int sensorId, int measurementIndex);
+        List<string> ValidateMeasurement(Measurement measurement, Guid sensorUUID, int measurementIndex);
     }
 }

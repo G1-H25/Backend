@@ -538,7 +538,7 @@ public class SensorController : ControllerBase
         // Process each sensor and its measurements
         foreach (var sensorData in request.Readings.sensors)
         {
-            var sensorId = sensorData.sensor_id;
+            var sensorUUID = sensorData.sensor_UUID;
 
             // Validate sensor data (including sensor ID)
             var sensorErrors = _validationService.ValidateSensorData(sensorData);
@@ -555,7 +555,7 @@ public class SensorController : ControllerBase
                 try
                 {
                     // Validate individual measurement using domain validation service
-                    var measurementErrors = _validationService.ValidateMeasurement(measurement, sensorId, measurementIndex);
+                    var measurementErrors = _validationService.ValidateMeasurement(measurement, sensorUUID, measurementIndex);
                     if (measurementErrors.Any())
                     {
                         errors.AddRange(measurementErrors);
@@ -586,19 +586,19 @@ public class SensorController : ControllerBase
                         }
                         else
                         {
-                            errors.Add($"Failed to process sensor {sensorId}: {result.ErrorMessage}");
+                            errors.Add($"Failed to process sensor {sensorUUID}: {result.ErrorMessage}");
                             skippedCount++;
                         }
                     }
                     catch (Exception ex)
                     {
-                        errors.Add($"Error processing sensor {sensorId}: {ex.Message}");
+                        errors.Add($"Error processing sensor {sensorUUID}: {ex.Message}");
                         skippedCount++;
                     }
                 }
                 catch (Exception ex)
                 {
-                    errors.Add($"Error processing sensor {sensorId}: {ex.Message}");
+                    errors.Add($"Error processing sensor {sensorUUID}: {ex.Message}");
                     skippedCount++;
                 }
             }
