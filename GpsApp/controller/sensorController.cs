@@ -743,8 +743,13 @@ public class SensorController : ControllerBase
 
             var liveDataMocker = new MockLiveData(_insertService, _sqlUpdate, _sqlGet);
 
+            // Check if delivery already exists
+            bool deliveryExists = await liveDataMocker.DoesDeliveryExistForSensorAsync(sensorId);
 
-            await liveDataMocker.CreateMockDeliveryAsync(sensorId);
+            if (!deliveryExists)
+            {
+                await liveDataMocker.CreateMockDeliveryAsync(sensorId);
+            }
 
             return (true, string.Empty);
         }
