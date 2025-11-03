@@ -570,7 +570,7 @@ public class SensorController : ControllerBase
                     var sensorDto = new SensorDto
                     {
                         GatewayUUID = request.GatewayUUID,
-                        UUID = Guid.NewGuid(), // Generate a UUID for this reading
+                        UUID = sensorUUID, // Generate a UUID for this reading
                         PolledAt = polledAt,
                         TemperatureCel = measurement.temperature_c,
                         HumdityPct = measurement.humidity_pct
